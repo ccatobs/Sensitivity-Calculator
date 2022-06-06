@@ -144,9 +144,9 @@ nefd = arrayNEI*reduce(solidAngle)[:, None]*sqrt(reduce(spatialPixels)[:, None]*
 def eorRed(array): #Eliminates 353 and 448 um wavelengths from data
     return array[2:]
 
-r = np.concatenate((r[:1, :3], r[2:, :3]))
+r = np.concatenate((r[:1, :4], r[2:, :4]))
 eorEqBw = c/(eorRed(wavelength)[:, None]*10**(-6)*r)*pi/2
-eorEqTrans = eqtrans[1:, :3]
+eorEqTrans = eqtrans[1:, :4]
 eorE_warm = eorRed(t_uhdpe_window)[:, None]*((1-eorEqTrans)*eta+(1-eta))+eorRed(e_window_warm)[:, None]
 centerFrequency = 299000000000000/eorRed(wavelength)
 eorRuze = 1/e**((4*pi*wfe/eorRed(wavelength))**2)
@@ -162,5 +162,16 @@ eorNEI = eorNEFD/eorRed(solidAngle)[:, None]/1000
 
 arrayify = np.ndarray.tolist
 
-dict_file = {"NET w8 avg": arrayify(netW8Avg), "NET w8 RJ": arrayify(netW8RJ), "NEI w8 Jy/sr": arrayify(neiW8), "EoR Spec NEFD": arrayify(eorNEFD), "EoR Spec NEI": arrayify(eorNEI)}
+def broadbandDisplay(array):
+    array = arrayify(array)
+    return {"353 um": array[0], "740 um": array[1], "861 um": array[2], "1052 um": array[3], "1350 um": array[4]}
+
+def eoRDisplay(array):
+    array = arrayify(array)
+    return {"740 um": {"Quartile 1": array[0][0], "Quartile 2": array[0][1], "Quartile 3": array[0][2], "Quartile 4": array[0][3]}, 
+    "861 um": {"Quartile 1": array[1][0], "Quartile 2": array[1][1], "Quartile 3": array[1][2], "Quartile 4": array[1][3]}, 
+    "1071 um": {"Quartile 1": array[2][0], "Quartile 2": array[2][1], "Quartile 3": array[2][2], "Quartile 4": array[2][3]}, 
+    "1350 um": {"Quartile 1": array[3][0], "Quartile 2": array[3][1], "Quartile 3": array[3][2], "Quartile 4": array[3][3]}}
+
+dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDisplay(netW8RJ), "NEI w8 Jy/sr": broadbandDisplay(neiW8), "EoR Spec NEFD": eoRDisplay(eorNEFD), "EoR Spec NEI": eoRDisplay(eorNEI)}
 documents = yaml.dump(dict_file, open("output.yaml", 'w'))
