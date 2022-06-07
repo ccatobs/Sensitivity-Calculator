@@ -1,5 +1,3 @@
-from cmath import sqrt
-from re import T
 import yaml
 import numpy as np
 
@@ -69,7 +67,7 @@ for key, value in dictionary.items():
         case "t_uhdpe_window": t_uhdpe_window = np.array(value)
         case "coldSpillOverEfficiency": coldSpillOverEfficiency = np.array(value)
         case "singleModedAOmegaLambda2": singleModedAOmegaLambda2 = np.array(value)
-        case "spatialPixels": spatialPixels = np.array(value)
+        case "spatialPixels": spatialPixels = np.array(value[:1] + [1] + value[1:]) #Dummy value in unused position [1] of list
         case "fpi": fpi = np.array(value)
 
         case "eqbw": eqbw = np.array(value)
