@@ -166,10 +166,10 @@ def broadbandDisplay(array):
 
 def eoRDisplay(array):
     array = arrayify(array)
-    return {"740 um": {"Quartile 1": array[0][0], "Quartile 2": array[0][1], "Quartile 3": array[0][2], "Quartile 4": array[0][3]}, 
-    "861 um": {"Quartile 1": array[1][0], "Quartile 2": array[1][1], "Quartile 3": array[1][2], "Quartile 4": array[1][3]}, 
-    "1071 um": {"Quartile 1": array[2][0], "Quartile 2": array[2][1], "Quartile 3": array[2][2], "Quartile 4": array[2][3]}, 
-    "1350 um": {"Quartile 1": array[3][0], "Quartile 2": array[3][1], "Quartile 3": array[3][2], "Quartile 4": array[3][3]}}
+    return {str(wavelength[2]) + " um": {"Quartile 1": array[0][0], "Quartile 2": array[0][1], "Quartile 3": array[0][2], "Quartile 4": array[0][3]}, 
+    str(wavelength[3]) + " um": {"Quartile 1": array[1][0], "Quartile 2": array[1][1], "Quartile 3": array[1][2], "Quartile 4": array[1][3]}, 
+    str(wavelength[4]) + " um": {"Quartile 1": array[2][0], "Quartile 2": array[2][1], "Quartile 3": array[2][2], "Quartile 4": array[2][3]}, 
+    str(wavelength[5]) + " um": {"Quartile 1": array[3][0], "Quartile 2": array[3][1], "Quartile 3": array[3][2], "Quartile 4": array[3][3]}}
 
 dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDisplay(netW8RJ), "NEI w8 Jy/sr": broadbandDisplay(neiW8), "EoR Spec NEFD": eoRDisplay(eorNEFD), "EoR Spec NEI": eoRDisplay(eorNEI)}
 documents = yaml.dump(dict_file, open("output.yaml", 'w'))
