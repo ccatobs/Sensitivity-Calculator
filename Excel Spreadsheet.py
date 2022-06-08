@@ -35,6 +35,7 @@ r = None
 signal = None
 
 aToCMB = None
+wavelength = None
 
 pi = np.pi
 ln = np.log
@@ -43,46 +44,45 @@ e = np.e
 h = 6.626e-34
 k = 1.38e-23
 c = 299792458
-wavelength = np.array([353, 448, 740, 861, 1071, 1350])
 
 stream = open("input.yaml", 'r')
 dictionary = yaml.safe_load(stream)
 for key, value in dictionary.items():
-    match key:
-        case "diameter": diameter = value
-        case "t": t = value
-        case "wfe": wfe = value
-        case "space": space = value
+    if key == "diameter": diameter = value
+    if key == "t": t = value
+    if key == "wfe": wfe = value
+    if key == "space": space = value
 
-        case "eta": eta = value
+    if key == "eta": eta = value
 
-        case "doe": doe = value
-        case "t_int": t_int = value
-        case "pixelYield": pixelYield = value
-        case "sz-camNumPoln": szCamNumPoln = value
-        case "eor-specNumPoln": eorSpecNumPoln = value
+    if key == "doe": doe = value
+    if key == "t_int": t_int = value
+    if key == "pixelYield": pixelYield = value
+    if key == "sz-camNumPoln": szCamNumPoln = value
+    if key == "eor-specNumPoln": eorSpecNumPoln = value
 
-        case "t_filter_cold": t_filter_cold = np.array(value)
-        case "t_lens_cold": t_lens_cold = np.array(value)
-        case "t_uhdpe_window": t_uhdpe_window = np.array(value)
-        case "coldSpillOverEfficiency": coldSpillOverEfficiency = np.array(value)
-        case "singleModedAOmegaLambda2": singleModedAOmegaLambda2 = np.array(value)
-        case "spatialPixels": spatialPixels = np.array(value[:1] + [1] + value[1:]) #Dummy value in unused position [1] of list
-        case "fpi": fpi = np.array(value)
+    if key == "t_filter_cold": t_filter_cold = np.array(value)
+    if key == "t_lens_cold": t_lens_cold = np.array(value)
+    if key == "t_uhdpe_window": t_uhdpe_window = np.array(value)
+    if key == "coldSpillOverEfficiency": coldSpillOverEfficiency = np.array(value)
+    if key == "singleModedAOmegaLambda2": singleModedAOmegaLambda2 = np.array(value)
+    if key == "spatialPixels": spatialPixels = np.array(value[:1] + [1] + value[1:]) #Dummy value in unused position [1] of list
+    if key == "fpi": fpi = np.array(value)
 
-        case "eqbw": eqbw = np.array(value)
-        case "eqtrans": eqtrans = np.array(value)
-        case "centerFrequency": centerFrequency = np.array(value)
-        case "detectorNEP": detectorNEP = value
-        case "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor = value
-        case "sensitivity": sensitivity = value
-        case "hoursPerYear": hoursPerYear = value
-        case "sensPerBeam": sensPerBeam = value
+    if key == "eqbw": eqbw = np.array(value)
+    if key == "eqtrans": eqtrans = np.array(value)
+    if key == "centerFrequency": centerFrequency = np.array(value)
+    if key == "detectorNEP": detectorNEP = value
+    if key == "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor = value
+    if key == "sensitivity": sensitivity = value
+    if key == "hoursPerYear": hoursPerYear = value
+    if key == "sensPerBeam": sensPerBeam = value
 
-        case "r": r = np.array(value)
-        case "signal": signal = np.array(value)
+    if key == "r": r = np.array(value)
+    if key == "signal": signal = np.array(value)
 
-        case "aToCMB": aToCMB = np.array(value)
+    if key == "aToCMB": aToCMB = np.array(value)
+    if key == "wavelength": wavelength = np.array(value)
 
 a = pi*(diameter/2)**2
 
@@ -162,7 +162,7 @@ arrayify = np.ndarray.tolist
 
 def broadbandDisplay(array):
     array = arrayify(array)
-    return {"353 um": array[0], "740 um": array[1], "861 um": array[2], "1052 um": array[3], "1350 um": array[4]}
+    return {str(wavelength[0]) + " um": array[0], str(wavelength[2]) + " um": array[1], str(wavelength[3]) + " um": array[2], str(wavelength[4]) + " um": array[3], str(wavelength[5]) + " um": array[4]}
 
 def eoRDisplay(array):
     array = arrayify(array)

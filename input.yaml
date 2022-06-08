@@ -34,3 +34,4 @@
  signal: [4.3e+5, 1.5e+5, 1.18e+5, 3.4e+4, 1.e+4]
  #Misc
  aToCMB: [14157.5627, 24.576959, 12.1646617, 5.61604682, 3.13413648]
+ wavelength: [353, 448, 740, 861, 1071, 1350] #NOTE: First value not used in EoR Spec, second value currently unused in general
