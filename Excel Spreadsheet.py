@@ -172,4 +172,4 @@ def eoRDisplay(array):
     str(wavelength[5]) + " um": {"Quartile 1": array[3][0], "Quartile 2": array[3][1], "Quartile 3": array[3][2], "Quartile 4": array[3][3]}}
 
 dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDisplay(netW8RJ), "NEI w8 Jy/sr": broadbandDisplay(neiW8), "EoR Spec NEFD": eoRDisplay(eorNEFD), "EoR Spec NEI": eoRDisplay(eorNEI)}
-documents = yaml.dump(dict_file, open("output.yaml", 'w'))
+documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
