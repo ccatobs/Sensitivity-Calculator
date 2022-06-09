@@ -88,15 +88,19 @@ for key, value in dictionary.items():
     if key == "aToCMB": aToCMB = np.array(value)
     if key == "wavelength": wavelength = np.array(value)
 
+#Telescope
 a = pi*(diameter/2)**2
 
+#Detector
 szCamCorForPoln = abs(3-szCamNumPoln)
 eorSpecCorForPoln = abs(3-eorSpecNumPoln)
 
+#Instrument, throughput
 t_cold = t_filter_cold*t_lens_cold**3
 e_window_warm = 1 - t_uhdpe_window
 
-windowTrans = np.ones(5) * t_uhdpe_window[1]
+#Instrument, beams/area of focal plane
+windowTrans = np.ones(len(wavelength)) * t_uhdpe_window[1] #This doesn't make sense but is the same as the sheet, and luckily is not used here nor in the sheet
 beam = 1.2*wavelength/diameter/1000000*206265
 solidAngle = pi/4/ln(2)*(beam/206264)**2
 nativeAOmegaLambda2 = solidAngle*a/(wavelength*0.000001)**2
@@ -113,6 +117,7 @@ pointingsIn1000SqDeg = 1000/effectiveFov
 secondsPerPointingIn4000Hrs = 4000*3600/pointingsIn1000SqDeg
 noiseFactor1000SqDeg4000Hrs = sqrt(secondsPerPointingIn4000Hrs)
 
+#Weather quartiles/broadband
 e_warm = (t_uhdpe_window[:, None])*((1-eqtrans)*eta+(1-eta))+(e_window_warm[:, None])
 ruze = 1/(e**((4*pi*wfe/(wavelength))**2))
 weather_t_cold = (t_cold)
@@ -126,14 +131,16 @@ nef = szCamCorForPoln*totalNEP/(a*weather_t_cold[:, None]*doe*eta*ruze[:, None]*
 nefd = nef*10**26*1000/(eqbw[:, None])
 net = nefd*10**(-29)/((solidAngle)[:, None])*((wavelength)[:, None]*0.000001)**2/(2*1.38*10**(-23))*1000
 
-arrayNETRJ = (net/((spatialPixels)[:, None]*pixelYield)**0.5)[:, :3]
+#Unlabeled section/final noise equivalent calculations
+arrayNETRJ = (net/((spatialPixels)[:, None]*pixelYield)**0.5)
 arrayNETCMB = arrayNETRJ*aToCMB[:, None]*1000
-arrayNEI = nefd[:, :3]/1000/((solidAngle)[:, None])/((spatialPixels)[:, None]*pixelYield)**0.5
+arrayNEI = nefd/1000/((solidAngle)[:, None])/((spatialPixels)[:, None]*pixelYield)**0.5
 netW8Avg = sqrt(3/(1/arrayNETCMB[:, 0]**2+1/arrayNETCMB[:, 1]**2+1/arrayNETCMB[:, 2]**2).astype(float))
 netW8RJ = netW8Avg/aToCMB
 neiW8 = sqrt(3/(1/arrayNEI[:, 0]**2+1/arrayNEI[:, 1]**2+1/arrayNEI[:, 2]**2).astype(float))
 nefd = arrayNEI*(solidAngle)[:, None]*sqrt((spatialPixels)[:, None]*pixelYield)*1000
 
+#EoR Spec
 eorEqBw = c/(wavelength[:, None]*10**(-6)*r)*pi/2
 eorEqTrans = eqtrans
 eorE_warm = (t_uhdpe_window)[:, None]*((1-eorEqTrans)*eta+(1-eta))+(e_window_warm)[:, None]
@@ -158,7 +165,7 @@ def broadbandDisplayHelper(array, w, dict):
         return dict
 
 
-def broadbandDisplay(array):
+def broadbandDisplay(array): #Creates a dictionary to be put into a yaml file for broadband data
     array = arrayify(array)
     return broadbandDisplayHelper(array, wavelength, {})
 
@@ -170,7 +177,7 @@ def eoRDisplayHelper(array, w, dict):
     else:
         return dict
 
-def eoRDisplay(array):
+def eoRDisplay(array): #Creates a dictionary to be put into a yaml file for EoR spec data
     array = arrayify(array)
     return eoRDisplayHelper(array, (wavelength), {})
 
