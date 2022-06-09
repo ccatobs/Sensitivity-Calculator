@@ -5,7 +5,6 @@ import numpy as np
 diameter = None
 t = None
 wfe = None
-space = None
 
 eta = None
 
@@ -58,8 +57,6 @@ for key, value in dictionary.items():
         t = value
     if key == "wfe":
         wfe = value
-    if key == "space":
-        space = value
 
     if key == "eta":
         eta = value
@@ -129,7 +126,7 @@ t_cold = t_filter_cold*t_lens_cold**3
 e_window_warm = 1 - t_uhdpe_window
 
 # Instrument, beams/area of focal plane
-# WindowTrans doesn't make sense but is the same as the sheet, and luckily is not used here nor in the sheet
+# WindowTrans's formula doesn't make sense but is the same as the sheet, and luckily is not used here nor in the sheet
 windowTrans = np.ones(len(wavelength)) * t_uhdpe_window[1]
 beam = 1.2*wavelength/diameter/1000000*206265
 solidAngle = pi/4/ln(2)*(beam/206264)**2
