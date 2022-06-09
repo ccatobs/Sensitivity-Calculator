@@ -1,37 +1,57 @@
 ---
- #Telescope
- diameter: 5.7
- t: 273
- wfe: 10.7
- space: 2.7
- #Site
- eta: .98
- #Detector
- doe: .8
- t_int: 1
- pixelYield: .8
- sz-camNumPoln: 1
- eor-specNumPoln: 2
- #Instrument
- t_filter_cold: [ .593, .840, .909, .922, .890]
- t_lens_cold: [.98, .98, .98, .98, .98]
- t_uhdpe_window: [.96, .97, .97, .97, .97]
- coldSpillOverEfficiency: [.8, .5, .7, .5, .5]
- singleModedAOmegaLambda2: [1., 1., 1., 1., 1.]
- spatialPixels: [20808, 20808, 10368, 10368, 7938]
- fpi: [6000, 6000, 6000, 6000]
- #Weather
- eqbw: [9.7e+10, 3.e+10, 3.6e+10, 7.e+10, 5.6e+10]
- eqtrans: [[.44, .25, .09, .01], [.79, .68, .51, .01], [.88, .81, .69, .01], [.95, .92, .87, .01], [.96, .95, .91, .01]]
- centerFrequency: [8.5e+11, 4.05e+11, 3.48e+11, 2.85e+11, 2.22e+11]
- detectorNEP: 0
- backgroundSubtractionDegradationFactor: 1
- sensitivity: 1
- hoursPerYear: 888
- sensPerBeam: 1
- #EoR Spec
- r: [[100., 100., 100., 100.], [100., 100., 100., 100.], [100., 100., 100., 100.], [100., 100., 100., 100.], [100., 100., 100., 100.]]
- signal: [4.3e+5, 1.5e+5, 1.18e+5, 3.4e+4, 1.e+4]
- #Misc
- aToCMB: [14157.5627, 24.576959, 12.1646617, 5.61604682, 3.13413648]
- wavelength: [353, 740, 861, 1071, 1350]
+#Telescope
+diameter: 5.7
+t: 273
+wfe: 10.7
+space: 2.7
+
+#Site
+eta: .98
+
+#Detector
+doe: .8
+t_int: 1
+pixelYield: .8
+sz-camNumPoln: 1
+eor-specNumPoln: 2
+
+#Instrument
+t_filter_cold: [.593, .840, .909, .922, .890]
+t_lens_cold: [.98, .98, .98, .98, .98]
+t_uhdpe_window: [.96, .97, .97, .97, .97]
+coldSpillOverEfficiency: [.8, .5, .7, .5, .5]
+singleModedAOmegaLambda2: [1., 1., 1., 1., 1.]
+spatialPixels: [20808, 20808, 10368, 10368, 7938]
+fpi: [6000, 6000, 6000, 6000]
+
+#Weather
+eqbw: [9.7e+10, 3.e+10, 3.6e+10, 7.e+10, 5.6e+10]
+eqtrans:
+  [
+    [.44, .25, .09, .01],
+    [.79, .68, .51, .01],
+    [.88, .81, .69, .01],
+    [.95, .92, .87, .01],
+    [.96, .95, .91, .01],
+  ]
+centerFrequency: [8.5e+11, 4.05e+11, 3.48e+11, 2.85e+11, 2.22e+11]
+detectorNEP: 0
+backgroundSubtractionDegradationFactor: 1
+sensitivity: 1
+hoursPerYear: 888
+sensPerBeam: 1
+
+#EoR Spec
+r:
+  [
+    [100., 100., 100., 100.],
+    [100., 100., 100., 100.],
+    [100., 100., 100., 100.],
+    [100., 100., 100., 100.],
+    [100., 100., 100., 100.],
+  ]
+signal: [4.3e+5, 1.5e+5, 1.18e+5, 3.4e+4, 1.e+4]
+
+#Misc
+aToCMB: [14157.5627, 24.576959, 12.1646617, 5.61604682, 3.13413648]
+wavelength: [353, 740, 861, 1071, 1350]
