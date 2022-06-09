@@ -46,6 +46,7 @@ e = np.e
 h = 6.626e-34
 k = 1.38e-23
 c = 299792458
+arrayify = np.ndarray.tolist
 
 #Read in yaml file and assign all input data to their respective variables
 stream = open("input.yaml", 'r')
@@ -112,17 +113,10 @@ pointingsIn1000SqDeg = 1000/effectiveFov
 secondsPerPointingIn4000Hrs = 4000*3600/pointingsIn1000SqDeg
 noiseFactor1000SqDeg4000Hrs = sqrt(secondsPerPointingIn4000Hrs)
 
-
-
-
-e_warm = (t_uhdpe_window)*((1-eqtrans)*eta+(1-eta))+(e_window_warm)
-for i in range(5):
-    e_warm[i][-1] = 1
+e_warm = (t_uhdpe_window[:, None])*((1-eqtrans)*eta+(1-eta))+(e_window_warm[:, None])
 ruze = 1/(e**((4*pi*wfe/(wavelength))**2))
 weather_t_cold = (t_cold)
-occupancy_normal = np.ones((5, 4)) * 1/(e**(h*c/((wavelength)*10**(-6)*k*t))-1)[:, None]
-occupancy_space = np.ones((5, 1)) * 1/(e**(h*c/((wavelength)*10**(-6)*k*space))-1)[:, None]
-occupancy = np.concatenate((occupancy_normal, occupancy_space), axis=1)
+occupancy = np.ones((5, 4)) * 1/(e**(h*c/((wavelength)*10**(-6)*k*t))-1)[:, None]
 acceptedModes = szCamNumPoln*(coldSpillOverEfficiency)*(singleModedAOmegaLambda2)
 powerPerPixel = h*c*e_warm*(weather_t_cold[:, None])*(acceptedModes[:, None])*occupancy*(eqbw[:, None])*doe/(((wavelength)*10**(-6))[:, None]) #Differs from excel sheet becauses of correctly using t(cold)
 photonNoiseNEP = h*c/((wavelength)[:, None]*10**(-6))*(1/t_int*acceptedModes[:, None]*eqbw[:, None]*e_warm*weather_t_cold[:, None]*doe*occupancy*(1+e_warm*weather_t_cold[:, None]*doe*occupancy))**0.5
@@ -140,26 +134,21 @@ netW8RJ = netW8Avg/aToCMB
 neiW8 = sqrt(3/(1/arrayNEI[:, 0]**2+1/arrayNEI[:, 1]**2+1/arrayNEI[:, 2]**2).astype(float))
 nefd = arrayNEI*(solidAngle)[:, None]*sqrt((spatialPixels)[:, None]*pixelYield)*1000
 
-def eorRed(array): #Eliminates 353 and 448 um wavelengths from data
-    return array[1:]
-
-r = np.concatenate((r[:1, :4], r[2:, :4]))
-eorEqBw = c/(eorRed(wavelength)[:, None]*10**(-6)*r)*pi/2
-eorEqTrans = eqtrans[1:, :4]
-eorE_warm = eorRed(t_uhdpe_window)[:, None]*((1-eorEqTrans)*eta+(1-eta))+eorRed(e_window_warm)[:, None]
-centerFrequency = 299000000000000/eorRed(wavelength)
-eorRuze = 1/e**((4*pi*wfe/eorRed(wavelength))**2)
-eorT_cold = eorRed(t_cold)*0.9 #Always takes from 739 um in the sheet
-eorOccupancy = 1/(e**(h*c/(eorRed(wavelength)*10**(-6)*k*t))-1)
-eorAcceptedModes = eorSpecNumPoln*a*eorRed(coldSpillOverEfficiency)*eorRed(solidAngle)/(eorRed(wavelength)*10**(-6))**2 #In sheet 1071 um is calculated incorrectly
-eorPhotonNoiseNEP = h*c/(eorRed(wavelength)[:, None]*10**(-6))*(eorAcceptedModes[:, None]*eorEqBw*eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]*(1+eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]))**0.5
+eorEqBw = c/(wavelength[:, None]*10**(-6)*r)*pi/2
+eorEqTrans = eqtrans
+eorE_warm = (t_uhdpe_window)[:, None]*((1-eorEqTrans)*eta+(1-eta))+(e_window_warm)[:, None]
+centerFrequency = 299000000000000/(wavelength)
+eorRuze = 1/e**((4*pi*wfe/(wavelength))**2)
+eorT_cold = (t_cold)*0.9 #Always takes from 739 um in the sheet
+eorOccupancy = 1/(e**(h*c/((wavelength)*10**(-6)*k*t))-1)
+eorAcceptedModes = eorSpecNumPoln*a*(coldSpillOverEfficiency)*(solidAngle)/((wavelength)*10**(-6))**2 #In sheet 1071 um is calculated incorrectly
+eorPhotonNoiseNEP = h*c/((wavelength)[:, None]*10**(-6))*(eorAcceptedModes[:, None]*eorEqBw*eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]*(1+eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]))**0.5
 eorTotalNEP = sqrt(eorPhotonNoiseNEP**2 + detectorNEP**2)
-eorColdTerminatedSpillover = eorRed(coldSpillOverEfficiency)
+eorColdTerminatedSpillover = (coldSpillOverEfficiency)
 eorNEF = eorSpecCorForPoln*eorTotalNEP/(a*eorT_cold[:, None]*doe*eta*eorRuze[:, None]*eorEqTrans*eorColdTerminatedSpillover[:, None]*backgroundSubtractionDegradationFactor)
 eorNEFD = eorNEF/eorEqBw*10**26*1000
-eorNEI = eorNEFD/eorRed(solidAngle)[:, None]/1000
+eorNEI = eorNEFD/(solidAngle)[:, None]/1000
 
-arrayify = np.ndarray.tolist
 
 def broadbandDisplayHelper(array, w, dict):
     if len(w) > 0:
@@ -183,7 +172,7 @@ def eoRDisplayHelper(array, w, dict):
 
 def eoRDisplay(array):
     array = arrayify(array)
-    return eoRDisplayHelper(array, eorRed(wavelength), {})
+    return eoRDisplayHelper(array, (wavelength), {})
 
 dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDisplay(netW8RJ), "NEI w8 Jy/sr": broadbandDisplay(neiW8), "EoR Spec NEFD": eoRDisplay(eorNEFD), "EoR Spec NEI": eoRDisplay(eorNEI)}
 documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
