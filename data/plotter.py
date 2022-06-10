@@ -5,11 +5,11 @@ import numpy as np
 # 1st Quartile: 0.47058824
 # 3rd Quartile: 2.16470588
 
-approcimationAccuracyMode = False
+approcimationAccuracyMode = True
+angle = 0
 
 
 def plotPercentile(percentile):
-    angle = 0
     file = open("data/ACT_annual_" + str(percentile) +
                 "." + str(angle) + ".out", "r")
     data = file.readlines()
@@ -26,7 +26,6 @@ def plotPercentile(percentile):
 
 
 def plotApproximate(percentile):
-    angle = 0
     file = open("data/ACT_annual_" + str(percentile) +
                 "_approximation." + str(angle) + ".out", "r")
     data = file.readlines()
@@ -53,6 +52,7 @@ plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
 plt.legend(loc="upper right")
+# Also remember to change the title of the graph
 plt.title("Transmission vs Frequency 1st Quartile")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Transmission")
