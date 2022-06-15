@@ -232,10 +232,6 @@ dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDis
 documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
-def frequencyToIndex(f):
-    return f*100
-
-
 def integrate(filePath, start, end):
     file = open("data/" + filePath + ".out", "r")
     data = file.readlines()
@@ -251,11 +247,11 @@ def integrate(filePath, start, end):
             break
         transmission += trans
 
-    return transmission / ((end - start) * 100)
+    return transmission / ((end - start + 1) * 100)
 
 
 def integrateFreq(filePath, center, width):
-    return integrate(filePath, (center-width)/2e9, (center+width)/2e9)
+    return integrate(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
 
 
 angle = "45"

@@ -99,7 +99,7 @@ def plotAll(angle):
         "Transmission vs Frequency Approximations and Configuration Files at " + str(angle) + " degrees")
 
 
-plotPercentiles(60)
+plotAll(45)
 plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
