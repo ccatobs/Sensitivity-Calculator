@@ -256,7 +256,10 @@ def averageFreq(filePath, center, width):
 
 
 angle = "45"
-myEqTrans = [[averageFreq("ACT_annual_25." + angle, cent, wid), averageFreq("ACT_annual_50." + angle, cent, wid),
-              averageFreq("ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
+myEqTrans = [[averageFreq("25/ACT_annual_25." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
+              averageFreq("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
+print(np.array(myEqTrans))
 
+myEqTrans = [[averageFreq("25_approx/ACT_annual_25_approximation." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
+              averageFreq("75_approx/ACT_annual_75_approximation." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
 print(np.array(myEqTrans))
