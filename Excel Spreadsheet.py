@@ -114,6 +114,8 @@ for key, value in dictionary.items():
     if key == "wavelength":
         wavelength = np.array(value)
 
+wavelength = c/centerFrequency*10**6
+
 # Telescope
 a = pi*(diameter/2)**2
 
@@ -183,7 +185,6 @@ eorEqBw = c/(wavelength[:, None]*10**(-6)*r)*pi/2
 eorEqTrans = eqtrans
 eorE_warm = (t_uhdpe_window)[:, None]*((1-eorEqTrans)
                                        * eta+(1-eta))+(e_window_warm)[:, None]
-centerFrequency = 299000000000000/(wavelength)
 eorRuze = 1/e**((4*pi*wfe/(wavelength))**2)
 eorT_cold = (t_cold)*0.9  # Always takes from 739 um in the sheet
 eorOccupancy = 1/(e**(h*c/((wavelength)*10**(-6)*k*t))-1)
@@ -232,7 +233,7 @@ dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDis
 documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
-def integrate(filePath, start, end):
+def average(filePath, start, end):
     file = open("data/" + filePath + ".out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
@@ -247,15 +248,15 @@ def integrate(filePath, start, end):
             break
         transmission += trans
 
-    return transmission / ((end - start + 1) * 100)
+    return transmission / ((end - start) * 100)
 
 
-def integrateFreq(filePath, center, width):
-    return integrate(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
+def averageFreq(filePath, center, width):
+    return average(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
 
 
 angle = "45"
-myEqTrans = [[integrateFreq("ACT_annual_25." + angle, cent, wid), integrateFreq("ACT_annual_50." + angle, cent, wid),
-              integrateFreq("ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
+myEqTrans = [[averageFreq("ACT_annual_25." + angle, cent, wid), averageFreq("ACT_annual_50." + angle, cent, wid),
+              averageFreq("ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
 
 print(np.array(myEqTrans))

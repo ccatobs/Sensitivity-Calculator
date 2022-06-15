@@ -61,7 +61,7 @@ def plotApproximationAccuracy(percentile, angle):
     plotApproximate(percentile, angle, "Approximation")
     plotPercentile(percentile, angle, "Configuration")
     plt.title("Configuration File Approximation Accuracy " +
-              str(percentile) + "th percentile, " + str(angle) + " degrees")
+              str(percentile) + "th percentile, " + str(angle) + " degrees Zenith Angle")
 
 
 # Plots the transmission at a given angle using configuration files
@@ -73,7 +73,7 @@ def plotPercentiles(angle):
     plotPercentile(50, angle, "50th percentile/2nd quartile")
     plotPercentile(75, angle, "75th percentile/3rd quartile")
     plt.title("Transmission at Various Atmospheric Conditions at " +
-              str(angle) + " degrees")
+              str(angle) + " degrees Zenith Angle")
 
 
 # Plots the transmission at a given angle using 50th percentile configuration file and an adjusted PWV
@@ -84,7 +84,8 @@ def plotApproximations(angle):
     plotApproximate(25, angle, "25th percentile/1st quartile")
     plotPercentile(50, angle, "50th percentile/2nd quartile")
     plotApproximate(75, angle, "75th percentile/3rd quartile")
-    plt.title("Transmission at Various PWV at " + str(angle) + " degrees")
+    plt.title("Transmission at Various PWV at " +
+              str(angle) + " degrees Zenith Angle")
 
 
 # Plots the transmission at a given angle, both the approximations and configuration files
@@ -98,7 +99,7 @@ def plotAll(angle):
     plotApproximate(75, angle, "Q3 Approximation")
     plotPercentile(75, angle, "Q3 Configuration")
     plt.title(
-        "Transmission vs Frequency Approximations and Configuration Files at " + str(angle) + " degrees")
+        "Transmission vs Frequency Approximations and Configuration Files at " + str(angle) + " degrees Zenith Angle")
 
 
 plotAll(45)
