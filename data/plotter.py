@@ -7,7 +7,7 @@ import numpy as np
 
 
 def plotPercentile(percentile, angle, label):
-    file = open("data/ACT_annual_" + str(percentile) +
+    file = open("data/" + str(percentile) + "/ACT_annual_" + str(percentile) +
                 "." + str(angle) + ".out", "r")
     data = file.readlines()
 
@@ -20,8 +20,12 @@ def plotPercentile(percentile, angle, label):
 
 
 def plotApproximate(percentile, angle, label):
-    file = open("data/ACT_annual_" + str(percentile) +
-                "_approximation." + str(angle) + ".out", "r")
+    filePath = "data/" + str(percentile) + "_approx/ACT_annual_" + \
+        str(percentile) + "_approximation." + str(angle) + ".out"
+    if percentile == 50:
+        filePath = "data/50/ACT_annual_" + \
+            str(percentile) + "_approximation." + str(angle) + ".out"
+    file = open(filePath, "r")
     data = file.readlines()
 
     x = [float(i.split(" ")[0]) for i in data]
@@ -102,7 +106,7 @@ def plotAll(angle):
         "Transmission vs Frequency Approximations and Configuration Files at " + str(angle) + " degrees Zenith Angle")
 
 
-plotAll(45)
+plotPercentiles(80)
 plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
