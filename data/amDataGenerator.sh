@@ -1,3 +1,4 @@
+#To use this, you MUST be in the data folder and have the am code (I used version 12.0) installed
 #! usr/bin/bash
 
 for i in {0..89}
