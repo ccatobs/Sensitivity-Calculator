@@ -59,8 +59,8 @@ def plotApproximationAccuracy(percentile, angle):
     if percentile != 25 and percentile != 75:
         print("Configuration files don't exist for that percentile")
         raise SystemExit(1)
-    if angle != 0 and angle != 45:
-        print("Approximations are only computed for 0 and 45 degrees")
+    if int(angle) != angle or angle < 0 or angle >= 90:
+        print("Interpolation not yet implemented")
         raise SystemExit(1)
     plotApproximate(percentile, angle, "Approximation")
     plotPercentile(percentile, angle, "Configuration")
@@ -82,8 +82,8 @@ def plotPercentiles(angle):
 
 # Plots the transmission at a given angle using 50th percentile configuration file and an adjusted PWV
 def plotApproximations(angle):
-    if angle != 0 and angle != 45:
-        print("Approximations are only computed for 0 and 45 degrees")
+    if int(angle) != angle or angle < 0 or angle >= 90:
+        print("Interpolation not yet implemented")
         raise SystemExit(1)
     plotApproximate(25, angle, "25th percentile/1st quartile")
     plotPercentile(50, angle, "50th percentile/2nd quartile")
@@ -94,8 +94,8 @@ def plotApproximations(angle):
 
 # Plots the transmission at a given angle, both the approximations and configuration files
 def plotAll(angle):
-    if angle != 0 and angle != 45:
-        print("Approximations are only computed for 0 and 45 degrees")
+    if int(angle) != angle or angle < 0 or angle >= 90:
+        print("Interpolation not yet implemented")
         raise SystemExit(1)
     plotApproximate(25, angle, "Q1 Approximation")
     plotPercentile(25, angle, "Q1 Configuration")
@@ -106,7 +106,7 @@ def plotAll(angle):
         "Transmission vs Frequency Approximations and Configuration Files at " + str(angle) + " degrees Zenith Angle")
 
 
-plotPercentiles(80)
+plotAll(60)
 plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
