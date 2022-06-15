@@ -149,7 +149,7 @@ e_warm = (t_uhdpe_window[:, None])*((1-eqtrans)
                                     * eta+(1-eta))+(e_window_warm[:, None])
 ruze = 1/(e**((4*pi*wfe/(wavelength))**2))
 weather_t_cold = (t_cold)
-occupancy = np.ones((len(wavelength), 4)) * 1 / \
+occupancy = np.ones((len(wavelength), 3)) * 1 / \
     (e**(h*c/((wavelength)*10**(-6)*k*t))-1)[:, None]
 acceptedModes = szCamNumPoln * \
     (coldSpillOverEfficiency)*(singleModedAOmegaLambda2)
@@ -216,7 +216,7 @@ def broadbandDisplay(array):
 def eoRDisplayHelper(array, w, dict):
     if len(w) > 0:
         dict.update({str(w[0]) + " um": {"Quartile 1": array[0][0], "Quartile 2": array[0]
-                    [1], "Quartile 3": array[0][2], "Quartile 4": array[0][3]}})
+                    [1], "Quartile 3": array[0][2]}})
         return eoRDisplayHelper(array[1:], w[1:], dict)
     else:
         return dict
@@ -258,7 +258,7 @@ def integrateFreq(filePath, center, width):
     return integrate(filePath, (center-width)/2e9, (center+width)/2e9)
 
 
-angle = "0"
+angle = "45"
 myEqTrans = [[integrateFreq("ACT_annual_25." + angle, cent, wid), integrateFreq("ACT_annual_50." + angle, cent, wid),
               integrateFreq("ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
 
