@@ -32,20 +32,22 @@ def plotApproximate(percentile, angle, label):
     plt.plot(x, y, linewidth=1, label=label)
 
 
+# Plots MAM at 0 degrees Q1 using version 10.0 and 12.0
 def plotVersionComparison():
     file = open("data/ACT_MAM_25.0.out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
     y = [float(i.split(" ")[2]) for i in data]
     file.close()
-    plt.plot(x, y, linewidth=1, label="My Data")
+    plt.plot(x, y, linewidth=1, label="AM 12.0")
 
     file = open("data/ACT_MAM_50_pwv0.51.out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
     y = [float(i.split(" ")[2]) for i in data]
     file.close()
-    plt.plot(x, y, linewidth=1, label="Steve Data")
+    plt.plot(x, y, linewidth=1, label="AM 10.0")
+    plt.title("Transmission vs Frequency MAM 0 degrees Q1")
 
 
 # Plots the approximation and configuration file for a given percentile and angle
