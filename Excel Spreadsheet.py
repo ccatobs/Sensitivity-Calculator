@@ -230,3 +230,36 @@ def eoRDisplay(array):  # Creates a dictionary to be put into a yaml file for Eo
 dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDisplay(
     netW8RJ), "NEI w8 Jy/sr": broadbandDisplay(neiW8), "EoR Spec NEFD": eoRDisplay(eorNEFD), "EoR Spec NEI": eoRDisplay(eorNEI)}
 documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
+
+
+def frequencyToIndex(f):
+    return f*100
+
+
+def integrate(filePath, start, end):
+    file = open("data/" + filePath + ".out", "r")
+    data = file.readlines()
+    x = [float(i.split(" ")[0]) for i in data]
+    y = [float(i.split(" ")[1]) for i in data]
+    file.close()
+
+    transmission = 0
+    for (f, trans) in zip(x, y):
+        if f < start:
+            continue
+        if f >= end:
+            break
+        transmission += trans
+
+    return transmission / ((end - start) * 100)
+
+
+def integrateFreq(filePath, center, width):
+    return integrate(filePath, (center-width)/2e9, (center+width)/2e9)
+
+
+angle = "0"
+myEqTrans = [[integrateFreq("ACT_annual_25." + angle, cent, wid), integrateFreq("ACT_annual_50." + angle, cent, wid),
+              integrateFreq("ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
+
+print(np.array(myEqTrans))
