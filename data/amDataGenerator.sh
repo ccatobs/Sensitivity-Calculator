@@ -8,5 +8,10 @@ do
         var=`am ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.0 >ACT_annual_$((p)).$((i)).out`
         echo $var
     done
-done
 
+    var=`am ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.47058824 >ACT_annual_25_approximation.$((i)).out`
+    echo $var
+
+    var=`am ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  2.16470588 >ACT_annual_75_approximation.$((i)).out`
+    echo $var
+done
