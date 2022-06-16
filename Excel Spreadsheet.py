@@ -214,7 +214,8 @@ def broadbandDisplayHelper(array, w, dict):
 
 # Creates a dictionary to be put into a yaml file for broadband data
 def broadbandDisplay(array):
-    array = arrayify(array)
+    if type(array) == np.ndarray:
+        array = arrayify(array)
     return broadbandDisplayHelper(array, wavelength, {})
 
 
@@ -228,7 +229,8 @@ def eoRDisplayHelper(array, w, dict):
 
 
 def eoRDisplay(array):  # Creates a dictionary to be put into a yaml file for EoR spec data
-    array = arrayify(array)
+    if type(array) == np.ndarray:
+        array = arrayify(array)
     return eoRDisplayHelper(array, (wavelength), {})
 
 
@@ -260,10 +262,18 @@ def averageFreq(filePath, center, width):
 
 
 angle = "45"
-myEqTrans = [[averageFreq("25/ACT_annual_25." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
-              averageFreq("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
-print(np.array(myEqTrans))
+actSiteTrans = np.array([[averageFreq("25/ACT_annual_25." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
+                          averageFreq("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+print(actSiteTrans)
 
-myEqTrans = [[averageFreq("25_approx/ACT_annual_25_approximation." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
-              averageFreq("75_approx/ACT_annual_75_approximation." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]
-print(np.array(myEqTrans))
+steveTrans = np.array([[averageFreq("Steve/25/ACT_annual_25." + angle, cent, wid), averageFreq("Steve/50/ACT_annual_50." + angle, cent, wid),
+                        averageFreq("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+print(steveTrans)
+
+steveTrans = np.array([[averageFreq("Steve/25/ACT_annual_25." + angle, cent, wid), averageFreq("Steve/50/ACT_annual_50." + angle, cent, wid),
+                        averageFreq("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+print(steveTrans)
+
+dict_file = {"ACT Site": eoRDisplay(
+    actSiteTrans), "Steve Method": eoRDisplay(steveTrans)}
+documents = yaml.dump(dict_file, open("custom.yaml", 'w'), sort_keys=False)

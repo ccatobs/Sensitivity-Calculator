@@ -6,6 +6,18 @@ import numpy as np
 # 3rd Quartile: 2.16470588 = 1.84 mm / 0.85 mm
 
 
+def plotCustom(filePath, label):
+    file = open(filePath, "r")
+    data = file.readlines()
+
+    x = [float(i.split(" ")[0]) for i in data]
+    y = [float(i.split(" ")[1]) for i in data]
+
+    file.close()
+
+    plt.plot(x, y, linewidth=1, label=label)
+
+
 def plotPercentile(percentile, angle, label):
     filePath = "data/" + str(percentile) + "/ACT_annual_" + \
         str(percentile) + "." + str(angle) + ".out"
@@ -109,7 +121,18 @@ def plotAll(angle):
         "Approximations and Configuration Files at " + str(angle) + " degrees Zenith Angle")
 
 
-plotAll(45)
+def plotCCAT(angle):
+    if int(angle) != angle or angle < 0 or angle >= 90:
+        print("Interpolation not yet implemented")
+        raise SystemExit(1)
+    plotCustom("data/CCAT/25/ACT_annual_25." + str(angle) + ".out", "Q1")
+    plotCustom("data/CCAT/50/ACT_annual_50." + str(angle) + ".out", "Q2")
+    plotCustom("data/CCAT/75/ACT_annual_75." + str(angle) + ".out", "Q3")
+    plt.title("Transmission at CCAT Site at " +
+              str(angle) + " degrees Zenith Angle")
+
+
+plotCCAT(45)
 plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
