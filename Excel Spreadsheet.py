@@ -34,9 +34,6 @@ sensPerBeam = None
 r = None
 signal = None
 
-aToCMB = None
-wavelength = None
-
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
 ln = np.log
@@ -109,12 +106,19 @@ for key, value in dictionary.items():
     if key == "signal":
         signal = np.array(value)
 
-    if key == "aToCMB":
-        aToCMB = np.array(value)
-    if key == "wavelength":
-        wavelength = np.array(value)
-
 wavelength = c/centerFrequency*10**6
+
+
+def a_to_CMB(f):
+    kb = 1.3806488e-23
+    T = 2.725
+    v = f*1e9
+    x = h*v/(kb*T)
+    return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+
+
+aToCMB = np.array([a_to_CMB(centerFrequency[i]/1e9)
+                  for i in range(len(centerFrequency))])
 
 # Telescope
 a = pi*(diameter/2)**2
