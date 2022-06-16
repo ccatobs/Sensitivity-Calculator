@@ -257,26 +257,45 @@ def average(filePath, start, end):
     return transmission / ((end - start) * 100)
 
 
-def averageFreq(filePath, center, width):
+def averageTrans(filePath, center, width):
     return average(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
+
+
+truncatedDecimals = True
+decimalPlaces = 3
+
+
+def trunOut(array):
+    if truncatedDecimals:
+        temp = eoRDisplay(array)
+        for k1 in temp:
+            for k2 in temp[k1]:
+                temp[k1][k2] = round(temp[k1][k2], decimalPlaces)
+        return temp
+    else:
+        return eoRDisplay(array)
 
 
 def customOutput(angle):
     angle = str(angle)
-    actSiteTrans = np.array([[averageFreq("25/ACT_annual_25." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
-                              averageFreq("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    actSiteTrans = np.array([[averageTrans("25/ACT_annual_25." + angle, cent, wid), averageTrans("50/ACT_annual_50." + angle, cent, wid),
+                              averageTrans("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
 
-    steveTrans = np.array([[averageFreq("Steve/25/ACT_annual_25." + angle, cent, wid), averageFreq("Steve/50/ACT_annual_50." + angle, cent, wid),
-                            averageFreq("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    steveTrans = np.array([[averageTrans("Steve/25/ACT_annual_25." + angle, cent, wid), averageTrans("Steve/50/ACT_annual_50." + angle, cent, wid),
+                            averageTrans("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
 
-    ccatTrans = np.array([[averageFreq("CCAT/25/ACT_annual_25." + angle, cent, wid), averageFreq("CCAT/50/ACT_annual_50." + angle, cent, wid),
-                           averageFreq("CCAT/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-    return {"ACT Site": eoRDisplay(
-        actSiteTrans), "Steve Method": eoRDisplay(steveTrans), "CCAT Site": eoRDisplay(ccatTrans)}
+    ccatTrans = np.array([[averageTrans("CCAT/25/ACT_annual_25." + angle, cent, wid), averageTrans("CCAT/50/ACT_annual_50." + angle, cent, wid),
+                           averageTrans("CCAT/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    return {"ACT Site": trunOut(
+        actSiteTrans), "Steve Method": trunOut(steveTrans), "CCAT Site": trunOut(ccatTrans)}
 
 
 temp = customOutput(45)
-temp.update({"Excel Sheet (Unknown Method)": eoRDisplay(eqtrans)})
+temp.update({"Excel Sheet (Unknown Method)": trunOut(eqtrans)})
 dict_file = {"45 Degree Elevation": temp,
              "60 Degrees Elevation": customOutput(30)}
-documents = yaml.dump(dict_file, open("custom.yaml", 'w'), sort_keys=False)
+documents = yaml.dump(dict_file, open(
+    "methods comparison.yaml", 'w'), sort_keys=False)
+
+dict_file = {"Power": trunOut(powerPerPixel * 10 ** 12)}
+documents = yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)

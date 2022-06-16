@@ -1,0 +1,149 @@
+45 Degree Elevation:
+  ACT Site:
+    352.6970094117647 um:
+      Quartile 1: 0.375
+      Quartile 2: 0.177
+      Quartile 3: 0.023
+    740.2282913580248 um:
+      Quartile 1: 0.747
+      Quartile 2: 0.61
+      Quartile 3: 0.351
+    861.4725804597701 um:
+      Quartile 1: 0.855
+      Quartile 2: 0.765
+      Quartile 3: 0.562
+    1051.9033614035088 um:
+      Quartile 1: 0.93
+      Quartile 2: 0.889
+      Quartile 3: 0.784
+    1350.4164774774774 um:
+      Quartile 1: 0.955
+      Quartile 2: 0.931
+      Quartile 3: 0.865
+  Steve Method:
+    352.6970094117647 um:
+      Quartile 1: 0.434
+      Quartile 2: 0.221
+      Quartile 3: 0.051
+    740.2282913580248 um:
+      Quartile 1: 0.778
+      Quartile 2: 0.648
+      Quartile 3: 0.435
+    861.4725804597701 um:
+      Quartile 1: 0.874
+      Quartile 2: 0.791
+      Quartile 3: 0.635
+    1051.9033614035088 um:
+      Quartile 1: 0.938
+      Quartile 2: 0.901
+      Quartile 3: 0.824
+    1350.4164774774774 um:
+      Quartile 1: 0.96
+      Quartile 2: 0.938
+      Quartile 3: 0.89
+  CCAT Site:
+    352.6970094117647 um:
+      Quartile 1: 0.505
+      Quartile 2: 0.304
+      Quartile 3: 0.08
+    740.2282913580248 um:
+      Quartile 1: 0.81
+      Quartile 2: 0.706
+      Quartile 3: 0.492
+    861.4725804597701 um:
+      Quartile 1: 0.893
+      Quartile 2: 0.829
+      Quartile 3: 0.679
+    1051.9033614035088 um:
+      Quartile 1: 0.947
+      Quartile 2: 0.919
+      Quartile 3: 0.847
+    1350.4164774774774 um:
+      Quartile 1: 0.964
+      Quartile 2: 0.948
+      Quartile 3: 0.905
+  Excel Sheet (Unknown Method):
+    352.6970094117647 um:
+      Quartile 1: 0.441
+      Quartile 2: 0.253
+      Quartile 3: 0.085
+    740.2282913580248 um:
+      Quartile 1: 0.789
+      Quartile 2: 0.679
+      Quartile 3: 0.506
+    861.4725804597701 um:
+      Quartile 1: 0.882
+      Quartile 2: 0.813
+      Quartile 3: 0.693
+    1051.9033614035088 um:
+      Quartile 1: 0.95
+      Quartile 2: 0.923
+      Quartile 3: 0.871
+    1350.4164774774774 um:
+      Quartile 1: 0.964
+      Quartile 2: 0.946
+      Quartile 3: 0.91
+60 Degrees Elevation:
+  ACT Site:
+    352.6970094117647 um:
+      Quartile 1: 0.446
+      Quartile 2: 0.241
+      Quartile 3: 0.045
+    740.2282913580248 um:
+      Quartile 1: 0.788
+      Quartile 2: 0.667
+      Quartile 3: 0.424
+    861.4725804597701 um:
+      Quartile 1: 0.88
+      Quartile 2: 0.803
+      Quartile 3: 0.624
+    1051.9033614035088 um:
+      Quartile 1: 0.942
+      Quartile 2: 0.908
+      Quartile 3: 0.82
+    1350.4164774774774 um:
+      Quartile 1: 0.963
+      Quartile 2: 0.943
+      Quartile 3: 0.888
+  Steve Method:
+    352.6970094117647 um:
+      Quartile 1: 0.503
+      Quartile 2: 0.29
+      Quartile 3: 0.086
+    740.2282913580248 um:
+      Quartile 1: 0.814
+      Quartile 2: 0.701
+      Quartile 3: 0.506
+    861.4725804597701 um:
+      Quartile 1: 0.895
+      Quartile 2: 0.825
+      Quartile 3: 0.689
+    1051.9033614035088 um:
+      Quartile 1: 0.949
+      Quartile 2: 0.919
+      Quartile 3: 0.853
+    1350.4164774774774 um:
+      Quartile 1: 0.967
+      Quartile 2: 0.949
+      Quartile 3: 0.91
+  CCAT Site:
+    352.6970094117647 um:
+      Quartile 1: 0.569
+      Quartile 2: 0.375
+      Quartile 3: 0.125
+    740.2282913580248 um:
+      Quartile 1: 0.842
+      Quartile 2: 0.752
+      Quartile 3: 0.559
+    861.4725804597701 um:
+      Quartile 1: 0.912
+      Quartile 2: 0.858
+      Quartile 3: 0.728
+    1051.9033614035088 um:
+      Quartile 1: 0.956
+      Quartile 2: 0.933
+      Quartile 3: 0.873
+    1350.4164774774774 um:
+      Quartile 1: 0.971
+      Quartile 2: 0.957
+      Quartile 3: 0.922
