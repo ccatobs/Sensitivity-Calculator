@@ -261,19 +261,22 @@ def averageFreq(filePath, center, width):
     return average(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
 
 
-angle = "45"
-actSiteTrans = np.array([[averageFreq("25/ACT_annual_25." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
-                          averageFreq("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-print(actSiteTrans)
+def customOutput(angle):
+    angle = str(angle)
+    actSiteTrans = np.array([[averageFreq("25/ACT_annual_25." + angle, cent, wid), averageFreq("50/ACT_annual_50." + angle, cent, wid),
+                              averageFreq("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
 
-steveTrans = np.array([[averageFreq("Steve/25/ACT_annual_25." + angle, cent, wid), averageFreq("Steve/50/ACT_annual_50." + angle, cent, wid),
-                        averageFreq("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-print(steveTrans)
+    steveTrans = np.array([[averageFreq("Steve/25/ACT_annual_25." + angle, cent, wid), averageFreq("Steve/50/ACT_annual_50." + angle, cent, wid),
+                            averageFreq("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
 
-steveTrans = np.array([[averageFreq("Steve/25/ACT_annual_25." + angle, cent, wid), averageFreq("Steve/50/ACT_annual_50." + angle, cent, wid),
-                        averageFreq("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-print(steveTrans)
+    ccatTrans = np.array([[averageFreq("CCAT/25/ACT_annual_25." + angle, cent, wid), averageFreq("CCAT/50/ACT_annual_50." + angle, cent, wid),
+                           averageFreq("CCAT/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    return {"ACT Site": eoRDisplay(
+        actSiteTrans), "Steve Method": eoRDisplay(steveTrans), "CCAT Site": eoRDisplay(ccatTrans)}
 
-dict_file = {"ACT Site": eoRDisplay(
-    actSiteTrans), "Steve Method": eoRDisplay(steveTrans)}
+
+temp = customOutput(45)
+temp.update({"Excel Sheet (Unknown Method)": eoRDisplay(eqtrans)})
+dict_file = {"45 Degree Elevation": temp,
+             "60 Degrees Elevation": customOutput(30)}
 documents = yaml.dump(dict_file, open("custom.yaml", 'w'), sort_keys=False)
