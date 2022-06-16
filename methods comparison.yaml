@@ -1,149 +1,149 @@
 45 Degree Elevation:
   ACT Site:
-    352.6970094117647 um:
-      Quartile 1: 0.375
-      Quartile 2: 0.177
-      Quartile 3: 0.023
-    740.2282913580248 um:
-      Quartile 1: 0.747
+    352 um:
+      Quartile 1: 0.38
+      Quartile 2: 0.18
+      Quartile 3: 0.02
+    740 um:
+      Quartile 1: 0.75
       Quartile 2: 0.61
-      Quartile 3: 0.351
-    861.4725804597701 um:
-      Quartile 1: 0.855
-      Quartile 2: 0.765
-      Quartile 3: 0.562
-    1051.9033614035088 um:
+      Quartile 3: 0.35
+    861 um:
+      Quartile 1: 0.86
+      Quartile 2: 0.76
+      Quartile 3: 0.56
+    1051 um:
       Quartile 1: 0.93
-      Quartile 2: 0.889
-      Quartile 3: 0.784
-    1350.4164774774774 um:
-      Quartile 1: 0.955
-      Quartile 2: 0.931
-      Quartile 3: 0.865
+      Quartile 2: 0.89
+      Quartile 3: 0.78
+    1350 um:
+      Quartile 1: 0.95
+      Quartile 2: 0.93
+      Quartile 3: 0.87
   Steve Method:
-    352.6970094117647 um:
-      Quartile 1: 0.434
-      Quartile 2: 0.221
-      Quartile 3: 0.051
-    740.2282913580248 um:
-      Quartile 1: 0.778
-      Quartile 2: 0.648
-      Quartile 3: 0.435
-    861.4725804597701 um:
-      Quartile 1: 0.874
-      Quartile 2: 0.791
-      Quartile 3: 0.635
-    1051.9033614035088 um:
-      Quartile 1: 0.938
-      Quartile 2: 0.901
-      Quartile 3: 0.824
-    1350.4164774774774 um:
+    352 um:
+      Quartile 1: 0.43
+      Quartile 2: 0.22
+      Quartile 3: 0.05
+    740 um:
+      Quartile 1: 0.78
+      Quartile 2: 0.65
+      Quartile 3: 0.44
+    861 um:
+      Quartile 1: 0.87
+      Quartile 2: 0.79
+      Quartile 3: 0.63
+    1051 um:
+      Quartile 1: 0.94
+      Quartile 2: 0.9
+      Quartile 3: 0.82
+    1350 um:
       Quartile 1: 0.96
-      Quartile 2: 0.938
+      Quartile 2: 0.94
       Quartile 3: 0.89
   CCAT Site:
-    352.6970094117647 um:
-      Quartile 1: 0.505
-      Quartile 2: 0.304
+    352 um:
+      Quartile 1: 0.51
+      Quartile 2: 0.3
       Quartile 3: 0.08
-    740.2282913580248 um:
+    740 um:
       Quartile 1: 0.81
-      Quartile 2: 0.706
-      Quartile 3: 0.492
-    861.4725804597701 um:
-      Quartile 1: 0.893
-      Quartile 2: 0.829
-      Quartile 3: 0.679
-    1051.9033614035088 um:
-      Quartile 1: 0.947
-      Quartile 2: 0.919
-      Quartile 3: 0.847
-    1350.4164774774774 um:
-      Quartile 1: 0.964
-      Quartile 2: 0.948
-      Quartile 3: 0.905
-  Excel Sheet (Unknown Method):
-    352.6970094117647 um:
-      Quartile 1: 0.441
-      Quartile 2: 0.253
-      Quartile 3: 0.085
-    740.2282913580248 um:
-      Quartile 1: 0.789
-      Quartile 2: 0.679
-      Quartile 3: 0.506
-    861.4725804597701 um:
-      Quartile 1: 0.882
-      Quartile 2: 0.813
-      Quartile 3: 0.693
-    1051.9033614035088 um:
+      Quartile 2: 0.71
+      Quartile 3: 0.49
+    861 um:
+      Quartile 1: 0.89
+      Quartile 2: 0.83
+      Quartile 3: 0.68
+    1051 um:
       Quartile 1: 0.95
-      Quartile 2: 0.923
-      Quartile 3: 0.871
-    1350.4164774774774 um:
-      Quartile 1: 0.964
-      Quartile 2: 0.946
+      Quartile 2: 0.92
+      Quartile 3: 0.85
+    1350 um:
+      Quartile 1: 0.96
+      Quartile 2: 0.95
+      Quartile 3: 0.91
+  Excel Sheet (Unknown Method):
+    352 um:
+      Quartile 1: 0.44
+      Quartile 2: 0.25
+      Quartile 3: 0.09
+    740 um:
+      Quartile 1: 0.79
+      Quartile 2: 0.68
+      Quartile 3: 0.51
+    861 um:
+      Quartile 1: 0.88
+      Quartile 2: 0.81
+      Quartile 3: 0.69
+    1051 um:
+      Quartile 1: 0.95
+      Quartile 2: 0.92
+      Quartile 3: 0.87
+    1350 um:
+      Quartile 1: 0.96
+      Quartile 2: 0.95
       Quartile 3: 0.91
 60 Degrees Elevation:
   ACT Site:
-    352.6970094117647 um:
-      Quartile 1: 0.446
-      Quartile 2: 0.241
-      Quartile 3: 0.045
-    740.2282913580248 um:
-      Quartile 1: 0.788
-      Quartile 2: 0.667
-      Quartile 3: 0.424
-    861.4725804597701 um:
+    352 um:
+      Quartile 1: 0.45
+      Quartile 2: 0.24
+      Quartile 3: 0.04
+    740 um:
+      Quartile 1: 0.79
+      Quartile 2: 0.67
+      Quartile 3: 0.42
+    861 um:
       Quartile 1: 0.88
-      Quartile 2: 0.803
-      Quartile 3: 0.624
-    1051.9033614035088 um:
-      Quartile 1: 0.942
-      Quartile 2: 0.908
+      Quartile 2: 0.8
+      Quartile 3: 0.62
+    1051 um:
+      Quartile 1: 0.94
+      Quartile 2: 0.91
       Quartile 3: 0.82
-    1350.4164774774774 um:
-      Quartile 1: 0.963
-      Quartile 2: 0.943
-      Quartile 3: 0.888
+    1350 um:
+      Quartile 1: 0.96
+      Quartile 2: 0.94
+      Quartile 3: 0.89
   Steve Method:
-    352.6970094117647 um:
-      Quartile 1: 0.503
+    352 um:
+      Quartile 1: 0.5
       Quartile 2: 0.29
-      Quartile 3: 0.086
-    740.2282913580248 um:
-      Quartile 1: 0.814
-      Quartile 2: 0.701
-      Quartile 3: 0.506
-    861.4725804597701 um:
-      Quartile 1: 0.895
-      Quartile 2: 0.825
-      Quartile 3: 0.689
-    1051.9033614035088 um:
-      Quartile 1: 0.949
-      Quartile 2: 0.919
-      Quartile 3: 0.853
-    1350.4164774774774 um:
-      Quartile 1: 0.967
-      Quartile 2: 0.949
+      Quartile 3: 0.09
+    740 um:
+      Quartile 1: 0.81
+      Quartile 2: 0.7
+      Quartile 3: 0.51
+    861 um:
+      Quartile 1: 0.9
+      Quartile 2: 0.83
+      Quartile 3: 0.69
+    1051 um:
+      Quartile 1: 0.95
+      Quartile 2: 0.92
+      Quartile 3: 0.85
+    1350 um:
+      Quartile 1: 0.97
+      Quartile 2: 0.95
       Quartile 3: 0.91
   CCAT Site:
-    352.6970094117647 um:
-      Quartile 1: 0.569
-      Quartile 2: 0.375
-      Quartile 3: 0.125
-    740.2282913580248 um:
-      Quartile 1: 0.842
-      Quartile 2: 0.752
-      Quartile 3: 0.559
-    861.4725804597701 um:
-      Quartile 1: 0.912
-      Quartile 2: 0.858
-      Quartile 3: 0.728
-    1051.9033614035088 um:
-      Quartile 1: 0.956
-      Quartile 2: 0.933
-      Quartile 3: 0.873
-    1350.4164774774774 um:
-      Quartile 1: 0.971
-      Quartile 2: 0.957
-      Quartile 3: 0.922
+    352 um:
+      Quartile 1: 0.57
+      Quartile 2: 0.38
+      Quartile 3: 0.13
+    740 um:
+      Quartile 1: 0.84
+      Quartile 2: 0.75
+      Quartile 3: 0.56
+    861 um:
+      Quartile 1: 0.91
+      Quartile 2: 0.86
+      Quartile 3: 0.73
+    1051 um:
+      Quartile 1: 0.96
+      Quartile 2: 0.93
+      Quartile 3: 0.87
+    1350 um:
+      Quartile 1: 0.97
+      Quartile 2: 0.96
+      Quartile 3: 0.92

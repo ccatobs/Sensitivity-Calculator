@@ -2,19 +2,20 @@
 #This script takes about 15 minutes on my machine; it produces console outputs via am code's automatic outputs as a sign it's running
 #! usr/bin/bash
 
-#Values taken from https://arxiv.org/pdf/2007.04262.pdf, feel free to update
+#Values taken from https://arxiv.org/pdf/2007.04262.pdf
 CerroChajnantorPWVQ1=0.36
 CerroChajnantorPWVQ2=0.67
 CerroChajnantorPWVQ3=1.28
 
-#Values approximated by taking Chajnantor Plateau values from https://arxiv.org/pdf/2007.04262.pdf
+#ACT PWV values approximated by taking Chajnantor Plateau values from https://arxiv.org/pdf/2007.04262.pdf
 ActPWVQ1=0.60
 ActPWVQ2=1.05
 ActPWVQ3=1.98
 
-CCATQ1=$(bc <<<"scale=4; $CerroChajnantorPWVQ1/$ActPWVQ1")
-CCATQ2=$(bc <<<"scale=4; $CerroChajnantorPWVQ2/$ActPWVQ2")
-CCATQ3=$(bc <<<"scale=4; $CerroChajnantorPWVQ3/$ActPWVQ3")
+#Calculate PWV ratios between ACT and CCAT sites
+CCATQ1=$(bc <<<"scale=10; $CerroChajnantorPWVQ1/$ActPWVQ1")
+CCATQ2=$(bc <<<"scale=10; $CerroChajnantorPWVQ2/$ActPWVQ2")
+CCATQ3=$(bc <<<"scale=10; $CerroChajnantorPWVQ3/$ActPWVQ3")
 
 echo $CCATQ1
 echo $CCATQ2

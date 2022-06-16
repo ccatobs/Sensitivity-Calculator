@@ -34,6 +34,8 @@ sensPerBeam = None
 r = None
 signal = None
 
+decimalPlaces = None
+
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
 ln = np.log
@@ -105,6 +107,9 @@ for key, value in dictionary.items():
         r = np.array(value)
     if key == "signal":
         signal = np.array(value)
+
+    if key == "decimalPlaces":
+        decimalPlaces = value
 
 wavelength = c/centerFrequency*10**6
 
@@ -204,38 +209,52 @@ eorNEFD = eorNEF/eorEqBw*10**26*1000
 eorNEI = eorNEFD/(solidAngle)[:, None]/1000
 
 
-def broadbandDisplayHelper(array, w, dict):
-    if len(w) > 0:
-        dict.update({str(w[0]) + " um": array[0]})
-        return broadbandDisplayHelper(array[1:], w[1:], dict)
+def trun(array):
+    if decimalPlaces != None:
+        for k1 in array:
+            if type(array[k1]) == dict:
+                for k2 in array[k1]:
+                    array[k1][k2] = round(array[k1][k2], decimalPlaces)
+            else:
+                array[k1] = round(array[k1], decimalPlaces)
+        return array
     else:
-        return dict
+        return array
+
+
+def valueDisplayHelper(array, w, dict):
+    if len(w) > 0:
+        dict.update({str(int(w[0])) + " um": array[0]})
+        return valueDisplayHelper(array[1:], w[1:], dict)
+    else:
+        return trun(dict)
 
 
 # Creates a dictionary to be put into a yaml file for broadband data
-def broadbandDisplay(array):
+def valueDisplay(array):
     if type(array) == np.ndarray:
         array = arrayify(array)
-    return broadbandDisplayHelper(array, wavelength, {})
+    return valueDisplayHelper(array, wavelength, {})
 
 
-def eoRDisplayHelper(array, w, dict):
+def quartileDisplayHelper(array, w, dict):
     if len(w) > 0:
-        dict.update({str(w[0]) + " um": {"Quartile 1": array[0][0], "Quartile 2": array[0]
+        dict.update({str(int(w[0])) + " um": {"Quartile 1": array[0][0], "Quartile 2": array[0]
                     [1], "Quartile 3": array[0][2]}})
-        return eoRDisplayHelper(array[1:], w[1:], dict)
+        return quartileDisplayHelper(array[1:], w[1:], dict)
     else:
-        return dict
+        return trun(dict)
 
 
-def eoRDisplay(array):  # Creates a dictionary to be put into a yaml file for EoR spec data
+# Creates a dictionary to be put into a yaml file for data involving quartiles
+def quartileDisplay(array):
     if type(array) == np.ndarray:
         array = arrayify(array)
-    return eoRDisplayHelper(array, (wavelength), {})
+    return quartileDisplayHelper(array, (wavelength), {})
 
 
-dict_file = {"NET w8 avg": broadbandDisplay(netW8Avg), "NET w8 RJ": broadbandDisplay(
-    netW8RJ), "NEI w8 Jy/sr": broadbandDisplay(neiW8), "EoR Spec NEFD": eoRDisplay(eorNEFD), "EoR Spec NEI": eoRDisplay(eorNEI)}
+dict_file = {"NET w8 avg": valueDisplay(netW8Avg), "NET w8 RJ": valueDisplay(
+    netW8RJ), "NEI w8 Jy/sr": valueDisplay(neiW8), "EoR Spec NEFD": quartileDisplay(eorNEFD), "EoR Spec NEI": quartileDisplay(eorNEI)}
 documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
@@ -261,41 +280,24 @@ def averageTrans(filePath, center, width):
     return average(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
 
 
-truncatedDecimals = True
-decimalPlaces = 3
-
-
-def trunOut(array):
-    if truncatedDecimals:
-        temp = eoRDisplay(array)
-        for k1 in temp:
-            for k2 in temp[k1]:
-                temp[k1][k2] = round(temp[k1][k2], decimalPlaces)
-        return temp
-    else:
-        return eoRDisplay(array)
-
-
 def customOutput(angle):
     angle = str(angle)
     actSiteTrans = np.array([[averageTrans("25/ACT_annual_25." + angle, cent, wid), averageTrans("50/ACT_annual_50." + angle, cent, wid),
                               averageTrans("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-
     steveTrans = np.array([[averageTrans("Steve/25/ACT_annual_25." + angle, cent, wid), averageTrans("Steve/50/ACT_annual_50." + angle, cent, wid),
                             averageTrans("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-
     ccatTrans = np.array([[averageTrans("CCAT/25/ACT_annual_25." + angle, cent, wid), averageTrans("CCAT/50/ACT_annual_50." + angle, cent, wid),
                            averageTrans("CCAT/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-    return {"ACT Site": trunOut(
-        actSiteTrans), "Steve Method": trunOut(steveTrans), "CCAT Site": trunOut(ccatTrans)}
+    return {"ACT Site": quartileDisplay(
+        actSiteTrans), "Steve Method": quartileDisplay(steveTrans), "CCAT Site": quartileDisplay(ccatTrans)}
 
 
 temp = customOutput(45)
-temp.update({"Excel Sheet (Unknown Method)": trunOut(eqtrans)})
+temp.update({"Excel Sheet (Unknown Method)": quartileDisplay(eqtrans)})
 dict_file = {"45 Degree Elevation": temp,
              "60 Degrees Elevation": customOutput(30)}
 documents = yaml.dump(dict_file, open(
     "methods comparison.yaml", 'w'), sort_keys=False)
 
-dict_file = {"Power": trunOut(powerPerPixel * 10 ** 12)}
+dict_file = {"Power": quartileDisplay(powerPerPixel * 10 ** 12)}
 documents = yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
