@@ -276,18 +276,31 @@ def average(filePath, start, end):
     return transmission / ((end - start) * 100)
 
 
-def averageTrans(filePath, center, width):
+def averageTransHelper(filePath, center, width):
     return average(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
 
 
+def averageTrans(prefix, angle, percentile, center, width):
+    if angle >= 15 and angle <= 75 and int(angle) == angle:
+        return averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width)
+    elif int(angle) != angle:
+        floor = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
+                                   str(percentile) + "." + str(int(np.floor(angle))), center, width)
+        ceil = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
+                                  str(percentile) + "." + str(int(np.ceil(angle))), center, width)
+        prop = angle - np.floor(angle)
+        return floor * (1 - prop) + ceil * prop
+    else:
+        print("Angle out of range")
+
+
 def customOutput(angle):
-    angle = str(angle)
-    actSiteTrans = np.array([[averageTrans("25/ACT_annual_25." + angle, cent, wid), averageTrans("50/ACT_annual_50." + angle, cent, wid),
-                              averageTrans("75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-    steveTrans = np.array([[averageTrans("Steve/25/ACT_annual_25." + angle, cent, wid), averageTrans("Steve/50/ACT_annual_50." + angle, cent, wid),
-                            averageTrans("Steve/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-    ccatTrans = np.array([[averageTrans("CCAT/25/ACT_annual_25." + angle, cent, wid), averageTrans("CCAT/50/ACT_annual_50." + angle, cent, wid),
-                           averageTrans("CCAT/75/ACT_annual_75." + angle, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    actSiteTrans = np.array([[averageTrans("", angle, 25, cent, wid), averageTrans("", angle, 50, cent, wid),
+                              averageTrans("", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    steveTrans = np.array([[averageTrans("Steve/", angle, 25, cent, wid), averageTrans("Steve/", angle, 50, cent, wid),
+                           averageTrans("Steve/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    ccatTrans = np.array([[averageTrans("CCAT/", angle, 25, cent, wid), averageTrans("CCAT/", angle, 50, cent, wid),
+                           averageTrans("CCAT/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
     return {"ACT Site": quartileDisplay(
         actSiteTrans), "Steve Method": quartileDisplay(steveTrans), "CCAT Site": quartileDisplay(ccatTrans)}
 

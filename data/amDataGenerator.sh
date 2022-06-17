@@ -31,8 +31,8 @@ do
     done
 
     #Approximations
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.47058824 >data/25_approx/ACT_annual_25_approximation.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  2.16470588 >data/75_approx/ACT_annual_75_approximation.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.47058824 >data/25_approx/ACT_annual_25.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  2.16470588 >data/75_approx/ACT_annual_75.$((i)).out
 
     #Steve's approximations
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.4 >data/Steve/25/ACT_annual_25.$((i)).out
