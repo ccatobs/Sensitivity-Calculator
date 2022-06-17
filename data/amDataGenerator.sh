@@ -35,9 +35,9 @@ do
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  2.16470588 >data/75_approx/ACT_annual_75.$((i)).out
 
     #Steve's approximations
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.4 >data/Steve/25/ACT_annual_25.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.85 >data/Steve/50/ACT_annual_50.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.84 >data/Steve/75/ACT_annual_75.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.51 >data/Steve/25/ACT_annual_25.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.95 >data/Steve/50/ACT_annual_50.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.81 >data/Steve/75/ACT_annual_75.$((i)).out
 
     #CCAT Calculations
     am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CCATQ1 >data/CCAT/25/ACT_annual_25.$((i)).out
