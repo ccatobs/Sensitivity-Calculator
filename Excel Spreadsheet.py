@@ -35,6 +35,8 @@ r = None
 signal = None
 
 decimalPlaces = None
+calculateTrans = None
+angle = None
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
@@ -110,6 +112,10 @@ for key, value in dictionary.items():
 
     if key == "decimalPlaces":
         decimalPlaces = value
+    if key == "calculateTrans":
+        calculateTrans = value
+    if key == "angle":
+        angle = value
 
 wavelength = c/centerFrequency*10**6
 
@@ -124,6 +130,49 @@ def a_to_CMB(f):
 
 aToCMB = np.array([a_to_CMB(centerFrequency[i]/1e9)
                   for i in range(len(centerFrequency))])
+
+
+def averageTransSE(filePath, start, end):
+    file = open("data/" + filePath + ".out", "r")
+    data = file.readlines()
+    x = [float(i.split(" ")[0]) for i in data]
+    y = [float(i.split(" ")[1]) for i in data]
+    file.close()
+
+    transmission = 0
+    for (f, trans) in zip(x, y):
+        if f < start:
+            continue
+        if f >= end:
+            break
+        transmission += trans
+
+    return transmission / ((end - start) * 100)
+
+
+def averageTransHelper(filePath, center, width):
+    return averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
+
+
+def averageTrans(prefix, angle, percentile, center, width):
+    if angle >= 15 and angle <= 75 and int(angle) == angle:
+        return averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width)
+    elif int(angle) != angle:
+        floor = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
+                                   str(percentile) + "." + str(int(np.floor(angle))), center, width)
+        ceil = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
+                                  str(percentile) + "." + str(int(np.ceil(angle))), center, width)
+        prop = angle - np.floor(angle)
+        return floor * (1 - prop) + ceil * prop
+    else:
+        print("Angle out of range")
+
+
+origEQTrans = eqtrans
+if calculateTrans:
+    eqtrans = np.array([[averageTrans("CCAT/", angle, percentile, cent, wid)
+                         for percentile in [25, 50, 75]] for (cent, wid) in zip(centerFrequency, eqbw)])
+
 
 # Telescope
 a = pi*(diameter/2)**2
@@ -258,42 +307,6 @@ dict_file = {"NET w8 avg": valueDisplay(netW8Avg), "NET w8 RJ": valueDisplay(
 documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
-def average(filePath, start, end):
-    file = open("data/" + filePath + ".out", "r")
-    data = file.readlines()
-    x = [float(i.split(" ")[0]) for i in data]
-    y = [float(i.split(" ")[1]) for i in data]
-    file.close()
-
-    transmission = 0
-    for (f, trans) in zip(x, y):
-        if f < start:
-            continue
-        if f >= end:
-            break
-        transmission += trans
-
-    return transmission / ((end - start) * 100)
-
-
-def averageTransHelper(filePath, center, width):
-    return average(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
-
-
-def averageTrans(prefix, angle, percentile, center, width):
-    if angle >= 15 and angle <= 75 and int(angle) == angle:
-        return averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width)
-    elif int(angle) != angle:
-        floor = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                   str(percentile) + "." + str(int(np.floor(angle))), center, width)
-        ceil = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                  str(percentile) + "." + str(int(np.ceil(angle))), center, width)
-        prop = angle - np.floor(angle)
-        return floor * (1 - prop) + ceil * prop
-    else:
-        print("Angle out of range")
-
-
 def customOutput(angle):
     actSiteTrans = np.array([[averageTrans("", angle, 25, cent, wid), averageTrans("", angle, 50, cent, wid),
                               averageTrans("", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
@@ -306,7 +319,7 @@ def customOutput(angle):
 
 
 temp = customOutput(45)
-temp.update({"Excel Sheet (Unknown Method)": quartileDisplay(eqtrans)})
+temp.update({"Excel Sheet (Unknown Method)": quartileDisplay(origEQTrans)})
 dict_file = {"45 Degree Elevation": temp,
              "60 Degrees Elevation": customOutput(30)}
 documents = yaml.dump(dict_file, open(

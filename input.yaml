@@ -53,3 +53,5 @@ r:
 
 #Misc
 decimalPlaces: 2
+calculateTrans: True
+angle: 45
