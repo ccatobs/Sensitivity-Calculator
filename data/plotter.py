@@ -142,34 +142,39 @@ def plotCCAT(angle):
               str(angle) + " degrees Zenith Angle")
 
 
+# Plots a piecewise function for transmission values from the excel sheet
+def plotExcel(percentile):
+    excelTrans = [
+        [.441, .253, .085],
+        [.789, .679, .506],
+        [.882, .813, .693],
+        [.95, .923, .871],
+        [.964, .946, .91],
+    ]
+    excelFreq = [8.5e+11, 4.05e+11, 3.48e+11, 2.85e+11, 2.22e+11]
+    excelBW = [9.7e+10, 3.e+10, 3.6e+10, 7.e+10, 5.6e+10]
+    for (f, t, bw) in zip(excelFreq, excelTrans, excelBW):
+        x = [(f-bw/2)/1e9, (f+bw/2)/1e9]
+        y = [t[int(percentile/25)-1], t[int(percentile/25)-1]]
+        plt.plot(x, y,
+                 linewidth=2, label=("Excel " + str(int(f/1e9)) + " GHz"))
+
+
+# Plots CCAT, Steve's Method, ACT, and Excel Sheet (if angle is 45 degrees) transmission
 def plotAll(angle, percentile):
     if angle < 15 or angle > 75:
         print("Angle out of range")
         raise SystemExit(1)
-
     plotFraction(angle, percentile, "CCAT", prefix="CCAT/")
     plotFraction(angle, percentile, "Steve's Method", prefix="Steve/")
     plotFraction(angle, percentile, "ACT")
     if angle == 45:
-        excelTrans = [
-            [.441, .253, .085],
-            [.789, .679, .506],
-            [.882, .813, .693],
-            [.95, .923, .871],
-            [.964, .946, .91],
-        ]
-        excelFreq = [8.5e+11, 4.05e+11, 3.48e+11, 2.85e+11, 2.22e+11]
-        excelBW = [9.7e+10, 3.e+10, 3.6e+10, 7.e+10, 5.6e+10]
-        for (f, t, bw) in zip(excelFreq, excelTrans, excelBW):
-            x = [(f-bw/2)/1e9, (f+bw/2)/1e9]
-            y = [t[int(percentile/25)-1], t[int(percentile/25)-1]]
-            plt.plot(x, y,
-                     linewidth=2, label=("Excel " + str(int(f/1e9)) + " GHz"))
+        plotExcel(percentile)
     plt.title("Transmission at Various Sites at " +
-              str(angle) + " degrees Zenith Angle and Q" + str(int(percentile/25)))
+              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
-plotAll(44.5, 75)
+plotAll(45, 75)
 plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
