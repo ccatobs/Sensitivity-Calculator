@@ -170,8 +170,20 @@ def plotAll(angle, percentile):
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
+# Plots the current transmission graphs, and excel sheet if angle is 45 degrees
+def plotCurrent(angle, percentile):
+    if angle < 15 or angle > 75:
+        print("Angle out of range")
+        raise SystemExit(1)
+    plotFraction(angle, percentile, "CCAT", prefix="CCAT/")
+    if angle == 45:
+        plotExcel(percentile)
+    plt.title("Transmission at Various Sites at " +
+              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
+
+
 # Requested graphs go here
-plotAll(45, 75)
+plotCurrent(45, 75)
 
 
 plt.ylim(ymin=0, ymax=1)
