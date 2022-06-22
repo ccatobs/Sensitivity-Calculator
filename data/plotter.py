@@ -1,10 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Values for trop_h2o_scale_factor approximations in am data generation (based on PWV ratios):
-# 1st Quartile: 0.47058824 = 0.4 mm / 0.85 mm
-# 3rd Quartile: 2.16470588 = 1.84 mm / 0.85 mm
-
 
 def plotCustom(filePath, label):
     file = open(filePath, "r")
@@ -174,7 +170,10 @@ def plotAll(angle, percentile):
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
+# Requested graphs go here
 plotAll(45, 75)
+
+
 plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
