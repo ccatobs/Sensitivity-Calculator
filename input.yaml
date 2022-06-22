@@ -52,6 +52,7 @@ r:
 #signal: [4.3e+5, 1.5e+5, 1.18e+5, 3.4e+4, 1.e+4]
 
 #Misc
-decimalPlaces: 2
+decimalPlaces: 3
 calculateTrans: True
 angle: 45
+outputFreq: True

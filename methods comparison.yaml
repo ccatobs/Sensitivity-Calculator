@@ -1,149 +1,149 @@
 45 Degree Elevation:
   ACT Site:
-    352 um:
-      Quartile 1: 0.38
-      Quartile 2: 0.18
-      Quartile 3: 0.02
-    740 um:
-      Quartile 1: 0.75
+    850 GHz:
+      Quartile 1: 0.375
+      Quartile 2: 0.177
+      Quartile 3: 0.023
+    405 GHz:
+      Quartile 1: 0.747
       Quartile 2: 0.61
-      Quartile 3: 0.35
-    861 um:
-      Quartile 1: 0.86
-      Quartile 2: 0.76
-      Quartile 3: 0.56
-    1051 um:
+      Quartile 3: 0.351
+    348 GHz:
+      Quartile 1: 0.855
+      Quartile 2: 0.765
+      Quartile 3: 0.562
+    285 GHz:
       Quartile 1: 0.93
-      Quartile 2: 0.89
-      Quartile 3: 0.78
-    1350 um:
-      Quartile 1: 0.95
-      Quartile 2: 0.93
-      Quartile 3: 0.87
+      Quartile 2: 0.889
+      Quartile 3: 0.784
+    222 GHz:
+      Quartile 1: 0.955
+      Quartile 2: 0.931
+      Quartile 3: 0.865
   Steve Method:
-    352 um:
-      Quartile 1: 0.43
-      Quartile 2: 0.22
-      Quartile 3: 0.05
-    740 um:
-      Quartile 1: 0.78
-      Quartile 2: 0.65
+    850 GHz:
+      Quartile 1: 0.368
+      Quartile 2: 0.191
+      Quartile 3: 0.053
+    405 GHz:
+      Quartile 1: 0.744
+      Quartile 2: 0.622
       Quartile 3: 0.44
-    861 um:
-      Quartile 1: 0.87
-      Quartile 2: 0.79
-      Quartile 3: 0.63
-    1051 um:
-      Quartile 1: 0.94
-      Quartile 2: 0.9
-      Quartile 3: 0.82
-    1350 um:
-      Quartile 1: 0.96
-      Quartile 2: 0.94
-      Quartile 3: 0.89
+    348 GHz:
+      Quartile 1: 0.853
+      Quartile 2: 0.774
+      Quartile 3: 0.639
+    285 GHz:
+      Quartile 1: 0.929
+      Quartile 2: 0.893
+      Quartile 3: 0.826
+    222 GHz:
+      Quartile 1: 0.954
+      Quartile 2: 0.933
+      Quartile 3: 0.892
   CCAT Site:
-    352 um:
-      Quartile 1: 0.51
-      Quartile 2: 0.3
+    850 GHz:
+      Quartile 1: 0.505
+      Quartile 2: 0.304
       Quartile 3: 0.08
-    740 um:
+    405 GHz:
       Quartile 1: 0.81
-      Quartile 2: 0.71
-      Quartile 3: 0.49
-    861 um:
-      Quartile 1: 0.89
-      Quartile 2: 0.83
-      Quartile 3: 0.68
-    1051 um:
-      Quartile 1: 0.95
-      Quartile 2: 0.92
-      Quartile 3: 0.85
-    1350 um:
-      Quartile 1: 0.96
-      Quartile 2: 0.95
-      Quartile 3: 0.9
+      Quartile 2: 0.706
+      Quartile 3: 0.492
+    348 GHz:
+      Quartile 1: 0.893
+      Quartile 2: 0.829
+      Quartile 3: 0.679
+    285 GHz:
+      Quartile 1: 0.947
+      Quartile 2: 0.919
+      Quartile 3: 0.847
+    222 GHz:
+      Quartile 1: 0.964
+      Quartile 2: 0.948
+      Quartile 3: 0.905
   Excel Sheet (Unknown Method):
-    352 um:
-      Quartile 1: 0.44
-      Quartile 2: 0.25
-      Quartile 3: 0.09
-    740 um:
-      Quartile 1: 0.79
-      Quartile 2: 0.68
-      Quartile 3: 0.51
-    861 um:
-      Quartile 1: 0.88
-      Quartile 2: 0.81
-      Quartile 3: 0.69
-    1051 um:
+    850 GHz:
+      Quartile 1: 0.441
+      Quartile 2: 0.253
+      Quartile 3: 0.085
+    405 GHz:
+      Quartile 1: 0.789
+      Quartile 2: 0.679
+      Quartile 3: 0.506
+    348 GHz:
+      Quartile 1: 0.882
+      Quartile 2: 0.813
+      Quartile 3: 0.693
+    285 GHz:
       Quartile 1: 0.95
-      Quartile 2: 0.92
-      Quartile 3: 0.87
-    1350 um:
-      Quartile 1: 0.96
-      Quartile 2: 0.95
+      Quartile 2: 0.923
+      Quartile 3: 0.871
+    222 GHz:
+      Quartile 1: 0.964
+      Quartile 2: 0.946
       Quartile 3: 0.91
 60 Degrees Elevation:
   ACT Site:
-    352 um:
-      Quartile 1: 0.45
-      Quartile 2: 0.24
-      Quartile 3: 0.04
-    740 um:
-      Quartile 1: 0.79
-      Quartile 2: 0.67
-      Quartile 3: 0.42
-    861 um:
+    850 GHz:
+      Quartile 1: 0.446
+      Quartile 2: 0.241
+      Quartile 3: 0.045
+    405 GHz:
+      Quartile 1: 0.788
+      Quartile 2: 0.667
+      Quartile 3: 0.424
+    348 GHz:
       Quartile 1: 0.88
-      Quartile 2: 0.8
-      Quartile 3: 0.62
-    1051 um:
-      Quartile 1: 0.94
-      Quartile 2: 0.91
+      Quartile 2: 0.803
+      Quartile 3: 0.624
+    285 GHz:
+      Quartile 1: 0.942
+      Quartile 2: 0.908
       Quartile 3: 0.82
-    1350 um:
-      Quartile 1: 0.96
-      Quartile 2: 0.94
-      Quartile 3: 0.89
+    222 GHz:
+      Quartile 1: 0.963
+      Quartile 2: 0.943
+      Quartile 3: 0.888
   Steve Method:
-    352 um:
-      Quartile 1: 0.5
-      Quartile 2: 0.29
+    850 GHz:
+      Quartile 1: 0.439
+      Quartile 2: 0.256
       Quartile 3: 0.09
-    740 um:
-      Quartile 1: 0.81
-      Quartile 2: 0.7
-      Quartile 3: 0.51
-    861 um:
-      Quartile 1: 0.9
-      Quartile 2: 0.83
-      Quartile 3: 0.69
-    1051 um:
-      Quartile 1: 0.95
-      Quartile 2: 0.92
-      Quartile 3: 0.85
-    1350 um:
-      Quartile 1: 0.97
-      Quartile 2: 0.95
-      Quartile 3: 0.91
+    405 GHz:
+      Quartile 1: 0.785
+      Quartile 2: 0.678
+      Quartile 3: 0.511
+    348 GHz:
+      Quartile 1: 0.878
+      Quartile 2: 0.81
+      Quartile 3: 0.693
+    285 GHz:
+      Quartile 1: 0.942
+      Quartile 2: 0.912
+      Quartile 3: 0.855
+    222 GHz:
+      Quartile 1: 0.962
+      Quartile 2: 0.945
+      Quartile 3: 0.911
   CCAT Site:
-    352 um:
-      Quartile 1: 0.57
-      Quartile 2: 0.38
-      Quartile 3: 0.13
-    740 um:
-      Quartile 1: 0.84
-      Quartile 2: 0.75
-      Quartile 3: 0.56
-    861 um:
-      Quartile 1: 0.91
-      Quartile 2: 0.86
-      Quartile 3: 0.73
-    1051 um:
-      Quartile 1: 0.96
-      Quartile 2: 0.93
-      Quartile 3: 0.87
-    1350 um:
-      Quartile 1: 0.97
-      Quartile 2: 0.96
-      Quartile 3: 0.92
+    850 GHz:
+      Quartile 1: 0.569
+      Quartile 2: 0.375
+      Quartile 3: 0.125
+    405 GHz:
+      Quartile 1: 0.842
+      Quartile 2: 0.752
+      Quartile 3: 0.559
+    348 GHz:
+      Quartile 1: 0.912
+      Quartile 2: 0.858
+      Quartile 3: 0.728
+    285 GHz:
+      Quartile 1: 0.956
+      Quartile 2: 0.933
+      Quartile 3: 0.873
+    222 GHz:
+      Quartile 1: 0.971
+      Quartile 2: 0.957
+      Quartile 3: 0.922

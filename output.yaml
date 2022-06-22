@@ -1,60 +1,60 @@
 NET w8 avg:
-  352 um: 193565.72
-  740 um: 166.4
-  861 um: 52.95
-  1051 um: 13.1
-  1350 um: 6.82
+  850000000000 GHz: 193565.722
+  405000000000 GHz: 166.405
+  348000000000 GHz: 52.947
+  285000000000 GHz: 13.098
+  222000000000 GHz: 6.822
 NET w8 RJ:
-  352 um: 13.67
-  740 um: 6.77
-  861 um: 4.35
-  1051 um: 2.21
-  1350 um: 2.18
+  850000000000 GHz: 13.674
+  405000000000 GHz: 6.771
+  348000000000 GHz: 4.353
+  285000000000 GHz: 2.21
+  222000000000 GHz: 2.177
 NEI w8 Jy/sr:
-  352 um: 303392.35
-  740 um: 34106.6
-  861 um: 16187.85
-  1051 um: 5512.31
-  1350 um: 3294.37
+  850000000000 GHz: 303392.351
+  405000000000 GHz: 34106.602
+  348000000000 GHz: 16187.852
+  285000000000 GHz: 5512.31
+  222000000000 GHz: 3294.37
 EoR Spec NEFD:
-  352 um:
-    Quartile 1: 345.27
+  850 GHz:
+    Quartile 1: 345.274
     Quartile 2: 734.36
-    Quartile 3: 3477.13
-  740 um:
-    Quartile 1: 151.54
-    Quartile 2: 234.61
-    Quartile 3: 515.24
-  861 um:
+    Quartile 3: 3477.128
+  405 GHz:
+    Quartile 1: 151.542
+    Quartile 2: 234.612
+    Quartile 3: 515.239
+  348 GHz:
     Quartile 1: 84.73
-    Quartile 2: 120.71
-    Quartile 3: 229.85
-  1051 um:
-    Quartile 1: 72.14
-    Quartile 2: 89.56
+    Quartile 2: 120.708
+    Quartile 3: 229.852
+  285 GHz:
+    Quartile 1: 72.138
+    Quartile 2: 89.562
     Quartile 3: 138.49
-  1350 um:
-    Quartile 1: 66.2
-    Quartile 2: 77.02
-    Quartile 3: 107.16
+  222 GHz:
+    Quartile 1: 66.196
+    Quartile 2: 77.015
+    Quartile 3: 107.164
 EoR Spec NEI:
-  352 um:
-    Quartile 1: 55268722.17
-    Quartile 2: 117550367.75
-    Quartile 3: 556590431.38
-  740 um:
-    Quartile 1: 5507058.35
-    Quartile 2: 8525847.58
-    Quartile 3: 18723870.17
-  861 um:
-    Quartile 1: 2273395.25
-    Quartile 2: 3238708.16
-    Quartile 3: 6167143.45
-  1051 um:
-    Quartile 1: 1298169.9
+  850 GHz:
+    Quartile 1: 55268722.171
+    Quartile 2: 117550367.751
+    Quartile 3: 556590431.381
+  405 GHz:
+    Quartile 1: 5507058.352
+    Quartile 2: 8525847.575
+    Quartile 3: 18723870.171
+  348 GHz:
+    Quartile 1: 2273395.252
+    Quartile 2: 3238708.158
+    Quartile 3: 6167143.447
+  285 GHz:
+    Quartile 1: 1298169.896
     Quartile 2: 1611720.49
-    Quartile 3: 2492222.01
-  1350 um:
-    Quartile 1: 722798.12
-    Quartile 2: 840929.81
-    Quartile 3: 1170127.8
+    Quartile 3: 2492222.014
+  222 GHz:
+    Quartile 1: 722798.118
+    Quartile 2: 840929.807
+    Quartile 3: 1170127.803

@@ -1,21 +1,21 @@
 Power:
-  352 um:
-    Quartile 1: 63.51
-    Quartile 2: 86.41
-    Quartile 3: 111.95
-  740 um:
-    Quartile 1: 7.94
-    Quartile 2: 11.34
-    Quartile 3: 18.37
-  861 um:
+  850 GHz:
+    Quartile 1: 63.507
+    Quartile 2: 86.406
+    Quartile 3: 111.946
+  405 GHz:
+    Quartile 1: 7.937
+    Quartile 2: 11.343
+    Quartile 3: 18.369
+  348 GHz:
     Quartile 1: 9.5
-    Quartile 2: 13.36
-    Quartile 3: 22.35
-  1051 um:
-    Quartile 1: 8.94
-    Quartile 2: 11.32
-    Quartile 3: 17.38
-  1350 um:
-    Quartile 1: 5.78
+    Quartile 2: 13.362
+    Quartile 3: 22.353
+  285 GHz:
+    Quartile 1: 8.938
+    Quartile 2: 11.318
+    Quartile 3: 17.377
+  222 GHz:
+    Quartile 1: 5.778
     Quartile 2: 6.85
-    Quartile 3: 9.68
+    Quartile 3: 9.685

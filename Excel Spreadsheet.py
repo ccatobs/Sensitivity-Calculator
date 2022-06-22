@@ -37,6 +37,7 @@ signal = None
 decimalPlaces = None
 calculateTrans = None
 angle = None
+outputFreq = None
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
@@ -116,6 +117,8 @@ for key, value in dictionary.items():
         calculateTrans = value
     if key == "angle":
         angle = value
+    if key == "outputFreq":
+        outputFreq = value
 
 wavelength = c/centerFrequency*10**6
 
@@ -273,7 +276,12 @@ def trun(array):
 
 def valueDisplayHelper(array, w, dict):
     if len(w) > 0:
-        dict.update({str(int(w[0])) + " um": array[0]})
+        unit = None
+        if outputFreq:
+            unit = " GHz"
+        else:
+            unit = " um"
+        dict.update({str(int(w[0])) + unit: array[0]})
         return valueDisplayHelper(array[1:], w[1:], dict)
     else:
         return trun(dict)
@@ -283,12 +291,22 @@ def valueDisplayHelper(array, w, dict):
 def valueDisplay(array):
     if type(array) == np.ndarray:
         array = arrayify(array)
-    return valueDisplayHelper(array, wavelength, {})
+    outputLabel = None
+    if outputFreq:
+        outputLabel = centerFrequency
+    else:
+        outputLabel = wavelength
+    return valueDisplayHelper(array, outputLabel, {})
 
 
 def quartileDisplayHelper(array, w, dict):
     if len(w) > 0:
-        dict.update({str(int(w[0])) + " um": {"Quartile 1": array[0][0], "Quartile 2": array[0]
+        unit = None
+        if outputFreq:
+            unit = " GHz"
+        else:
+            unit = " um"
+        dict.update({str(int(w[0])) + unit: {"Quartile 1": array[0][0], "Quartile 2": array[0]
                     [1], "Quartile 3": array[0][2]}})
         return quartileDisplayHelper(array[1:], w[1:], dict)
     else:
@@ -299,7 +317,12 @@ def quartileDisplayHelper(array, w, dict):
 def quartileDisplay(array):
     if type(array) == np.ndarray:
         array = arrayify(array)
-    return quartileDisplayHelper(array, (wavelength), {})
+    outputLabel = None
+    if outputFreq:
+        outputLabel = centerFrequency / 1e9
+    else:
+        outputLabel = wavelength
+    return quartileDisplayHelper(array, outputLabel, {})
 
 
 dict_file = {"NET w8 avg": valueDisplay(netW8Avg), "NET w8 RJ": valueDisplay(
