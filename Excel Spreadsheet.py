@@ -293,7 +293,7 @@ def valueDisplay(array):
         array = arrayify(array)
     outputLabel = None
     if outputFreq:
-        outputLabel = centerFrequency
+        outputLabel = centerFrequency / 1e9
     else:
         outputLabel = wavelength
     return valueDisplayHelper(array, outputLabel, {})
