@@ -41,7 +41,7 @@
       Quartile 1: 0.954
       Quartile 2: 0.933
       Quartile 3: 0.892
-  CCAT Site:
+  Plateau:
     850 GHz:
       Quartile 1: 0.505
       Quartile 2: 0.304
@@ -62,6 +62,48 @@
       Quartile 1: 0.964
       Quartile 2: 0.948
       Quartile 3: 0.905
+  APEX:
+    850 GHz:
+      Quartile 1: 0.546
+      Quartile 2: 0.361
+      Quartile 3: 0.108
+    405 GHz:
+      Quartile 1: 0.827
+      Quartile 2: 0.74
+      Quartile 3: 0.533
+    348 GHz:
+      Quartile 1: 0.904
+      Quartile 2: 0.85
+      Quartile 3: 0.71
+    285 GHz:
+      Quartile 1: 0.951
+      Quartile 2: 0.928
+      Quartile 3: 0.863
+    222 GHz:
+      Quartile 1: 0.967
+      Quartile 2: 0.954
+      Quartile 3: 0.915
+  Config:
+    850 GHz:
+      Quartile 1: 0.54
+      Quartile 2: 0.4
+      Quartile 3: 0.221
+    405 GHz:
+      Quartile 1: 0.825
+      Quartile 2: 0.76
+      Quartile 3: 0.647
+    348 GHz:
+      Quartile 1: 0.902
+      Quartile 2: 0.863
+      Quartile 3: 0.79
+    285 GHz:
+      Quartile 1: 0.95
+      Quartile 2: 0.934
+      Quartile 3: 0.901
+    222 GHz:
+      Quartile 1: 0.966
+      Quartile 2: 0.957
+      Quartile 3: 0.938
   Excel Sheet (Unknown Method):
     850 GHz:
       Quartile 1: 0.441
@@ -126,7 +168,7 @@
       Quartile 1: 0.962
       Quartile 2: 0.945
       Quartile 3: 0.911
-  CCAT Site:
+  Plateau:
     850 GHz:
       Quartile 1: 0.569
       Quartile 2: 0.375
@@ -147,3 +189,45 @@
       Quartile 1: 0.971
       Quartile 2: 0.957
       Quartile 3: 0.922
+  APEX:
+    850 GHz:
+      Quartile 1: 0.606
+      Quartile 2: 0.432
+      Quartile 3: 0.16
+    405 GHz:
+      Quartile 1: 0.856
+      Quartile 2: 0.782
+      Quartile 3: 0.598
+    348 GHz:
+      Quartile 1: 0.921
+      Quartile 2: 0.876
+      Quartile 3: 0.756
+    285 GHz:
+      Quartile 1: 0.96
+      Quartile 2: 0.941
+      Quartile 3: 0.886
+    222 GHz:
+      Quartile 1: 0.973
+      Quartile 2: 0.962
+      Quartile 3: 0.93
+  Config:
+    850 GHz:
+      Quartile 1: 0.6
+      Quartile 2: 0.469
+      Quartile 3: 0.289
+    405 GHz:
+      Quartile 1: 0.854
+      Quartile 2: 0.799
+      Quartile 3: 0.701
+    348 GHz:
+      Quartile 1: 0.919
+      Quartile 2: 0.887
+      Quartile 3: 0.825
+    285 GHz:
+      Quartile 1: 0.959
+      Quartile 2: 0.945
+      Quartile 3: 0.918
+    222 GHz:
+      Quartile 1: 0.972
+      Quartile 2: 0.965
+      Quartile 3: 0.949

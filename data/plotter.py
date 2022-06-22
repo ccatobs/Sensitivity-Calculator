@@ -126,15 +126,15 @@ def plotSteve(angle):
               str(angle) + " degrees Zenith Angle")
 
 
-# Plots the transmission for CCAT at a given angle
-def plotCCAT(angle):
+# Plots the transmission for CerroPlateau at a given angle
+def plotCerroPlateau(angle):
     if angle < 15 or angle > 75:
         print("Angle out of range")
         raise SystemExit(1)
-    plotFraction(angle, 25, "Q1", prefix="CCAT/")
-    plotFraction(angle, 50, "Q1", prefix="CCAT/")
-    plotFraction(angle, 75, "Q1", prefix="CCAT/")
-    plt.title("Transmission at CCAT Site at " +
+    plotFraction(angle, 25, "Q1", prefix="CerroPlateau/")
+    plotFraction(angle, 50, "Q1", prefix="CerroPlateau/")
+    plotFraction(angle, 75, "Q1", prefix="CerroPlateau/")
+    plt.title("Transmission at CerroPlateau Site at " +
               str(angle) + " degrees Zenith Angle")
 
 
@@ -156,12 +156,14 @@ def plotExcel(percentile):
                  linewidth=2, label=("Excel " + str(int(f/1e9)) + " GHz"))
 
 
-# Plots CCAT, Steve's Method, ACT, and Excel Sheet (if angle is 45 degrees) transmission
+# Plots all transmissions (besides default approximation)
 def plotAll(angle, percentile):
     if angle < 15 or angle > 75:
         print("Angle out of range")
         raise SystemExit(1)
-    plotFraction(angle, percentile, "CCAT", prefix="CCAT/")
+    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
+    plotFraction(angle, percentile, "APEX", prefix="CerroAPEX/")
+    plotFraction(angle, percentile, "Plateau", prefix="CerroPlateau/")
     plotFraction(angle, percentile, "Steve's Method", prefix="Steve/")
     plotFraction(angle, percentile, "ACT")
     if angle == 45:
@@ -175,7 +177,21 @@ def plotCurrent(angle, percentile):
     if angle < 15 or angle > 75:
         print("Angle out of range")
         raise SystemExit(1)
-    plotFraction(angle, percentile, "CCAT", prefix="CCAT/")
+    plotFraction(angle, percentile, "CerroPlateau", prefix="CerroPlateau/")
+    if angle == 45:
+        plotExcel(percentile)
+    plt.title("Transmission at Various Sites at " +
+              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
+
+
+# Plots the various transmissions for the trop_h2o_scale_factor adjusted transmissions
+def pwvRatioAdjustments(angle, percentile):
+    if angle < 15 or angle > 75:
+        print("Angle out of range")
+        raise SystemExit(1)
+    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
+    plotFraction(angle, percentile, "APEX", prefix="CerroAPEX/")
+    plotFraction(angle, percentile, "Plateau", prefix="CerroPlateau/")
     if angle == 45:
         plotExcel(percentile)
     plt.title("Transmission at Various Sites at " +
@@ -183,7 +199,7 @@ def plotCurrent(angle, percentile):
 
 
 # Requested graphs go here
-plotCurrent(45, 75)
+pwvRatioAdjustments(45, 25)
 
 
 plt.ylim(ymin=0, ymax=1)

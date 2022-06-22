@@ -173,7 +173,7 @@ def averageTrans(prefix, angle, percentile, center, width):
 
 origEQTrans = eqtrans
 if calculateTrans:
-    eqtrans = np.array([[averageTrans("CCAT/", angle, percentile, cent, wid)
+    eqtrans = np.array([[averageTrans("CerroPlateau/", angle, percentile, cent, wid)
                          for percentile in [25, 50, 75]] for (cent, wid) in zip(centerFrequency, eqbw)])
 
 
@@ -335,10 +335,14 @@ def customOutput(angle):
                               averageTrans("", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
     steveTrans = np.array([[averageTrans("Steve/", angle, 25, cent, wid), averageTrans("Steve/", angle, 50, cent, wid),
                            averageTrans("Steve/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
-    ccatTrans = np.array([[averageTrans("CCAT/", angle, 25, cent, wid), averageTrans("CCAT/", angle, 50, cent, wid),
-                           averageTrans("CCAT/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    cerroPlateau = np.array([[averageTrans("CerroPlateau/", angle, 25, cent, wid), averageTrans("CerroPlateau/", angle, 50, cent, wid),
+                              averageTrans("CerroPlateau/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    cerroAPEX = np.array([[averageTrans("CerroAPEX/", angle, 25, cent, wid), averageTrans("CerroAPEX/", angle, 50, cent, wid),
+                           averageTrans("CerroAPEX/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
+    cerroConfig = np.array([[averageTrans("CerroConfig/", angle, 25, cent, wid), averageTrans("CerroConfig/", angle, 50, cent, wid),
+                           averageTrans("CerroConfig/", angle, 75, cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)])
     return {"ACT Site": quartileDisplay(
-        actSiteTrans), "Steve Method": quartileDisplay(steveTrans), "CCAT Site": quartileDisplay(ccatTrans)}
+        actSiteTrans), "Steve Method": quartileDisplay(steveTrans), "Plateau": quartileDisplay(cerroPlateau), "APEX": quartileDisplay(cerroAPEX), "Config": quartileDisplay(cerroConfig)}
 
 
 temp = customOutput(45)
