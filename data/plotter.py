@@ -198,11 +198,34 @@ def pwvRatioAdjustments(angle, percentile):
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
+def myPlotCustom(filePath, label):
+    file = open(filePath, "r")
+    data = file.readlines()
+
+    x = [float(i.split(" ")[0]) for i in data]
+    y = [float(i.split(" ")[1]) for i in data]
+
+    file.close()
+
+    plt.plot(x, y, linewidth=1, label=label)
+
+
+def plotOldData(percentile):
+    if percentile == 25:
+        myPlotCustom("data/ACT_MAM_50_pwv0.51.out", "Q1")
+    elif percentile == 50:
+        myPlotCustom("data/ACT_MAM_50_pwv0.95.out", "Q2")
+    elif percentile == 75:
+        myPlotCustom("data/ACT_MAM_50_pwv1.81.out", "Q3")
+    plotExcel(percentile)
+    plt.title("temp")
+
+
 # Requested graphs go here
-pwvRatioAdjustments(45, 75)
+plotOldData(25)
 
 
-plt.ylim(ymin=0, ymax=1)
+plt.ylim(ymin=0, ymax=20)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
 plt.legend(loc="upper right")

@@ -1,21 +1,21 @@
-Excel:
+Config:
   850 GHz:
-    Quartile 1: 70.81
-    Quartile 2: 92.215
-    Quartile 3: 111.343
+    Quartile 1: 70.96
+    Quartile 2: 90.363
+    Quartile 3: 109.238
   405 GHz:
-    Quartile 1: 8.62
-    Quartile 2: 12.226
-    Quartile 3: 17.897
+    Quartile 1: 8.918
+    Quartile 2: 12.092
+    Quartile 3: 17.192
   348 GHz:
-    Quartile 1: 10.181
-    Quartile 2: 14.314
-    Quartile 3: 21.501
+    Quartile 1: 10.58
+    Quartile 2: 14.247
+    Quartile 3: 20.732
   285 GHz:
-    Quartile 1: 8.652
-    Quartile 2: 10.943
-    Quartile 3: 15.356
+    Quartile 1: 9.596
+    Quartile 2: 11.883
+    Quartile 3: 16.224
   222 GHz:
-    Quartile 1: 5.797
-    Quartile 2: 6.983
-    Quartile 3: 9.355
+    Quartile 1: 6.075
+    Quartile 2: 7.109
+    Quartile 3: 9.133

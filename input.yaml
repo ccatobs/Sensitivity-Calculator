@@ -53,6 +53,6 @@ r:
 
 #Misc
 decimalPlaces: 3
-calculateTrans: False
+calculateTrans: True
 angle: 45
 outputFreq: True

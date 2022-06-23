@@ -172,7 +172,7 @@ def averageTrans(prefix, angle, percentile, center, width):
 
 origEQTrans = eqtrans
 if calculateTrans:
-    eqtrans = np.array([[averageTrans("CerroPlateau/", angle, percentile, cent, wid)
+    eqtrans = np.array([[averageTrans("CerroConfig/", angle, percentile, cent, wid)
                          for percentile in [25, 50, 75]] for (cent, wid) in zip(centerFrequency, eqbw)])
 
 
@@ -351,5 +351,5 @@ dict_file = {"45 Degree Elevation": temp,
 documents = yaml.dump(dict_file, open(
     "methods comparison.yaml", 'w'), sort_keys=False)
 
-dict_file = {"Excel": quartileDisplay(powerPerPixel * 10 ** 12)}
+dict_file = {"Config": quartileDisplay(powerPerPixel * 10 ** 12)}
 documents = yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
