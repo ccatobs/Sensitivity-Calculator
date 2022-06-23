@@ -172,18 +172,6 @@ def plotAll(angle, percentile):
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
-# Plots the current transmission graphs, and excel sheet if angle is 45 degrees
-def plotCurrent(angle, percentile):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, percentile, "CerroPlateau", prefix="CerroPlateau/")
-    if angle == 45:
-        plotExcel(percentile)
-    plt.title("Transmission at Various Sites at " +
-              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
-
-
 # Plots the various transmissions for the trop_h2o_scale_factor adjusted transmissions
 def pwvRatioAdjustments(angle, percentile):
     if angle < 15 or angle > 75:
@@ -198,6 +186,7 @@ def pwvRatioAdjustments(angle, percentile):
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
+# Plots the recreation of the data in the original excel sheet
 def plotOldData(percentile):
     if percentile == 25:
         plotCustom("data/ACT_MAM_50_pwv0.51.out", "Q1")
@@ -209,8 +198,33 @@ def plotOldData(percentile):
     plt.title("Transmission During MAM Season Using Old Method")
 
 
+# Plots transmission using PWV ratio from configuration file
+def plotConfig(angle, percentile):
+    if angle < 15 or angle > 75:
+        print("Angle out of range")
+        raise SystemExit(1)
+    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
+    if angle == 45:
+        plotExcel(percentile)
+    plt.title("Transmission at CCAT site Using Configuration File PWV Ratio at " +
+              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
+
+
+# Plots the current transmission graphs, and excel sheet if angle is 45 degrees
+def plotCurrent(angle, percentile):
+    if angle < 15 or angle > 75:
+        print("Angle out of range")
+        raise SystemExit(1)
+    plotFraction(angle, percentile, str(angle) + " degrees, Q" +
+                 str(int(percentile/25)), prefix="CerroConfig/")
+    if angle == 45:
+        plotExcel(percentile)
+    plt.title("Transmission at " +
+              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
+
+
 # Requested graphs go here
-plotOldData(75)
+plotConfig(45, 25)
 
 
 plt.ylim(ymin=0, ymax=1)
