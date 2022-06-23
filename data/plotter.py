@@ -199,7 +199,7 @@ def pwvRatioAdjustments(angle, percentile):
 
 
 # Requested graphs go here
-pwvRatioAdjustments(45, 25)
+pwvRatioAdjustments(45, 75)
 
 
 plt.ylim(ymin=0, ymax=1)

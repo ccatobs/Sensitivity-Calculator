@@ -1,60 +1,60 @@
 NET w8 avg:
-  850 GHz: 193565.722
-  405 GHz: 166.405
-  348 GHz: 52.947
-  285 GHz: 13.098
-  222 GHz: 6.822
+  850 GHz: 241840.529
+  405 GHz: 181.707
+  348 GHz: 56.236
+  285 GHz: 12.508
+  222 GHz: 6.828
 NET w8 RJ:
-  850 GHz: 13.674
-  405 GHz: 6.771
-  348 GHz: 4.353
-  285 GHz: 2.21
-  222 GHz: 2.177
+  850 GHz: 17.084
+  405 GHz: 7.394
+  348 GHz: 4.623
+  285 GHz: 2.11
+  222 GHz: 2.179
 NEI w8 Jy/sr:
-  850 GHz: 303392.351
-  405 GHz: 34106.602
-  348 GHz: 16187.852
-  285 GHz: 5512.31
-  222 GHz: 3294.37
+  850 GHz: 379057.645
+  405 GHz: 37242.988
+  348 GHz: 17193.297
+  285 GHz: 5264.143
+  222 GHz: 3297.428
 EoR Spec NEFD:
   850 GHz:
-    Quartile 1: 345.274
-    Quartile 2: 734.36
-    Quartile 3: 3477.128
+    Quartile 1: 431.012
+    Quartile 2: 931.056
+    Quartile 3: 3245.436
   405 GHz:
-    Quartile 1: 151.542
-    Quartile 2: 234.612
-    Quartile 3: 515.239
+    Quartile 1: 166.505
+    Quartile 2: 260.222
+    Quartile 3: 488.992
   348 GHz:
-    Quartile 1: 84.73
-    Quartile 2: 120.708
-    Quartile 3: 229.852
+    Quartile 1: 90.723
+    Quartile 2: 130.396
+    Quartile 3: 217.526
   285 GHz:
-    Quartile 1: 72.138
-    Quartile 2: 89.562
-    Quartile 3: 138.49
+    Quartile 1: 70.101
+    Quartile 2: 86.761
+    Quartile 3: 121.339
   222 GHz:
-    Quartile 1: 66.196
-    Quartile 2: 77.015
-    Quartile 3: 107.164
+    Quartile 1: 66.38
+    Quartile 2: 78.371
+    Quartile 3: 103.526
 EoR Spec NEI:
   850 GHz:
-    Quartile 1: 55268722.171
-    Quartile 2: 117550367.751
-    Quartile 3: 556590431.381
+    Quartile 1: 68992955.397
+    Quartile 2: 149035926.407
+    Quartile 3: 519502964.703
   405 GHz:
-    Quartile 1: 5507058.352
-    Quartile 2: 8525847.575
-    Quartile 3: 18723870.171
+    Quartile 1: 6050836.837
+    Quartile 2: 9456534.403
+    Quartile 3: 17770051.049
   348 GHz:
-    Quartile 1: 2273395.252
-    Quartile 2: 3238708.158
-    Quartile 3: 6167143.447
+    Quartile 1: 2434187.836
+    Quartile 2: 3498637.494
+    Quartile 3: 5836431.818
   285 GHz:
-    Quartile 1: 1298169.896
-    Quartile 2: 1611720.49
-    Quartile 3: 2492222.014
+    Quartile 1: 1261513.923
+    Quartile 2: 1561311.16
+    Quartile 3: 2183579.799
   222 GHz:
-    Quartile 1: 722798.118
-    Quartile 2: 840929.807
-    Quartile 3: 1170127.803
+    Quartile 1: 724802.294
+    Quartile 2: 855738.076
+    Quartile 3: 1130402.309

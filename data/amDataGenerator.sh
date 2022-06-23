@@ -42,30 +42,30 @@ do
     #ACT calculations
     for p in 25 50 75
     do
-        am data/ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.0 >data/$((p))/ACT_annual_$((p)).$((i)).out
+        am data/ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.0 >data/$((p))/ACT_annual_$((p)).$((i)).out 2>data/$((p))/ACT_annual_$((p)).$((i)).err
     done
 
     #Approximations
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.47058824 >data/25_approx/ACT_annual_25.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  2.16470588 >data/75_approx/ACT_annual_75.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.47058824 >data/25_approx/ACT_annual_25.$((i)).out 2>data/25_approx/ACT_annual_25.$((i)).err
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  2.16470588 >data/75_approx/ACT_annual_75.$((i)).out 2>data/75_approx/ACT_annual_75.$((i)).err
 
     #Steve's approximations
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.51 >data/Steve/25/ACT_annual_25.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.95 >data/Steve/50/ACT_annual_50.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.81 >data/Steve/75/ACT_annual_75.$((i)).out
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.51 >data/Steve/25/ACT_annual_25.$((i)).out 2>data/Steve/25/ACT_annual_25.$((i)).err
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.95 >data/Steve/50/ACT_annual_50.$((i)).out 2>data/Steve/50/ACT_annual_50.$((i)).err
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.81 >data/Steve/75/ACT_annual_75.$((i)).out 2>data/Steve/75/ACT_annual_75.$((i)).err
 
     #CerroPlateau Calculations
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroPlateauQ1 >data/CerroPlateau/25/ACT_annual_25.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroPlateauQ2 >data/CerroPlateau/50/ACT_annual_50.$((i)).out
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroPlateauQ3 >data/CerroPlateau/75/ACT_annual_75.$((i)).out
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroPlateauQ1 >data/CerroPlateau/25/ACT_annual_25.$((i)).out 2>data/CerroPlateau/25/ACT_annual_25.$((i)).err
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroPlateauQ2 >data/CerroPlateau/50/ACT_annual_50.$((i)).out 2>data/CerroPlateau/50/ACT_annual_50.$((i)).err
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroPlateauQ3 >data/CerroPlateau/75/ACT_annual_75.$((i)).out 2>data/CerroPlateau/75/ACT_annual_75.$((i)).err
 
     #CerroAPEX Calculations
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroAPEXQ1 >data/CerroAPEX/25/ACT_annual_25.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroAPEXQ2 >data/CerroAPEX/50/ACT_annual_50.$((i)).out
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroAPEXQ3 >data/CerroAPEX/75/ACT_annual_75.$((i)).out
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroAPEXQ1 >data/CerroAPEX/25/ACT_annual_25.$((i)).out 2>data/CerroAPEX/25/ACT_annual_25.$((i)).err
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroAPEXQ2 >data/CerroAPEX/50/ACT_annual_50.$((i)).out 2>data/CerroAPEX/50/ACT_annual_50.$((i)).err
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroAPEXQ3 >data/CerroAPEX/75/ACT_annual_75.$((i)).out 2>data/CerroAPEX/75/ACT_annual_75.$((i)).err
 
     #CerroConfig Calculations
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ1 >data/CerroConfig/25/ACT_annual_25.$((i)).out
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ2 >data/CerroConfig/50/ACT_annual_50.$((i)).out
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ3 >data/CerroConfig/75/ACT_annual_75.$((i)).out
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ1 >data/CerroConfig/25/ACT_annual_25.$((i)).out 2>data/CerroConfig/25/ACT_annual_25.$((i)).err
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ2 >data/CerroConfig/50/ACT_annual_50.$((i)).out 2>data/CerroConfig/50/ACT_annual_50.$((i)).err
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ3 >data/CerroConfig/75/ACT_annual_75.$((i)).out 2>data/CerroConfig/75/ACT_annual_75.$((i)).err
 done

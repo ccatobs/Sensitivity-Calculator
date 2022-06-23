@@ -131,8 +131,7 @@ def a_to_CMB(f):
     return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
 
 
-aToCMB = np.array([a_to_CMB(centerFrequency[i]/1e9)
-                  for i in range(len(centerFrequency))])
+aToCMB = np.array([a_to_CMB(i/1e9) for i in centerFrequency])
 
 
 def averageTransSE(filePath, start, end):
@@ -352,5 +351,5 @@ dict_file = {"45 Degree Elevation": temp,
 documents = yaml.dump(dict_file, open(
     "methods comparison.yaml", 'w'), sort_keys=False)
 
-dict_file = {"Power": quartileDisplay(powerPerPixel * 10 ** 12)}
+dict_file = {"Excel": quartileDisplay(powerPerPixel * 10 ** 12)}
 documents = yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
