@@ -1,4 +1,4 @@
-Config:
+Broadband:
   850 GHz:
     Quartile 1: 70.96
     Quartile 2: 90.363
@@ -19,3 +19,24 @@ Config:
     Quartile 1: 6.075
     Quartile 2: 7.109
     Quartile 3: 9.133
+EoR Spec:
+  850 GHz:
+    Quartile 1: 22.531
+    Quartile 2: 28.692
+    Quartile 3: 34.684
+  405 GHz:
+    Quartile 1: 4.362
+    Quartile 2: 5.915
+    Quartile 3: 8.41
+  348 GHz:
+    Quartile 1: 3.706
+    Quartile 2: 4.99
+    Quartile 3: 7.262
+  285 GHz:
+    Quartile 1: 1.416
+    Quartile 2: 1.753
+    Quartile 3: 2.393
+  222 GHz:
+    Quartile 1: 0.873
+    Quartile 2: 1.021
+    Quartile 3: 1.312

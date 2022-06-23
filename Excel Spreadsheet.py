@@ -258,6 +258,8 @@ eorNEF = eorSpecCorForPoln*eorTotalNEP/(a*eorT_cold[:, None]*doe*eta*eorRuze[:, 
                                         * eorEqTrans*eorColdTerminatedSpillover[:, None]*backgroundSubtractionDegradationFactor)
 eorNEFD = eorNEF/eorEqBw*10**26*1000
 eorNEI = eorNEFD/(solidAngle)[:, None]/1000
+eorPowerPerPixel = h*c/(wavelength[:, None]*10**(-6))*eorE_warm*eorT_cold[:, None]*eorAcceptedModes[:,
+                                                                                                    None]*eorOccupancy[:, None]*eorEqBw*doe  # Look at t_cold in excel sheet
 
 
 def trun(array):
@@ -353,5 +355,6 @@ dict_file = {"45 Degree Elevation": temp,
 documents = yaml.dump(dict_file, open(
     "methods comparison.yaml", 'w'), sort_keys=False)
 
-dict_file = {"Config": quartileDisplay(powerPerPixel * 10 ** 12)}
+dict_file = {"Broadband": quartileDisplay(
+    powerPerPixel*10**12), "EoR Spec": quartileDisplay(eorPowerPerPixel*10**12)}
 documents = yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
