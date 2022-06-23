@@ -18,9 +18,9 @@ APEXQ2=1.2816666666666667
 APEXQ3=2.28
 
 #PWV values in ACT configuration files, collected by data/pwvCalculator.py
-ACTConfigQ1=0.70588868
-ACTConfigQ2=1.4705762629999999
-ACTConfigQ3=3.55953805
+ACTConfigQ1=0.457488
+ACTConfigQ2=0.9315249999999999
+ACTConfigQ3=2.23472
 
 #Calculate PWV ratios between ACT and CCAT sites
 CerroPlateauQ1=$(bc <<<"scale=10; $CerroChajnantorPWVQ1/$ChajnantorPlateauQ1")

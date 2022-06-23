@@ -189,12 +189,12 @@ def pwvRatioAdjustments(angle, percentile):
     if angle < 15 or angle > 75:
         print("Angle out of range")
         raise SystemExit(1)
-    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
     plotFraction(angle, percentile, "APEX", prefix="CerroAPEX/")
     plotFraction(angle, percentile, "Plateau", prefix="CerroPlateau/")
+    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
     if angle == 45:
         plotExcel(percentile)
-    plt.title("Transmission at Various Sites at " +
+    plt.title("Transmission at CCAT site Using Various PWV Ratios at " +
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
