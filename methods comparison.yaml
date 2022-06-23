@@ -104,7 +104,7 @@
       Quartile 1: 0.96
       Quartile 2: 0.944
       Quartile 3: 0.913
-  Excel Sheet (Unknown Method):
+  Excel Sheet:
     850 GHz:
       Quartile 1: 0.441
       Quartile 2: 0.253
@@ -121,6 +121,27 @@
       Quartile 1: 0.95
       Quartile 2: 0.923
       Quartile 3: 0.871
+    222 GHz:
+      Quartile 1: 0.964
+      Quartile 2: 0.946
+      Quartile 3: 0.91
+  Recreated Excel:
+    850 GHz:
+      Quartile 1: 0.442
+      Quartile 2: 0.253
+      Quartile 3: 0.085
+    405 GHz:
+      Quartile 1: 0.789
+      Quartile 2: 0.679
+      Quartile 3: 0.506
+    348 GHz:
+      Quartile 1: 0.88
+      Quartile 2: 0.81
+      Quartile 3: 0.689
+    285 GHz:
+      Quartile 1: 0.944
+      Quartile 2: 0.913
+      Quartile 3: 0.854
     222 GHz:
       Quartile 1: 0.964
       Quartile 2: 0.946

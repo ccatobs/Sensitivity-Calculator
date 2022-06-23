@@ -345,7 +345,9 @@ def customOutput(angle):
 
 
 temp = customOutput(45)
-temp.update({"Excel Sheet (Unknown Method)": quartileDisplay(origEQTrans)})
+temp.update({"Excel Sheet": quartileDisplay(origEQTrans)})
+temp.update({"Recreated Excel": quartileDisplay(np.array([[averageTransHelper("ACT_MAM_50_pwv0.51", cent, wid), averageTransHelper("ACT_MAM_50_pwv0.95", cent, wid),
+                                                           averageTransHelper("ACT_MAM_50_pwv1.81", cent, wid)] for (cent, wid) in zip(centerFrequency, eqbw)]))})
 dict_file = {"45 Degree Elevation": temp,
              "60 Degrees Elevation": customOutput(30)}
 documents = yaml.dump(dict_file, open(
