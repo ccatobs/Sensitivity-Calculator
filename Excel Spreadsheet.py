@@ -1,4 +1,3 @@
-from unicodedata import decimal
 import yaml
 import numpy as np
 from functools import partial
@@ -128,7 +127,7 @@ def getInputs(filePath):
     return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "eqtrans": eqtrans, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "calculateTrans": calculateTrans, "angle": angle, "outputFreq": outputFreq}
 
 
-def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, eqtrans, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal):
+def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
     wavelength = c/centerFrequency*10**6
 
     def a_to_CMB(f):
@@ -342,28 +341,14 @@ def quartDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
     return partial(quartileDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
 
 
-if __name__ == "__main__":
-    i = getInputs("input.yaml")
+def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal):
+    partTrans = partial(getEQTrans, center=centerFrequency, width=eqbw)
+    partCalc = partial(calculate, diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency,
+                       singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal)
+    return lambda x: partCalc(partTrans(x))
 
-    eqtrans = i["eqtrans"]
-    if i["calculateTrans"]:
-        eqtrans = getEQTrans(i["angle"], i["centerFrequency"], i["eqbw"])
 
-    outputs = calculate(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
-                        i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], i["coldSpillOverEfficiency"], i["singleModedAOmegaLambda2"],
-                        i["spatialPixels"], i["fpi"], i["eqbw"], eqtrans, i["centerFrequency"], i["detectorNEP"],
-                        i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
-
-    valueDisplay = valDisplayPartial(
-        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-    quartileDisplay = quartDisplayPartial(
-        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-
-    dict_file = {"NET w8 avg": valueDisplay(outputs["netW8Avg"]),
-                 "NET w8 RJ": valueDisplay(outputs["netW8RJ"]), "NEI w8 Jy/sr": valueDisplay(
-        outputs["neiW8"]), "EoR Spec NEFD": quartileDisplay(outputs["eorNEFD"]), "EoR Spec NEI": quartileDisplay(outputs["eorNEI"])}
-    documents = yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
-
+def methodsComparisonFile(i, quartileDisplay):
     def customOutput(angle):
         actSiteTrans = np.array([[averageTrans("", angle, 25, cent, wid), averageTrans("", angle, 50, cent, wid),
                                 averageTrans("", angle, 75, cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])])
@@ -384,9 +369,46 @@ if __name__ == "__main__":
                                                                averageTransHelper("ACT_MAM_50_pwv1.81", cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])]))})
     dict_file = {"45 Degree Elevation": temp,
                  "60 Degrees Elevation": customOutput(30)}
-    documents = yaml.dump(dict_file, open(
-        "methods comparison.yaml", 'w'), sort_keys=False)
+    return yaml.dump(dict_file, open("methods comparison.yaml", 'w'), sort_keys=False)
 
-    dict_file = {"Broadband": quartileDisplay(
-        outputs["powerPerPixel"]*10**12), "EoR Spec": quartileDisplay(outputs["eorPowerPerPixel"]*10**12)}
-    documents = yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
+
+def sensitivityFile(outputs, valueDisplay, quartileDisplay):
+    dict_file = {"NET w8 avg": valueDisplay(outputs["netW8Avg"]),
+                 "NET w8 RJ": valueDisplay(outputs["netW8RJ"]), "NEI w8 Jy/sr": valueDisplay(
+        outputs["neiW8"]), "EoR Spec NEFD": quartileDisplay(outputs["eorNEFD"]), "EoR Spec NEI": quartileDisplay(outputs["eorNEI"])}
+    return yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
+
+
+def powerFile(outputs, quartileDisplay):
+    outputs60 = calculate(30)
+    outputs45 = calculate(45)
+
+    def displayPower(o):
+        return {"Broadband": quartileDisplay(o["powerPerPixel"]*10**12), "EoR Spec": quartileDisplay(o["eorPowerPerPixel"]*10**12)}
+
+    def powerDiff(output1, output2):
+        return {"powerPerPixel": np.array([[q1-q2 for q1, q2 in zip(f1, f2)] for f1, f2 in zip(output1["powerPerPixel"], output2["powerPerPixel"])]), "eorPowerPerPixel": np.array([[q1-q2 for q1, q2 in zip(f1, f2)] for f1, f2 in zip(output1["eorPowerPerPixel"], output2["eorPowerPerPixel"])])}
+
+    dict_file = {str(i["angle"]) + " degrees": displayPower(outputs),
+                 "45 degrees": displayPower(outputs45), "60 degrees": displayPower(outputs60), "45-60 Delta": displayPower(powerDiff(outputs45, outputs60))}
+    return yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
+
+
+if __name__ == "__main__":
+    i = getInputs("input.yaml")
+
+    calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
+                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], i["coldSpillOverEfficiency"], i["singleModedAOmegaLambda2"],
+                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+
+    outputs = calculate(i["angle"])
+
+    valueDisplay = valDisplayPartial(
+        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+    quartileDisplay = quartDisplayPartial(
+        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+
+    methodsComparisonFile(i, quartileDisplay)
+    sensitivityFile(outputs, valueDisplay, quartileDisplay)
+    powerFile(outputs, quartileDisplay)
