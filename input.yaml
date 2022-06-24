@@ -25,14 +25,6 @@ spatialPixels: [20808, 20808, 10368, 10368, 7938]
 
 #Weather
 eqbw: [9.7e+10, 3.e+10, 3.6e+10, 7.e+10, 5.6e+10]
-eqtrans:
-  [
-    [.441, .253, .085],
-    [.789, .679, .506],
-    [.882, .813, .693],
-    [.95, .923, .871],
-    [.964, .946, .91],
-  ]
 centerFrequency: [8.5e+11, 4.05e+11, 3.48e+11, 2.85e+11, 2.22e+11]
 detectorNEP: 0
 backgroundSubtractionDegradationFactor: 1
@@ -53,6 +45,5 @@ r:
 
 #Misc
 decimalPlaces: 3
-calculateTrans: True
 angle: 45
 outputFreq: True

@@ -36,7 +36,6 @@ def getInputs(filePath):
     fpi = None
 
     eqbw = None
-    eqtrans = None
     centerFrequency = None
     detectorNEP = None
     backgroundSubtractionDegradationFactor = None
@@ -48,7 +47,6 @@ def getInputs(filePath):
     signal = None
 
     decimalPlaces = None
-    calculateTrans = None
     angle = None
     outputFreq = None
 
@@ -94,8 +92,6 @@ def getInputs(filePath):
 
         if key == "eqbw":
             eqbw = np.array(value)
-        if key == "eqtrans":
-            eqtrans = np.array(value)
         if key == "centerFrequency":
             centerFrequency = np.array(value)
         if key == "detectorNEP":
@@ -116,15 +112,13 @@ def getInputs(filePath):
 
         if key == "decimalPlaces":
             decimalPlaces = value
-        if key == "calculateTrans":
-            calculateTrans = value
         if key == "angle":
             angle = value
         if key == "outputFreq":
             outputFreq = value
 
     stream.close()
-    return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "eqtrans": eqtrans, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "calculateTrans": calculateTrans, "angle": angle, "outputFreq": outputFreq}
+    return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "angle": angle, "outputFreq": outputFreq}
 
 
 def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
@@ -364,7 +358,14 @@ def methodsComparisonFile(i, quartileDisplay):
             actSiteTrans), "Steve Method": quartileDisplay(steveTrans), "Plateau": quartileDisplay(cerroPlateau), "APEX": quartileDisplay(cerroAPEX), "Config": quartileDisplay(cerroConfig)}
 
     temp = customOutput(45)
-    temp.update({"Excel Sheet": quartileDisplay(i["eqtrans"])})
+    temp.update({"Excel Sheet": quartileDisplay(np.array([
+        [.441, .253, .085],
+        [.789, .679, .506],
+        [.882, .813, .693],
+        [.95, .923, .871],
+        [.964, .946, .91],
+    ])
+    )})
     temp.update({"Recreated Excel": quartileDisplay(np.array([[averageTransHelper("ACT_MAM_50_pwv0.51", cent, wid), averageTransHelper("ACT_MAM_50_pwv0.95", cent, wid),
                                                                averageTransHelper("ACT_MAM_50_pwv1.81", cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])]))})
     dict_file = {"45 Degree Elevation": temp,
