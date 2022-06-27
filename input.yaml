@@ -48,3 +48,4 @@ decimalPlaces: 3
 observationElevationAngle: 45
 outputFreq: True #Units of the output; False = wavelength, True = frequency
 detectorSpacing: 1
+lyotStopAngle: 13.4

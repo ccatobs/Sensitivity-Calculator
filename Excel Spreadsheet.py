@@ -51,6 +51,7 @@ def getInputs(filePath):
     observationElevationAngle = None
     outputFreq = None
     detectorSpacing = None
+    lyotStopAngle = None
 
     # Read in yaml file and assign all input data to their respective variables
     stream = open(filePath, 'r')
@@ -120,9 +121,11 @@ def getInputs(filePath):
             outputFreq = value
         if key == "detectorSpacing":
             detectorSpacing = value
+        if key == "lyotStopAngle":
+            lyotStopAngle = value
 
     stream.close()
-    return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "observationElevationAngle": observationElevationAngle, "outputFreq": outputFreq, "detectorSpacing": detectorSpacing}
+    return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "observationElevationAngle": observationElevationAngle, "outputFreq": outputFreq, "detectorSpacing": detectorSpacing, "lyotStopAngle": lyotStopAngle}
 
 
 def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
@@ -399,9 +402,7 @@ def powerFile(outputs, quartileDisplay):
     return yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
 
 
-def calcColdSpillOverEfficiency(contractFactor, showPlots):
-    half_angle = 13.4
-
+def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False):
     def power2(db):
         return 10.0**(db/10.0)
 
@@ -440,15 +441,15 @@ def calcColdSpillOverEfficiency(contractFactor, showPlots):
     return spill_eff
 
 
-def getColdSpillOverEfficiency(i, showPlots):
+def getColdSpillOverEfficiency(i, showPlots=False):
     defaultSpacing = 1
-    return np.array([calcColdSpillOverEfficiency(280e9 / (f * (i["detectorSpacing"] / defaultSpacing)), showPlots) for f in i["centerFrequency"]])
+    return np.array([calcColdSpillOverEfficiency(i["lyotStopAngle"], 280e9 / (f * (i["detectorSpacing"] / defaultSpacing)), showPlots) for f in i["centerFrequency"]])
 
 
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
-    print(calcColdSpillOverEfficiency(1, False))
+    print(calcColdSpillOverEfficiency(i["lyotStopAngle"], 1, False))
     print(i["centerFrequency"])
     print(getColdSpillOverEfficiency(i, False))
     coldSpillOverEfficiency = i["coldSpillOverEfficiency"]
