@@ -45,5 +45,5 @@ r:
 
 #Misc
 decimalPlaces: 3
-angle: 45
+observationElevationAngle: 45
 outputFreq: True

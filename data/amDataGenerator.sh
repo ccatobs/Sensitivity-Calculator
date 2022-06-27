@@ -35,6 +35,9 @@ CerroConfigQ1=$(bc <<<"scale=10; $CerroChajnantorPWVQ1/$ACTConfigQ1")
 CerroConfigQ2=$(bc <<<"scale=10; $CerroChajnantorPWVQ2/$ACTConfigQ2")
 CerroConfigQ3=$(bc <<<"scale=10; $CerroChajnantorPWVQ3/$ACTConfigQ3")
 
+echo $CerroConfigQ1
+echo $CerroConfigQ2
+echo $CerroConfigQ3
 
 #Annual
 for i in {15..75}
