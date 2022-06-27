@@ -1,6 +1,7 @@
 import yaml
 import numpy as np
 from functools import partial
+import matplotlib.pyplot as plt
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
@@ -390,17 +391,66 @@ def powerFile(outputs, quartileDisplay):
     def powerDiff(output1, output2):
         return {"powerPerPixel": np.array([[q1-q2 for q1, q2 in zip(f1, f2)] for f1, f2 in zip(output1["powerPerPixel"], output2["powerPerPixel"])]), "eorPowerPerPixel": np.array([[q1-q2 for q1, q2 in zip(f1, f2)] for f1, f2 in zip(output1["eorPowerPerPixel"], output2["eorPowerPerPixel"])])}
 
-    dict_file = {str(i["angle"]) + " degrees": displayPower(outputs),
+    dict_file = {str(i["observationElevationAngle"]) + " degrees": displayPower(outputs),
                  "45 degrees": displayPower(outputs45), "60 degrees": displayPower(outputs60), "45-60 Delta": displayPower(powerDiff(outputs45, outputs60))}
     return yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
 
 
+def calcColdSpillOverEfficiency(contractFactor, showPlots):
+    half_angle = 13.4
+
+    def power2(db):
+        return 10.0**(db/10.0)
+
+    d = np.genfromtxt(
+        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
+
+    # Number of data points at a given phi, 180 / 0.25 + 1
+    n = 721
+
+    # Bins the data by phi; the shape is now [phi, row, column]
+    d = d.reshape(-1, n, 8)
+
+    th = np.radians(d[0, :, 0]) * contractFactor
+
+    tot = np.trapz(power2(d[0, :, 3]) /
+                   np.max(power2(d[0, :, 3]))*np.sin(th), th)
+
+    th_cutoff = np.where(np.abs(th) < np.radians(half_angle))[0]
+
+    beam = np.trapz(power2(d[0, :, 3][th_cutoff])/np.max(power2(d[0, :, 3]
+                    [th_cutoff]))*np.sin(th[th_cutoff]), th[th_cutoff])
+
+    spill_eff = beam/tot
+    if showPlots:
+        plt.plot(np.degrees(th), power2(
+            d[0, :, 3])/np.max(power2(d[0, :, 3])), label="Spill eff = %.2f at %d GHz" % (spill_eff, 280/contractFactor), linewidth=2)
+        plt.axvline(x=half_angle, color='k',
+                    linewidth=2, label='Lyot stop angle')
+        plt.legend(loc=0)
+        plt.xlim(0, 180)
+        plt.yscale('log')
+        plt.xlabel('angle [deg]')
+        plt.ylabel('normalized beam')
+        plt.show()
+        plt.clf()
+    return spill_eff
+
+
+def getColdSpillOverEfficiency(i, showPlots):
+    return np.array([calcColdSpillOverEfficiency(280e9 / f, showPlots) for f in i["centerFrequency"]])
+
+
 if __name__ == "__main__":
     i = getInputs("input.yaml")
-    angle = 90 - i["observation elevation angle"]
+    angle = 90 - i["observationElevationAngle"]
+    print(calcColdSpillOverEfficiency(1, False))
+    print(i["centerFrequency"])
+    print(getColdSpillOverEfficiency(i, True))
+    coldSpillOverEfficiency = i["coldSpillOverEfficiency"]
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
-                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], i["coldSpillOverEfficiency"], i["singleModedAOmegaLambda2"],
+                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
                             i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
                             i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
 
