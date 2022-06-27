@@ -46,4 +46,5 @@ r:
 #Misc
 decimalPlaces: 3
 observationElevationAngle: 45
-outputFreq: True
+outputFreq: True #Units of the output; False = wavelength, True = frequency
+detectorSpacing: 1
