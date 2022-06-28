@@ -402,9 +402,40 @@ def powerFile(outputs, quartileDisplay):
     return yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
 
 
-def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False):
+# Calculates the best fit for the spill efficiency of the form power2(m*th + c) while returning (m, c)
+def calcBestFit(min, max):
     def power2(db):
         return 10.0**(db/10.0)
+
+    def invPower(x):
+        return np.log10(x)*10
+    d = np.genfromtxt(
+        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
+
+    # Number of data points at a given phi, 180 / 0.25 + 1
+    n = 721
+
+    # Bins the data by phi; the shape is now [phi, row, column]
+    d = d.reshape(-1, n, 8)
+
+    th = np.radians(d[0, :, 0])
+
+    data = d[0, :, 3]
+    myCuttoff = np.where((np.abs(th) < np.radians(max)) &
+                         (np.abs(th) > np.radians(min)))[0]
+    adjustedData = invPower(power2(data)/np.max(power2(data)))
+    a = np.vstack([th[myCuttoff], np.ones(len(th[myCuttoff]))]).T
+    m, c = np.linalg.lstsq(a, adjustedData[myCuttoff], rcond=None)[0]
+    mAdj = m * pi/180
+    return mAdj, c
+
+
+def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, useApprox=True):
+    def power2(db):
+        return 10.0**(db/10.0)
+
+    def invPower(x):
+        return np.log10(x)*10
 
     d = np.genfromtxt(
         'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
@@ -416,19 +447,37 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False):
     d = d.reshape(-1, n, 8)
 
     th = np.radians(d[0, :, 0]) * contractFactor
+    degrees = np.degrees(th)
 
-    tot = np.trapz(power2(d[0, :, 3]) /
-                   np.max(power2(d[0, :, 3]))*np.sin(th), th)
+    data = invPower(power2(d[0, :, 3])/power2(np.max(d[0, :, 3])))
+
+    minFit, maxFit = 90, 120
+    m, c = calcBestFit(minFit, maxFit)
+    maxExtrap = 1000
+    if useApprox:
+        linear = m*np.array(range(0, maxExtrap*4))/4+c
+        data = np.append(data[:maxFit*4+1], linear[maxFit*4+1:])
+
+    tot_cutoff = np.where(np.abs(th) < np.radians(180))[0]
+
+    tot = np.trapz(power2(data[tot_cutoff]) *
+                   np.sin(th[tot_cutoff]), th[tot_cutoff])
 
     th_cutoff = np.where(np.abs(th) < np.radians(half_angle))[0]
 
-    beam = np.trapz(power2(d[0, :, 3][th_cutoff])/np.max(power2(d[0, :, 3]
-                    [th_cutoff]))*np.sin(th[th_cutoff]), th[th_cutoff])
+    beam = np.trapz(power2(data[th_cutoff]) *
+                    np.sin(th[th_cutoff]), th[th_cutoff])
 
     spill_eff = beam/tot
+
+    custDegrees = np.array(range(0, maxExtrap*4))/4*contractFactor
     if showPlots:
+        plt.plot(custDegrees[custDegrees <= 180], power2(data[custDegrees <= 180]),
+                 label="mystuffs", linewidth=2)
         plt.plot(np.degrees(th), power2(
             d[0, :, 3])/np.max(power2(d[0, :, 3])), label="Spill eff = %.2f at %d GHz" % (spill_eff, 280/contractFactor), linewidth=2)
+        # plt.plot(degrees[np.logical_and(degrees > minFit, degrees < maxFit)], power2(m*degrees+c)[np.logical_and(degrees > minFit, degrees < maxFit)],
+        #         label="Linear", linewidth=2)
         plt.axvline(x=half_angle, color='k',
                     linewidth=2, label='Lyot stop angle')
         plt.legend(loc=0)
@@ -451,21 +500,22 @@ if __name__ == "__main__":
     angle = 90 - i["observationElevationAngle"]
     print(calcColdSpillOverEfficiency(i["lyotStopAngle"], 1, False))
     print(i["centerFrequency"])
-    print(getColdSpillOverEfficiency(i, False))
-    coldSpillOverEfficiency = i["coldSpillOverEfficiency"]
+    print(getColdSpillOverEfficiency(i, True))
+    if False:
+        coldSpillOverEfficiency = i["coldSpillOverEfficiency"]
 
-    calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
-                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
-                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
-                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+        calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
+                                i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
+                                i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                                i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
 
-    outputs = calculate(angle)
+        outputs = calculate(angle)
 
-    valueDisplay = valDisplayPartial(
-        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-    quartileDisplay = quartDisplayPartial(
-        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+        valueDisplay = valDisplayPartial(
+            i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+        quartileDisplay = quartDisplayPartial(
+            i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    methodsComparisonFile(i, quartileDisplay)
-    sensitivityFile(outputs, valueDisplay, quartileDisplay)
-    powerFile(outputs, quartileDisplay)
+        methodsComparisonFile(i, quartileDisplay)
+        sensitivityFile(outputs, valueDisplay, quartileDisplay)
+        powerFile(outputs, quartileDisplay)
