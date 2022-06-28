@@ -447,7 +447,6 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, use
     d = d.reshape(-1, n, 8)
 
     th = np.radians(d[0, :, 0]) * contractFactor
-    degrees = np.degrees(th)
 
     data = invPower(power2(d[0, :, 3])/power2(np.max(d[0, :, 3])))
 
@@ -455,10 +454,10 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, use
     m, c = calcBestFit(minFit, maxFit)
     maxExtrap = 1000
     if useApprox:
-        linear = m*np.array(range(0, maxExtrap*4))/4+c
+        linear = m*np.array(range(0, maxExtrap*4+1))/4+c
         data = np.append(data[:maxFit*4+1], linear[maxFit*4+1:])
 
-    tot_cutoff = np.where(np.abs(th) < np.radians(180))[0]
+    tot_cutoff = np.where(np.abs(th) <= np.radians(180))[0]
 
     tot = np.trapz(power2(data[tot_cutoff]) *
                    np.sin(th[tot_cutoff]), th[tot_cutoff])
@@ -470,12 +469,13 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, use
 
     spill_eff = beam/tot
 
-    custDegrees = np.array(range(0, maxExtrap*4))/4*contractFactor
+    custDegrees = np.array(range(0, maxExtrap*4+1))/4*contractFactor
     if showPlots:
         plt.plot(custDegrees[custDegrees <= 180], power2(data[custDegrees <= 180]),
                  label="mystuffs", linewidth=2)
         plt.plot(np.degrees(th), power2(
             d[0, :, 3])/np.max(power2(d[0, :, 3])), label="Spill eff = %.2f at %d GHz" % (spill_eff, 280/contractFactor), linewidth=2)
+        # Plot linear approximation on top of where it's approximating
         # plt.plot(degrees[np.logical_and(degrees > minFit, degrees < maxFit)], power2(m*degrees+c)[np.logical_and(degrees > minFit, degrees < maxFit)],
         #         label="Linear", linewidth=2)
         plt.axvline(x=half_angle, color='k',
