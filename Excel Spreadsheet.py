@@ -430,7 +430,35 @@ def calcBestFit(min, max):
     return mAdj, c
 
 
-def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, useApprox=True):
+# Calculates the highest point after a given angle on the default graph
+def getMaxAfter(min):
+    def power2(db):
+        return 10.0**(db/10.0)
+
+    def invPower(x):
+        return np.log10(x)*10
+    d = np.genfromtxt(
+        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
+
+    # Number of data points at a given phi, 180 / 0.25 + 1
+    n = 721
+
+    # Bins the data by phi; the shape is now [phi, row, column]
+    d = d.reshape(-1, n, 8)
+
+    th = np.radians(d[0, :, 0])
+
+    data = d[0, :, 3]
+    myCuttoff = np.where((np.abs(th) > np.radians(min)))[0]
+    adjustedData = (power2(data)/np.max(power2(data)))[myCuttoff]
+    max = adjustedData[0]
+    for d in adjustedData:
+        if d > max:
+            max = d
+    return max
+
+
+def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, approx="new"):
     def power2(db):
         return 10.0**(db/10.0)
 
@@ -446,19 +474,30 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, use
     # Bins the data by phi; the shape is now [phi, row, column]
     d = d.reshape(-1, n, 8)
 
-    th = np.radians(d[0, :, 0]) * contractFactor
+    maxExtrap = 1000
 
+    custDegrees = np.array(range(0, maxExtrap*4+1))/4*contractFactor
+    th = np.radians(custDegrees)
+
+    # Normalize the data
     data = invPower(power2(d[0, :, 3])/power2(np.max(d[0, :, 3])))
 
     minFit, maxFit = 90, 120
     m, c = calcBestFit(minFit, maxFit)
-    maxExtrap = 1000
-    if useApprox:
+    if approx == "new":
+        linear = m*np.array(range(0, maxExtrap*4+1))/4+c
+        data = np.append(data[:n], linear[n:])
+    elif approx == "old":
         linear = m*np.array(range(0, maxExtrap*4+1))/4+c
         data = np.append(data[:maxFit*4+1], linear[maxFit*4+1:])
+    elif approx == "none":
+        noop = None
+    elif approx == "flat":
+        max = invPower(getMaxAfter(170))
+        data = np.append(data[:n], [max for _ in range(maxExtrap*4-n+1)])
 
     tot_cutoff = np.where(np.abs(th) <= np.radians(180))[0]
-
+    tot_cutoff = tot_cutoff[tot_cutoff < len(data)]
     tot = np.trapz(power2(data[tot_cutoff]) *
                    np.sin(th[tot_cutoff]), th[tot_cutoff])
 
@@ -469,12 +508,11 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, use
 
     spill_eff = beam/tot
 
-    custDegrees = np.array(range(0, maxExtrap*4+1))/4*contractFactor
     if showPlots:
         plt.plot(custDegrees[custDegrees <= 180], power2(data[custDegrees <= 180]),
-                 label="mystuffs", linewidth=2)
-        plt.plot(np.degrees(th), power2(
-            d[0, :, 3])/np.max(power2(d[0, :, 3])), label="Spill eff = %.2f at %d GHz" % (spill_eff, 280/contractFactor), linewidth=2)
+                 label="Extrapolation", linewidth=2)
+        plt.plot(np.degrees(th)[:721], power2(
+            d[0, :, 3])/np.max(power2(d[0, :, 3])), label="Doug phi = 0 at %d GHz" % (280/contractFactor), linewidth=2)
         # Plot linear approximation on top of where it's approximating
         # plt.plot(degrees[np.logical_and(degrees > minFit, degrees < maxFit)], power2(m*degrees+c)[np.logical_and(degrees > minFit, degrees < maxFit)],
         #         label="Linear", linewidth=2)
@@ -490,17 +528,18 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, use
     return spill_eff
 
 
-def getColdSpillOverEfficiency(i, showPlots=False):
+def getColdSpillOverEfficiency(i, showPlots=False, approx="new"):
     defaultSpacing = 1
-    return np.array([calcColdSpillOverEfficiency(i["lyotStopAngle"], 280e9 / (f * (i["detectorSpacing"] / defaultSpacing)), showPlots) for f in i["centerFrequency"]])
+    return np.array([calcColdSpillOverEfficiency(i["lyotStopAngle"], 280e9 / (f * (i["detectorSpacing"] / defaultSpacing)), showPlots, approx=approx) for f in i["centerFrequency"]])
 
 
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
-    print(calcColdSpillOverEfficiency(i["lyotStopAngle"], 1, False))
-    print(i["centerFrequency"])
-    print(getColdSpillOverEfficiency(i, True))
+    # print(calcColdSpillOverEfficiency(
+    #    i["lyotStopAngle"], 1, True, approx="flat"))
+    # print(i["centerFrequency"])
+    print(getColdSpillOverEfficiency(i, True, approx="flat"))
     if False:
         coldSpillOverEfficiency = i["coldSpillOverEfficiency"]
 
