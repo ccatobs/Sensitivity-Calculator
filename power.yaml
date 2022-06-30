@@ -1,129 +1,129 @@
 45 degrees:
   Broadband:
     850 GHz:
-      Quartile 1: 70.96
-      Quartile 2: 90.363
-      Quartile 3: 109.238
+      Quartile 1: 69.843
+      Quartile 2: 88.941
+      Quartile 3: 107.518
     405 GHz:
-      Quartile 1: 8.918
-      Quartile 2: 12.092
-      Quartile 3: 17.192
+      Quartile 1: 8.746
+      Quartile 2: 11.859
+      Quartile 3: 16.862
     348 GHz:
-      Quartile 1: 10.58
-      Quartile 2: 14.247
-      Quartile 3: 20.732
+      Quartile 1: 9.213
+      Quartile 2: 12.407
+      Quartile 3: 18.054
     285 GHz:
-      Quartile 1: 9.596
-      Quartile 2: 11.883
-      Quartile 3: 16.224
+      Quartile 1: 9.188
+      Quartile 2: 11.378
+      Quartile 3: 15.535
     222 GHz:
-      Quartile 1: 6.075
-      Quartile 2: 7.109
-      Quartile 3: 9.133
+      Quartile 1: 4.944
+      Quartile 2: 5.786
+      Quartile 3: 7.433
   EoR Spec:
     850 GHz:
-      Quartile 1: 22.531
-      Quartile 2: 28.692
-      Quartile 3: 34.684
+      Quartile 1: 22.176
+      Quartile 2: 28.24
+      Quartile 3: 34.138
     405 GHz:
-      Quartile 1: 4.362
-      Quartile 2: 5.915
-      Quartile 3: 8.41
+      Quartile 1: 4.278
+      Quartile 2: 5.801
+      Quartile 3: 8.248
     348 GHz:
-      Quartile 1: 3.706
-      Quartile 2: 4.99
-      Quartile 3: 7.262
+      Quartile 1: 3.227
+      Quartile 2: 4.346
+      Quartile 3: 6.324
     285 GHz:
-      Quartile 1: 1.416
-      Quartile 2: 1.753
-      Quartile 3: 2.393
+      Quartile 1: 1.355
+      Quartile 2: 1.678
+      Quartile 3: 2.292
     222 GHz:
-      Quartile 1: 0.873
-      Quartile 2: 1.021
-      Quartile 3: 1.312
+      Quartile 1: 0.71
+      Quartile 2: 0.831
+      Quartile 3: 1.068
 60 degrees:
   Broadband:
     850 GHz:
-      Quartile 1: 63.229
-      Quartile 2: 82.325
-      Quartile 3: 103.346
+      Quartile 1: 62.234
+      Quartile 2: 81.028
+      Quartile 3: 101.718
     405 GHz:
-      Quartile 1: 7.733
-      Quartile 2: 10.483
-      Quartile 3: 15.068
+      Quartile 1: 7.585
+      Quartile 2: 10.282
+      Quartile 3: 14.778
     348 GHz:
-      Quartile 1: 9.294
-      Quartile 2: 12.388
-      Quartile 3: 17.974
+      Quartile 1: 8.093
+      Quartile 2: 10.788
+      Quartile 3: 15.652
     285 GHz:
-      Quartile 1: 8.673
-      Quartile 2: 10.571
-      Quartile 3: 14.208
+      Quartile 1: 8.304
+      Quartile 2: 10.122
+      Quartile 3: 13.604
     222 GHz:
-      Quartile 1: 5.599
-      Quartile 2: 6.451
-      Quartile 3: 8.126
+      Quartile 1: 4.557
+      Quartile 2: 5.25
+      Quartile 3: 6.613
   EoR Spec:
     850 GHz:
-      Quartile 1: 20.076
-      Quartile 2: 26.139
-      Quartile 3: 32.813
+      Quartile 1: 19.76
+      Quartile 2: 25.728
+      Quartile 3: 32.297
     405 GHz:
-      Quartile 1: 3.783
-      Quartile 2: 5.128
-      Quartile 3: 7.371
+      Quartile 1: 3.71
+      Quartile 2: 5.029
+      Quartile 3: 7.229
     348 GHz:
-      Quartile 1: 3.255
-      Quartile 2: 4.339
-      Quartile 3: 6.296
+      Quartile 1: 2.835
+      Quartile 2: 3.779
+      Quartile 3: 5.482
     285 GHz:
-      Quartile 1: 1.279
-      Quartile 2: 1.56
-      Quartile 3: 2.096
+      Quartile 1: 1.225
+      Quartile 2: 1.493
+      Quartile 3: 2.007
     222 GHz:
-      Quartile 1: 0.804
-      Quartile 2: 0.927
-      Quartile 3: 1.167
+      Quartile 1: 0.655
+      Quartile 2: 0.754
+      Quartile 3: 0.95
 45-60 Delta:
   Broadband:
     850 GHz:
-      Quartile 1: 7.73
-      Quartile 2: 8.039
-      Quartile 3: 5.892
+      Quartile 1: 7.609
+      Quartile 2: 7.912
+      Quartile 3: 5.8
     405 GHz:
-      Quartile 1: 1.184
-      Quartile 2: 1.608
-      Quartile 3: 2.124
+      Quartile 1: 1.161
+      Quartile 2: 1.578
+      Quartile 3: 2.083
     348 GHz:
-      Quartile 1: 1.286
-      Quartile 2: 1.859
-      Quartile 3: 2.758
+      Quartile 1: 1.12
+      Quartile 2: 1.618
+      Quartile 3: 2.402
     285 GHz:
-      Quartile 1: 0.922
-      Quartile 2: 1.312
-      Quartile 3: 2.016
+      Quartile 1: 0.883
+      Quartile 2: 1.256
+      Quartile 3: 1.93
     222 GHz:
-      Quartile 1: 0.476
-      Quartile 2: 0.658
-      Quartile 3: 1.007
+      Quartile 1: 0.387
+      Quartile 2: 0.536
+      Quartile 3: 0.819
   EoR Spec:
     850 GHz:
-      Quartile 1: 2.454
-      Quartile 2: 2.552
-      Quartile 3: 1.871
+      Quartile 1: 2.416
+      Quartile 2: 2.512
+      Quartile 3: 1.841
     405 GHz:
-      Quartile 1: 0.579
-      Quartile 2: 0.787
-      Quartile 3: 1.039
+      Quartile 1: 0.568
+      Quartile 2: 0.772
+      Quartile 3: 1.019
     348 GHz:
-      Quartile 1: 0.45
-      Quartile 2: 0.651
-      Quartile 3: 0.966
+      Quartile 1: 0.392
+      Quartile 2: 0.567
+      Quartile 3: 0.841
     285 GHz:
-      Quartile 1: 0.136
-      Quartile 2: 0.193
-      Quartile 3: 0.297
+      Quartile 1: 0.13
+      Quartile 2: 0.185
+      Quartile 3: 0.285
     222 GHz:
-      Quartile 1: 0.068
-      Quartile 2: 0.095
-      Quartile 3: 0.145
+      Quartile 1: 0.056
+      Quartile 2: 0.077
+      Quartile 3: 0.118

@@ -539,28 +539,23 @@ def getColdSpillOverEfficiency(i, showPlots=False, approx="none"):
     return np.array([calcColdSpillOverEfficiency(i["lyotStopAngle"], 280e9 / (f * (s / defaultSpacing)), showPlots=showPlots, approx=approx, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
 
 
-def spillEfficiencyFile(i):
-    coldSpillOverEfficiency = getColdSpillOverEfficiency(i)
-
-    calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
-                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
-                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
-                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
-
+def spillEfficiencyFile(i, calculate):
     output = calculate(45)
-    t = Texttable()
+    t = Texttable(max_width=0)
+    t.set_cols_dtype(['i', (lambda x: "%.1f" % float(x)), 'f', 'i',
+                     (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
+    t.set_cols_align(['c', 'c', 'c', 'c', 'c', 'c', 'c'])
     excelSpillEff = [.8, .5, .7, .5, .5]
     detectors = [36450, 20808, 10368, 10368, 7938]
     excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
-    t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET', 'Calculated NET'], (-1, 1)),
-                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], coldSpillOverEfficiency, output['netW8Avg'], excelSpillEff, detectors, i['detectorSpacing'], excelNET)]).T), axis=1))
+    t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET (uK rt(s))', 'Calculated NET (uK rt(s))'], (-1, 1)),
+                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], coldSpillOverEfficiency, output['netW8Avg'], excelSpillEff, detectors, i['detectorSpacing'], excelNET)])[::-1].T), axis=1).T)
     print(t.draw())
 
 
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
-    spillEfficiencyFile(i)
     coldSpillOverEfficiency = getColdSpillOverEfficiency(i)
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
@@ -575,8 +570,7 @@ if __name__ == "__main__":
     quartileDisplay = quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    if False:
-        methodsComparisonFile(i, quartileDisplay)
-        sensitivityFile(outputs, valueDisplay, quartileDisplay)
-        powerFile(outputs, quartileDisplay)
-#
+    methodsComparisonFile(i, quartileDisplay)
+    sensitivityFile(outputs, valueDisplay, quartileDisplay)
+    powerFile(outputs, quartileDisplay)
+    spillEfficiencyFile(i, calculate)
