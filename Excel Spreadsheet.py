@@ -2,6 +2,7 @@ import yaml
 import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
+from texttable import Texttable
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
@@ -533,33 +534,48 @@ def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, app
     return spill_eff
 
 
-def getColdSpillOverEfficiency(i, showPlots=False, approx="new"):
+def getColdSpillOverEfficiency(i, showPlots=False, approx="none"):
     defaultSpacing = 2.75
     return np.array([calcColdSpillOverEfficiency(i["lyotStopAngle"], 280e9 / (f * (s / defaultSpacing)), showPlots=showPlots, approx=approx, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
+
+
+def spillEfficiencyFile(i):
+    coldSpillOverEfficiency = getColdSpillOverEfficiency(i)
+
+    calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
+                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
+                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+
+    output = calculate(45)
+    t = Texttable()
+    excelSpillEff = [.8, .5, .7, .5, .5]
+    detectors = [36450, 20808, 10368, 10368, 7938]
+    excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
+    t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET', 'Calculated NET'], (-1, 1)),
+                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], coldSpillOverEfficiency, output['netW8Avg'], excelSpillEff, detectors, i['detectorSpacing'], excelNET)]).T), axis=1))
+    print(t.draw())
 
 
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
-    # print(calcColdSpillOverEfficiency(
-    #    i["lyotStopAngle"], 1, True, approx="flat"))
-    # print(i["centerFrequency"])
-    print(getColdSpillOverEfficiency(i, True, approx="flat"))
+    spillEfficiencyFile(i)
+    coldSpillOverEfficiency = getColdSpillOverEfficiency(i)
+
+    calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
+                            i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
+                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+
+    outputs = calculate(angle)
+
+    valueDisplay = valDisplayPartial(
+        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+    quartileDisplay = quartDisplayPartial(
+        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+
     if False:
-        coldSpillOverEfficiency = i["coldSpillOverEfficiency"]
-
-        calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
-                                i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
-                                i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
-                                i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
-
-        outputs = calculate(angle)
-
-        valueDisplay = valDisplayPartial(
-            i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-        quartileDisplay = quartDisplayPartial(
-            i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-
         methodsComparisonFile(i, quartileDisplay)
         sensitivityFile(outputs, valueDisplay, quartileDisplay)
         powerFile(outputs, quartileDisplay)

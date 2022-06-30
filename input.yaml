@@ -47,5 +47,5 @@ r:
 decimalPlaces: 3
 observationElevationAngle: 45
 outputFreq: True #Units of the output; False = wavelength, True = frequency
-detectorSpacing: [3.13, 2.75, 2.75, 1.97, 1.5]
+detectorSpacing: [1.51, 1.97, 2.75, 2.75, 3.13]
 lyotStopAngle: 13.4
