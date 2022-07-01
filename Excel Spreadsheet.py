@@ -350,37 +350,6 @@ def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eor
     return lambda x: partCalc(partTrans(x))
 
 
-def methodsComparisonFile(i, quartileDisplay):
-    def customOutput(angle):
-        actSiteTrans = np.array([[averageTrans("", angle, 25, cent, wid), averageTrans("", angle, 50, cent, wid),
-                                averageTrans("", angle, 75, cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])])
-        steveTrans = np.array([[averageTrans("Steve/", angle, 25, cent, wid), averageTrans("Steve/", angle, 50, cent, wid),
-                                averageTrans("Steve/", angle, 75, cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])])
-        cerroPlateau = np.array([[averageTrans("CerroPlateau/", angle, 25, cent, wid), averageTrans("CerroPlateau/", angle, 50, cent, wid),
-                                averageTrans("CerroPlateau/", angle, 75, cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])])
-        cerroAPEX = np.array([[averageTrans("CerroAPEX/", angle, 25, cent, wid), averageTrans("CerroAPEX/", angle, 50, cent, wid),
-                               averageTrans("CerroAPEX/", angle, 75, cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])])
-        cerroConfig = np.array([[averageTrans("CerroConfig/", angle, 25, cent, wid), averageTrans("CerroConfig/", angle, 50, cent, wid),
-                                 averageTrans("CerroConfig/", angle, 75, cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])])
-        return {"ACT Site": quartileDisplay(
-            actSiteTrans), "Steve Method": quartileDisplay(steveTrans), "Plateau": quartileDisplay(cerroPlateau), "APEX": quartileDisplay(cerroAPEX), "Config": quartileDisplay(cerroConfig)}
-
-    temp = customOutput(45)
-    temp.update({"Excel Sheet": quartileDisplay(np.array([
-        [.441, .253, .085],
-        [.789, .679, .506],
-        [.882, .813, .693],
-        [.95, .923, .871],
-        [.964, .946, .91],
-    ])
-    )})
-    temp.update({"Recreated Excel": quartileDisplay(np.array([[averageTransHelper("ACT_MAM_50_pwv0.51", cent, wid), averageTransHelper("ACT_MAM_50_pwv0.95", cent, wid),
-                                                               averageTransHelper("ACT_MAM_50_pwv1.81", cent, wid)] for (cent, wid) in zip(i["centerFrequency"], i["eqbw"])]))})
-    dict_file = {"45 Degree Elevation": temp,
-                 "60 Degrees Elevation": customOutput(30)}
-    return yaml.dump(dict_file, open("methods comparison.yaml", 'w'), sort_keys=False)
-
-
 def sensitivityFile(outputs, valueDisplay, quartileDisplay):
     dict_file = {"NET w8 avg": valueDisplay(outputs["netW8Avg"]),
                  "NET w8 RJ": valueDisplay(outputs["netW8RJ"]), "NEI w8 Jy/sr": valueDisplay(
@@ -464,10 +433,6 @@ def spillEfficiencyFile(i, calculate, spillEfficiency):
     print(t.draw())
 
 
-def invPower(x):
-    return np.log10(x)*10
-
-
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
@@ -478,7 +443,7 @@ if __name__ == "__main__":
     vals = d[0, :, 3]
     #d = np.genfromtxt('data/beam_280.txt')
     #degr = np.degrees(d[:, 0])
-    #vals = invPower(d[:, 1]**2)
+    #vals = np.log10((d[:, 1]**2))*10
     coldSpillOverEfficiency = getColdSpillOverEfficiency(
         i, 280e9, 2.75, degr, vals, showPlots=False)
 
@@ -494,7 +459,6 @@ if __name__ == "__main__":
     quartileDisplay = quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    methodsComparisonFile(i, quartileDisplay)
     sensitivityFile(outputs, valueDisplay, quartileDisplay)
     powerFile(outputs, quartileDisplay)
     spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)

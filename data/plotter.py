@@ -44,100 +44,6 @@ def plotFraction(angle, percentile, label, prefix="", approx=False):
         raise SystemExit(1)
 
 
-# Plots MAM at 0 degrees Q1 using version 10.0 and 12.0
-def plotVersionComparison():
-    file = open("data/ACT_MAM_25.0.out", "r")
-    data = file.readlines()
-    x = [float(i.split(" ")[0]) for i in data]
-    y = [float(i.split(" ")[2]) for i in data]
-    file.close()
-    plt.plot(x, y, linewidth=1, label="AM 12.0")
-
-    file = open("data/ACT_MAM_50_pwv0.51.out", "r")
-    data = file.readlines()
-    x = [float(i.split(" ")[0]) for i in data]
-    y = [float(i.split(" ")[2]) for i in data]
-    file.close()
-    plt.plot(x, y, linewidth=1, label="AM 10.0")
-    plt.title("Transmission vs Frequency MAM 0 degrees Q1")
-
-
-# Plots the approximation and configuration file for a given percentile and angle
-def plotApproximationAccuracy(percentile, angle):
-    if percentile != 25 and percentile != 75:
-        print("Configuration files don't exist for that percentile")
-        raise SystemExit(1)
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, percentile, "Approximation", approx=True)
-    plotFraction(angle, percentile, "Configuration")
-    plt.title("Configuration File Approximation Accuracy " +
-              str(percentile) + "th percentile, " + str(angle) + " degrees Zenith Angle")
-
-
-# Plots the transmission at a given angle using configuration files
-def plotPercentiles(angle):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, 25, "25th percentile/1st quartile")
-    plotFraction(angle, 50, "50th percentile/2nd quartile")
-    plotFraction(angle, 75, "75th percentile/3rd quartile")
-    plt.title("Transmission at Various Atmospheric Conditions at " +
-              str(angle) + " degrees Zenith Angle")
-
-
-# Plots the transmission at a given angle using 50th percentile configuration file and an adjusted PWV
-def plotApproximations(angle):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, 25, "25th percentile/1st quartile", approx=True)
-    plotFraction(angle, 50, "50th percentile/2nd quartile")
-    plotFraction(angle, 75, "75th percentile/3rd quartile", approx=True)
-    plt.title("Transmission at Various PWV at " +
-              str(angle) + " degrees Zenith Angle")
-
-
-# Plots the transmission for ACT at a given angle, both the approximations and configuration files
-def plotACT(angle):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, 25, "Q1 Approximation", approx=True)
-    plotFraction(angle, 25, "Q1 Configuration")
-    plotFraction(angle, 50, "Q2")
-    plotFraction(angle, 75, "Q3 Approximation", approx=True)
-    plotFraction(angle, 75, "Q3 Configuration")
-    plt.title(
-        "Approximations and Configuration Files at " + str(angle) + " degrees Zenith Angle")
-
-
-# Plots Steve's data for a given angle
-def plotSteve(angle):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, 25, "Q1", prefix="Steve/")
-    plotFraction(angle, 50, "Q1", prefix="Steve/")
-    plotFraction(angle, 75, "Q1", prefix="Steve/")
-    plt.title("Transmission Calculated from Steve's Method at " +
-              str(angle) + " degrees Zenith Angle")
-
-
-# Plots the transmission for CerroPlateau at a given angle
-def plotCerroPlateau(angle):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, 25, "Q1", prefix="CerroPlateau/")
-    plotFraction(angle, 50, "Q1", prefix="CerroPlateau/")
-    plotFraction(angle, 75, "Q1", prefix="CerroPlateau/")
-    plt.title("Transmission at CerroPlateau Site at " +
-              str(angle) + " degrees Zenith Angle")
-
-
 # Plots a piecewise function for transmission values from the excel sheet
 def plotExcel(percentile):
     excelTrans = [
@@ -156,75 +62,31 @@ def plotExcel(percentile):
                  linewidth=2, label=("Excel " + str(int(f/1e9)) + " GHz"))
 
 
-# Plots all transmissions (besides default approximation)
-def plotAll(angle, percentile):
+# Plots the current transmission graphs, and excel sheet if angle is 45 degrees and excelTrans is True
+def plotCurrent(angle, percentile, label=None, excelTrans=False):
     if angle < 15 or angle > 75:
         print("Angle out of range")
         raise SystemExit(1)
-    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
-    plotFraction(angle, percentile, "APEX", prefix="CerroAPEX/")
-    plotFraction(angle, percentile, "Plateau", prefix="CerroPlateau/")
-    plotFraction(angle, percentile, "Steve's Method", prefix="Steve/")
-    plotFraction(angle, percentile, "ACT")
-    if angle == 45:
-        plotExcel(percentile)
-    plt.title("Transmission at Various Sites at " +
-              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
-
-
-# Plots the various transmissions for the trop_h2o_scale_factor adjusted transmissions
-def pwvRatioAdjustments(angle, percentile):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, percentile, "APEX", prefix="CerroAPEX/")
-    plotFraction(angle, percentile, "Plateau", prefix="CerroPlateau/")
-    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
-    if angle == 45:
-        plotExcel(percentile)
-    plt.title("Transmission at CCAT site Using Various PWV Ratios at " +
-              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
-
-
-# Plots the recreation of the data in the original excel sheet
-def plotOldData(percentile):
-    if percentile == 25:
-        plotCustom("data/ACT_MAM_50_pwv0.51.out", "Q1")
-    elif percentile == 50:
-        plotCustom("data/ACT_MAM_50_pwv0.95.out", "Q2")
-    elif percentile == 75:
-        plotCustom("data/ACT_MAM_50_pwv1.81.out", "Q3")
-    plotExcel(percentile)
-    plt.title("Transmission During MAM Season Using Old Method")
-
-
-# Plots transmission using PWV ratio from configuration file
-def plotConfig(angle, percentile):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, percentile, "Config", prefix="CerroConfig/")
-    if angle == 45:
-        plotExcel(percentile)
-    plt.title("Transmission at CCAT site Using Configuration File PWV Ratio at " +
-              str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
-
-
-# Plots the current transmission graphs, and excel sheet if angle is 45 degrees
-def plotCurrent(angle, percentile):
-    if angle < 15 or angle > 75:
-        print("Angle out of range")
-        raise SystemExit(1)
-    plotFraction(angle, percentile, str(angle) + " degrees, Q" +
-                 str(int(percentile/25)), prefix="CerroConfig/")
-    if angle == 45:
+    if label == None:
+        label = str(angle) + " degrees, Q" + str(int(percentile/25))
+    plotFraction(angle, percentile, label, prefix="CerroConfig/")
+    if angle == 45 and excelTrans:
         plotExcel(percentile)
     plt.title("Transmission at " +
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
 
 
+# Plots all transmission graphs
+def plotAll(angle):
+    plotCurrent(angle, 25, "Q1")
+    plotCurrent(angle, 50, "Q2")
+    plotCurrent(angle, 75, "Q3")
+    plt.title("Transmission at " + str(90 - angle) +
+              " Observation Elevation Angle")
+
+
 # Requested graphs go here
-pwvRatioAdjustments(45, 75)
+plotAll(45)
 
 
 plt.ylim(ymin=0, ymax=1)
