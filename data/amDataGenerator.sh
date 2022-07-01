@@ -7,22 +7,22 @@ CerroChajnantorPWVQ1=0.36
 CerroChajnantorPWVQ2=0.67
 CerroChajnantorPWVQ3=1.28
 
-#PWV values in ACT configuration files, collected by data/pwvCalculator.py
-ACTConfigQ1=0.457488
-ACTConfigQ2=0.9315249999999999
-ACTConfigQ3=2.23472
+#PWV values in ACT configuration files
+ACTConfigQ1=$(python3 data/pwvCalculator.py 25)
+ACTConfigQ2=$(python3 data/pwvCalculator.py 50)
+ACTConfigQ3=$(python3 data/pwvCalculator.py 75)
 
+#Ratio of PWVs used in CCAT site data generation
 CerroConfigQ1=$(bc <<<"scale=10; $CerroChajnantorPWVQ1/$ACTConfigQ1")
 CerroConfigQ2=$(bc <<<"scale=10; $CerroChajnantorPWVQ2/$ACTConfigQ2")
 CerroConfigQ3=$(bc <<<"scale=10; $CerroChajnantorPWVQ3/$ACTConfigQ3")
 
-#Get PWV values from config files
+#Create base files so ACT's PWVs are known
 for p in 25 50 75
 do
     am data/ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >data/$((p))/ACT_annual_$((p)).45.out 2>data/$((p))/ACT_annual_$((p)).45.err
 done
 
-#Annual
 for i in {15..75}
 do
     #CerroConfig Calculations
