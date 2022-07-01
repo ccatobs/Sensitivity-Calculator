@@ -403,156 +403,6 @@ def powerFile(outputs, quartileDisplay):
     return yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
 
 
-# Calculates the best fit for the spill efficiency of the form power2(m*th + c) while returning (m, c)
-def calcBestFit(min, max):
-    def power2(db):
-        return 10.0**(db/10.0)
-
-    def invPower(x):
-        return np.log10(x)*10
-
-    d = np.genfromtxt(
-        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
-
-    # Number of data points at a given phi, 180 / 0.25 + 1
-    n = 721
-
-    # Bins the data by phi; the shape is now [phi, row, column]
-    d = d.reshape(-1, n, 8)
-
-    th = np.radians(d[0, :, 0])
-
-    data = d[0, :, 3]
-    myCuttoff = np.where((np.abs(th) < np.radians(max)) &
-                         (np.abs(th) > np.radians(min)))[0]
-    adjustedData = invPower(power2(data)/np.max(power2(data)))
-    a = np.vstack([th[myCuttoff], np.ones(len(th[myCuttoff]))]).T
-    m, c = np.linalg.lstsq(a, adjustedData[myCuttoff], rcond=None)[0]
-    mAdj = m * pi/180
-    return mAdj, c
-
-
-# Calculates the highest point after a given angle on the default graph
-def getMaxAfter(min):
-    def power2(db):
-        return 10.0**(db/10.0)
-
-    def invPower(x):
-        return np.log10(x)*10
-    d = np.genfromtxt(
-        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
-
-    # Number of data points at a given phi, 180 / 0.25 + 1
-    n = 721
-
-    # Bins the data by phi; the shape is now [phi, row, column]
-    d = d.reshape(-1, n, 8)
-
-    th = np.radians(d[0, :, 0])
-
-    data = d[0, :, 3]
-    myCuttoff = np.where((np.abs(th) > np.radians(min)))[0]
-    adjustedData = (power2(data)/np.max(power2(data)))[myCuttoff]
-    max = adjustedData[0]
-    for d in adjustedData:
-        if d > max:
-            max = d
-    return max
-
-
-def calcColdSpillOverEfficiency(half_angle, contractFactor, showPlots=False, approx="new", f=None):
-    def power2(db):
-        return 10.0**(db/10.0)
-
-    def invPower(x):
-        return np.log10(x)*10
-
-    d = np.genfromtxt(
-        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
-
-    # Number of data points at a given phi, 180 / 0.25 + 1
-    n = 721
-
-    # Bins the data by phi; the shape is now [phi, row, column]
-    d = d.reshape(-1, n, 8)
-
-    maxExtrap = 10000
-
-    custDegrees = np.array(range(0, maxExtrap*4+1))/4*contractFactor
-    th = np.radians(custDegrees)
-
-    # Normalize the data
-    data = invPower(power2(d[0, :, 3])/power2(np.max(d[0, :, 3])))
-
-    minFit, maxFit = 90, 120
-    m, c = calcBestFit(minFit, maxFit)
-    if approx == "new":
-        linear = m*np.array(range(0, maxExtrap*4+1))/4+c
-        data = np.append(data[:n], linear[n:])
-    elif approx == "old":
-        linear = m*np.array(range(0, maxExtrap*4+1))/4+c
-        data = np.append(data[:maxFit*4+1], linear[maxFit*4+1:])
-    elif approx == "none":
-        noop = None
-    elif approx == "flat":
-        max = invPower(getMaxAfter(170))
-        data = np.append(data[:n], [max for _ in range(maxExtrap*4-n+1)])
-
-    tot_cutoff = np.where(np.abs(th) <= np.radians(180))[0]
-    tot_cutoff = tot_cutoff[tot_cutoff < len(data)]
-    tot = np.trapz(power2(data[tot_cutoff]) *
-                   np.sin(th[tot_cutoff]), th[tot_cutoff])
-
-    th_cutoff = np.where(np.abs(th) < np.radians(half_angle))[0]
-
-    beam = np.trapz(power2(data[th_cutoff]) *
-                    np.sin(th[th_cutoff]), th[th_cutoff])
-
-    spill_eff = beam/tot
-
-    if showPlots:
-        if approx != "none":
-            plt.plot(custDegrees[custDegrees <= 180], power2(data[custDegrees <= 180]),
-                     label="Extrapolation", linewidth=2)
-        la = ""
-        if f != None:
-            la = " at %d GHz" % f
-        plt.plot(np.degrees(th)[:721], power2(
-            d[0, :, 3])/np.max(power2(d[0, :, 3])), label="Doug phi = 0" + la, linewidth=2)
-        # Plot linear approximation on top of where it's approximating
-        # plt.plot(degrees[np.logical_and(degrees > minFit, degrees < maxFit)], power2(m*degrees+c)[np.logical_and(degrees > minFit, degrees < maxFit)],
-        #         label="Linear", linewidth=2)
-        plt.axvline(x=half_angle, color='k',
-                    linewidth=2, label='Lyot stop angle')
-        plt.legend(loc=0)
-        plt.xlim(0, 180)
-        plt.yscale('log')
-        plt.xlabel('angle [deg]')
-        plt.ylabel('normalized beam')
-        plt.show()
-        plt.clf()
-    return spill_eff
-
-
-def getColdSpillOverEfficiency(i, showPlots=False, approx="none"):
-    defaultSpacing = 2.75
-    return np.array([calcColdSpillOverEfficiency(i["lyotStopAngle"], 280e9 / (f * (s / defaultSpacing)), showPlots=showPlots, approx=approx, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
-
-
-def spillEfficiencyFile(i, calculate):
-    output = calculate(45)
-    t = Texttable(max_width=0)
-    t.set_cols_dtype(['i', (lambda x: "%.1f" % float(x)), 'f', 'i',
-                     (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
-    t.set_cols_align(['c', 'c', 'c', 'c', 'c', 'c', 'c'])
-    excelSpillEff = [.8, .5, .7, .5, .5]
-    detectors = [36450, 20808, 10368, 10368, 7938]
-    excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
-    t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET (uK rt(s))', 'Calculated NET (uK rt(s))'], (-1, 1)),
-                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], coldSpillOverEfficiency, output['netW8Avg'], excelSpillEff, detectors, i['detectorSpacing'], excelNET)])[::-1].T), axis=1).T)
-    print(t.draw())
-
-
 def calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=False, f=None):
     def power2(db):
         return 10.0**(db/10.0)
@@ -596,17 +446,41 @@ def calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=Fal
     return spill_eff
 
 
+def getColdSpillOverEfficiency(i, beamFreq, beamPixelSpacing, degrees, values, showPlots=False):
+    return np.array([calcSpillFromData(i["lyotStopAngle"], beamFreq / (f * (s / beamPixelSpacing)), degrees, values, showPlots=showPlots, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
+
+
+def spillEfficiencyFile(i, calculate, spillEfficiency):
+    output = calculate(45)
+    t = Texttable(max_width=0)
+    t.set_cols_dtype(['i', (lambda x: "%.1f" % float(x)), 'f', 'i',
+                     (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
+    t.set_cols_align(['c', 'c', 'c', 'c', 'c', 'c', 'c'])
+    excelSpillEff = [.8, .5, .7, .5, .5]
+    detectors = [36450, 20808, 10368, 10368, 7938]
+    excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
+    t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET (uK rt(s))', 'Calculated NET (uK rt(s))'], (-1, 1)),
+                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], spillEfficiency, output['netW8Avg'], excelSpillEff, detectors, i['detectorSpacing'], excelNET)])[::-1].T), axis=1).T)
+    print(t.draw())
+
+
+def invPower(x):
+    return np.log10(x)*10
+
+
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
+
     d = np.genfromtxt(
-        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
-    d = d.reshape(-1, 721, 8)
-    degrees = d[0, :, 0]
-    values = d[0, :, 3]
-    [print(calcSpillFromData(13.4, cont, degrees, values,
-           showPlots=True, f=280)) for cont in [0.5, 1, 1.5]]
-    coldSpillOverEfficiency = getColdSpillOverEfficiency(i)
+        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
+    degr = d[0, :, 0]
+    vals = d[0, :, 3]
+    #d = np.genfromtxt('data/beam_280.txt')
+    #degr = np.degrees(d[:, 0])
+    #vals = invPower(d[:, 1]**2)
+    coldSpillOverEfficiency = getColdSpillOverEfficiency(
+        i, 280e9, 2.75, degr, vals, showPlots=False)
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
                             i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
@@ -623,4 +497,4 @@ if __name__ == "__main__":
     methodsComparisonFile(i, quartileDisplay)
     sensitivityFile(outputs, valueDisplay, quartileDisplay)
     powerFile(outputs, quartileDisplay)
-    spillEfficiencyFile(i, calculate)
+    spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
