@@ -553,9 +553,59 @@ def spillEfficiencyFile(i, calculate):
     print(t.draw())
 
 
+def calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=False, f=None):
+    def power2(db):
+        return 10.0**(db/10.0)
+
+    def invPower(x):
+        return np.log10(x)*10
+
+    myDegrees = degrees * contractFactor
+    th = np.radians(myDegrees)
+
+    # Normalize the data
+    data = invPower(power2(values)/power2(np.max(values)))
+
+    tot_cutoff = np.where(np.abs(th) <= np.radians(180))[0]
+    tot_cutoff = tot_cutoff[tot_cutoff < len(data)]
+    tot = np.trapz(power2(data[tot_cutoff]) *
+                   np.sin(th[tot_cutoff]), th[tot_cutoff])
+
+    th_cutoff = np.where(np.abs(th) < np.radians(half_angle))[0]
+
+    beam = np.trapz(power2(data[th_cutoff]) *
+                    np.sin(th[th_cutoff]), th[th_cutoff])
+
+    spill_eff = beam/tot
+
+    if showPlots:
+        la = ""
+        if f != None:
+            la = " at %d GHz" % f
+        plt.plot(np.degrees(th)[:721], power2(
+            values)/np.max(power2(values)), label="Doug phi = 0" + la, linewidth=2)
+        plt.axvline(x=half_angle, color='k',
+                    linewidth=2, label='Lyot stop angle')
+        plt.legend(loc=0)
+        plt.xlim(0, 180)
+        plt.yscale('log')
+        plt.xlabel('angle [deg]')
+        plt.ylabel('normalized beam')
+        plt.show()
+        plt.clf()
+    return spill_eff
+
+
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
+    d = np.genfromtxt(
+        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2)
+    d = d.reshape(-1, 721, 8)
+    degrees = d[0, :, 0]
+    values = d[0, :, 3]
+    [print(calcSpillFromData(13.4, cont, degrees, values,
+           showPlots=True, f=280)) for cont in [0.5, 1, 1.5]]
     coldSpillOverEfficiency = getColdSpillOverEfficiency(i)
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
