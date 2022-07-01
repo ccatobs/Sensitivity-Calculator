@@ -1,5 +1,4 @@
-#To use this, you must be in the Excel Spreadsheet folder and have the am code (I used version 12.0) installed
-#This script takes about 2 minutes on my machine, so it's probably not broken
+#To use this, you must be in the Excel Spreadsheet folder and have the am code installed. It takes approximately 2 minutes to run, and produces no output to stdout. The only things created should be files inside folders in data/
 #! usr/bin/bash
 
 #Values taken from https://arxiv.org/pdf/2007.04262.pdf

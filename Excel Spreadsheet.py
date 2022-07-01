@@ -426,26 +426,29 @@ def spillEfficiencyFile(i, calculate, spillEfficiency):
                      (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
     t.set_cols_align(['c', 'c', 'c', 'c', 'c', 'c', 'c'])
     excelSpillEff = [.8, .5, .7, .5, .5]
-    detectors = [36450, 20808, 10368, 10368, 7938]
     excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
     t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET (uK rt(s))', 'Calculated NET (uK rt(s))'], (-1, 1)),
-                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], spillEfficiency, output['netW8Avg'], excelSpillEff, detectors, i['detectorSpacing'], excelNET)])[::-1].T), axis=1).T)
+                               np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], spillEfficiency, output['netW8Avg'], excelSpillEff, i["spatialPixels"], i['detectorSpacing'], excelNET)])[::-1].T), axis=1).T)
     print(t.draw())
+
+
+# Load the beam file and pass the angle and value data to other functions
+def getSpillEfficiency(i):
+    data = np.genfromtxt(
+        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
+    degr = data[0, :, 0]
+    vals = data[0, :, 3]
+    #data = np.genfromtxt('data/beam_280.txt')
+    #degr = np.degrees(data[:, 0])
+    #vals = np.log10((data[:, 1]**2))*10
+    return getColdSpillOverEfficiency(
+        i, 280e9, 2.75, degr, vals, showPlots=False)
 
 
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
-
-    d = np.genfromtxt(
-        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
-    degr = d[0, :, 0]
-    vals = d[0, :, 3]
-    #d = np.genfromtxt('data/beam_280.txt')
-    #degr = np.degrees(d[:, 0])
-    #vals = np.log10((d[:, 1]**2))*10
-    coldSpillOverEfficiency = getColdSpillOverEfficiency(
-        i, 280e9, 2.75, degr, vals, showPlots=False)
+    coldSpillOverEfficiency = getSpillEfficiency(i)
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
                             i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
