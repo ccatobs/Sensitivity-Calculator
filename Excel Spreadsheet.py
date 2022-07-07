@@ -3,6 +3,7 @@ import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
 from texttable import Texttable
+import Noise
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 pi = np.pi
@@ -445,6 +446,26 @@ def getSpillEfficiency(i):
         i, 280e9, 2.75, degr, vals, showPlots=False)
 
 
+def custOutput():
+    CCAT_bands = [222., 280., 348., 405., 850.]
+    ccat = Noise.CcatLatv2b(CCAT_bands, [59/60., 47/60., 37/60., 32/60., 15/60.], [6.8, 12.7, 47.7,
+                            181.8, 305400.7], survey_years=4000/24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
+    fsky = 20000./(4*np.pi*(180/np.pi)**2)
+    lat_lmax = 8000
+    ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
+        fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
+    plotTemperature = False
+    for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], CCAT_bands[:-1]):
+        plt.plot(ell, curve, label=str(int(label))+' GHz')
+        plt.yscale('log')
+        plt.ylim(10**-5, 10**3)
+        plt.xscale('log')
+        plt.xlim(10**2, 10**4)
+        plt.title("Temperature" if plotTemperature else "Polarization")
+    plt.legend(loc='upper right')
+    plt.show()
+
+
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
@@ -462,6 +483,7 @@ if __name__ == "__main__":
     quartileDisplay = quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    sensitivityFile(outputs, valueDisplay, quartileDisplay)
-    powerFile(outputs, quartileDisplay)
-    spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    #sensitivityFile(outputs, valueDisplay, quartileDisplay)
+    #powerFile(outputs, quartileDisplay)
+    #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    custOutput()
