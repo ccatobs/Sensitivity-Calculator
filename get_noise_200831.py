@@ -4,6 +4,48 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import ccat_noise_200831 as CCAT_noise
 import scipy.optimize as op
+from astropy.table import QTable
+#import mapsims
+
+f = QTable.read("data/detectorParams.tbl", format="ascii.ipac")
+print(f.colnames)
+print(f)
+print(f[0]["fwhm"])
+f.add_index("band")
+print(f.loc["70"]["center_frequency"])
+print()
+print()
+
+if False:
+    NSIDE = 16
+    cmb = mapsims.SOPrecomputedCMB(
+        num=0,
+        nside=NSIDE,
+        lensed=False,
+        aberrated=False,
+        has_polarization=True,
+        cmb_set=0,
+        cmb_dir="mapsims/tests/data",
+        input_units="uK_CMB",
+    )
+    noise = mapsims.SONoiseSimulator(
+        nside=NSIDE,
+        return_uK_CMB=True,
+        sensitivity_mode="baseline",
+        apply_beam_correction=True,
+        apply_kludge_correction=True,
+        SA_one_over_f_mode="pessimistic",
+    )
+    simulator = mapsims.MapSim(
+        channels="tube:ST0",
+        nside=NSIDE,
+        unit="uK_CMB",
+        pysm_output_reference_frame="G",
+        pysm_components_string="a1",
+        pysm_custom_components={"cmb": cmb},
+        other_components={"noise": noise},
+    )
+    output_map = simulator.execute()
 
 plotAnything = False
 
@@ -29,7 +71,7 @@ ccat = CCAT_noise.CcatLatv2b(mode,
                              N_tubes=(1, 1, 1, 1, 1), el=el)
 
 # lmax for getting Nl's
-lat_lmax = 8000
+lat_lmax = 10000  # Originally 8000
 
 ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
     fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)

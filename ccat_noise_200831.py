@@ -95,8 +95,11 @@ class SOLatType:
 
         white_noise_el_rescale = np.array([1.] * len(self.bands))
         if self.el is not None:
+            print(self.el)
             el_data = self.el_noise_params
+            print(el_data)
             el_lims = el_data.get('valid')
+            print(el_lims)
             if el_lims[0] == 'only':
                 # noise model only valid at one elevation...
                 assert(self.el == el_lims[1])
@@ -104,6 +107,7 @@ class SOLatType:
                 assert(el_lims[0] <= self.el) and (self.el <= el_lims[1])
                 band_idx = np.array(
                     [np.argmin(abs(el_data['bands'] - b)) for b in self.bands])
+                print(el_data, band_idx, self.bands)
                 assert(
                     np.all(abs(np.array(el_data['bands'])[band_idx] - self.bands) < 5))
                 coeffs = el_data['coeffs']
@@ -571,7 +575,7 @@ class CcatLatv2b(SOLatType):
             'HF2': nar([0, 12.7,    0,    0, 0]),
             'HF3': nar([0,   0, 47.7,    0, 0]),
             'HF4': nar([0,   0,    0, 181.8, 0]),
-            'HF5': nar([0,   0,    0,    0, 305400.7]),
+            'HF5': nar([0,   0,    0,    0, 305400.7]),  # Weighted NET
         }
 
         # Save the elevation request.
