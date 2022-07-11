@@ -1,0 +1,273 @@
+[I 23:10:19.162 LabApp] The port 23232 is already in use, trying another port.
+[I 23:10:19.943 LabApp] JupyterLab extension loaded from /home/zonca/zonca/p/software/healpy/healpyvenv/lib/python3.7/site-packages/jupyterlab
+[I 23:10:19.943 LabApp] JupyterLab application directory is /home/zonca/zonca/p/software/healpy/healpyvenv/share/jupyter/lab
+[W 23:10:19.949 LabApp] Error loading server extension jupyterlab-slurm
+    Traceback (most recent call last):
+      File "/home/zonca/zonca/p/software/healpy/healpyvenv/lib/python3.7/site-packages/notebook/notebookapp.py", line 1670, in init_server_extensions
+        mod = importlib.import_module(modulename)
+      File "/usr/lib/python3.7/importlib/__init__.py", line 127, in import_module
+        return _bootstrap._gcd_import(name[level:], package, level)
+      File "<frozen importlib._bootstrap>", line 1006, in _gcd_import
+      File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+      File "<frozen importlib._bootstrap>", line 965, in _find_and_load_unlocked
+    ModuleNotFoundError: No module named 'jupyterlab-slurm'
+[I 23:10:19.950 LabApp] Serving notebooks from local directory: /home/zonca/zonca/p/software/mapsims/mapsims/data
+[I 23:10:19.950 LabApp] The Jupyter Notebook is running at:
+[I 23:10:19.950 LabApp] http://nebula.sdsc.edu:23233/?token=277046973b68c0f14dd41d63fe83eefdd5614cc64e33a168
+[I 23:10:19.950 LabApp]  or http://127.0.0.1:23233/?token=277046973b68c0f14dd41d63fe83eefdd5614cc64e33a168
+[I 23:10:19.951 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 23:10:19.955 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/zonca/.local/share/jupyter/runtime/nbserver-2675-open.html
+    Or copy and paste one of these URLs:
+        http://nebula.sdsc.edu:23233/?token=277046973b68c0f14dd41d63fe83eefdd5614cc64e33a168
+     or http://127.0.0.1:23233/?token=277046973b68c0f14dd41d63fe83eefdd5614cc64e33a168
+[I 23:10:31.658 LabApp] 302 GET /?token=277046973b68c0f14dd41d63fe83eefdd5614cc64e33a168 (76.88.96.157) 1.18ms
+[W 23:10:33.947 LabApp] Could not determine jupyterlab build status without nodejs
+[W 23:10:35.109 LabApp] 404 GET /api/contents/Untitled.ipynb?content=0&1591423834532 (76.88.96.157): No such file or directory: Untitled.ipynb
+[W 23:10:35.109 LabApp] No such file or directory: Untitled.ipynb
+[W 23:10:35.110 LabApp] 404 GET /api/contents/Untitled.ipynb?content=0&1591423834532 (76.88.96.157) 3.58ms referer=http://nebula.sdsc.edu:23233/lab
+[W 23:10:35.110 LabApp] 404 GET /api/contents/example.ipynb?content=0&1591423834535 (76.88.96.157): No such file or directory: example.ipynb
+[W 23:10:35.110 LabApp] No such file or directory: example.ipynb
+[W 23:10:35.111 LabApp] 404 GET /api/contents/example.ipynb?content=0&1591423834535 (76.88.96.157) 3.37ms referer=http://nebula.sdsc.edu:23233/lab
+[I 23:10:42.275 LabApp] Creating new notebook in /
+[I 23:10:42.990 LabApp] Kernel started: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 23:12:43.675 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:14:44.710 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:16:45.798 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:18:45.940 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:20:46.739 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:24:47.755 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:26:47.908 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:28:48.698 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:30:48.844 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:32:49.053 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:36:49.756 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:38:49.911 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:40:50.090 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:41:32.575 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 23:42:11.172 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 23:42:27.505 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:44:11.106 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:44:30.394 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:44:37.129 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:49:03.095 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:49:15.722 LabApp] Creating new notebook in /
+[I 23:49:16.482 LabApp] Kernel started: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 23:51:16.481 LabApp] Saving file at /Untitled.ipynb
+[I 23:53:16.750 LabApp] Saving file at /Untitled.ipynb
+[I 23:55:17.133 LabApp] Saving file at /Untitled.ipynb
+[I 23:55:45.174 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 23:55:52.341 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:56:01.583 LabApp] Kernel restarted: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 23:56:04.339 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 23:56:08.335 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 23:57:17.335 LabApp] Saving file at /Untitled.ipynb
+[I 23:59:17.657 LabApp] Saving file at /Untitled.ipynb
+[I 00:01:17.881 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 00:01:58.117 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 00:03:25.851 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 00:03:34.832 LabApp] Kernel restarted: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 00:03:36.325 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 00:03:46.516 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 00:04:30.628 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 00:06:53.578 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 00:08:39.261 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 00:08:39.261 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 00:08:39.719 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 00:08:40.077 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[W 00:10:09.723 LabApp] WebSocket ping timeout after 90003 ms.
+[W 00:10:10.077 LabApp] WebSocket ping timeout after 90000 ms.
+[I 00:10:14.726 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 00:10:15.079 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 08:38:48.081 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 08:39:27.153 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 10:47:05.456 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 10:47:05.456 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 10:47:06.071 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 10:47:06.154 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[W 10:48:36.072 LabApp] WebSocket ping timeout after 90001 ms.
+[W 10:48:36.155 LabApp] WebSocket ping timeout after 90000 ms.
+[W 10:48:36.921 LabApp] zmq message arrived on closed channel
+[W 10:48:36.924 LabApp] zmq message arrived on closed channel
+[W 10:48:36.925 LabApp] zmq message arrived on closed channel
+[I 10:48:38.754 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 10:48:39.889 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 10:48:41.156 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 10:48:41.949 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 11:10:25.731 LabApp] Creating new notebook in /
+[I 11:10:26.434 LabApp] Kernel started: b853b146-2ef8-4141-8e22-ea5acea98dc8
+[I 11:12:26.941 LabApp] Saving file at /Untitled.ipynb
+[I 11:20:28.005 LabApp] Saving file at /Untitled.ipynb
+[I 12:10:58.912 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 12:12:59.083 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 12:14:30.981 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 12:14:54.292 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 12:15:04.880 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 12:15:21.148 LabApp] Kernel restarted: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 12:15:34.395 LabApp] Kernel restarted: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 12:15:38.885 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 12:29:59.401 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 12:29:59.408 LabApp] Starting buffering for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 12:29:59.413 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 12:29:59.911 LabApp] Restoring connection for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 12:30:00.004 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 12:30:00.084 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[W 12:31:29.914 LabApp] WebSocket ping timeout after 90002 ms.
+[W 12:31:30.005 LabApp] WebSocket ping timeout after 90000 ms.
+[W 12:31:30.085 LabApp] WebSocket ping timeout after 90000 ms.
+[I 12:31:34.915 LabApp] Starting buffering for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 12:31:35.006 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 12:31:35.086 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 12:54:07.440 LabApp] Restoring connection for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 12:54:07.511 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 12:54:07.592 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 13:17:12.374 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 13:17:12.374 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 13:17:12.399 LabApp] Starting buffering for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 13:23:33.426 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 13:23:33.494 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 13:23:34.624 LabApp] Restoring connection for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 13:29:54.572 LabApp] Starting buffering for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 13:29:54.578 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 13:29:54.585 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 16:20:22.081 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 16:20:23.051 LabApp] Restoring connection for b853b146-2ef8-4141-8e22-ea5acea98dc8:41c56815-af76-43df-8d57-b589aec0d075
+[I 16:20:23.131 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 16:35:43.259 LabApp] Creating new notebook in /
+[I 16:35:43.886 LabApp] Kernel started: efece7f1-fa22-4249-b405-220cc1154e75
+[I 16:37:44.277 LabApp] Saving file at /Untitled1.ipynb
+[I 16:39:44.434 LabApp] Saving file at /Untitled1.ipynb
+[I 16:41:45.212 LabApp] Saving file at /Untitled1.ipynb
+[I 16:43:45.376 LabApp] Saving file at /Untitled1.ipynb
+[I 16:45:46.266 LabApp] Saving file at /test_so_instrument_parameters.ipynb
+[I 16:47:11.508 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 16:47:19.028 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 16:47:28.622 LabApp] Saving file at /explore_so_instrument_parameters_h5.ipynb
+[I 16:47:31.387 LabApp] Kernel restarted: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 16:47:35.049 LabApp] Kernel restarted: efece7f1-fa22-4249-b405-220cc1154e75
+[I 16:47:47.649 LabApp] Kernel shutdown: b853b146-2ef8-4141-8e22-ea5acea98dc8
+[I 16:47:59.194 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 16:48:04.136 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 16:48:12.280 LabApp] Kernel started: d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0
+[I 16:48:17.024 LabApp] Kernel restarted: d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0
+[I 16:48:20.428 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 16:50:12.941 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 16:50:14.919 LabApp] Kernel restarted: d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0
+[I 16:50:16.120 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 16:50:35.383 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 16:54:07.302 LabApp] Kernel restarted: d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0
+[I 16:54:09.910 LabApp] Saving file at /dump_h5_to_csv.ipynb
+[I 16:54:36.558 LabApp] Kernel restarted: efece7f1-fa22-4249-b405-220cc1154e75
+[I 16:55:47.243 LabApp] Saving file at /test_so_instrument_parameters.ipynb
+[I 21:06:23.194 LabApp] Saving file at /test_so_instrument_parameters.ipynb
+[I 22:18:35.036 LabApp] Saving file at /test_so_instrument_parameters.ipynb
+[I 23:41:17.668 LabApp] Starting buffering for efece7f1-fa22-4249-b405-220cc1154e75:b2e6a612-35d2-47c3-8b46-3026b0d0d11e
+[I 23:41:17.668 LabApp] Starting buffering for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:759cc13a-e9a4-451e-8863-f6f5c8b56516
+[I 23:41:17.675 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 23:41:17.681 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 23:41:17.959 LabApp] Restoring connection for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:759cc13a-e9a4-451e-8863-f6f5c8b56516
+[W 23:42:47.961 LabApp] WebSocket ping timeout after 90001 ms.
+[I 23:42:52.964 LabApp] Starting buffering for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:759cc13a-e9a4-451e-8863-f6f5c8b56516
+[I 09:06:26.521 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 09:06:26.599 LabApp] Restoring connection for efece7f1-fa22-4249-b405-220cc1154e75:b2e6a612-35d2-47c3-8b46-3026b0d0d11e
+[I 09:06:27.539 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[I 09:07:05.501 LabApp] Restoring connection for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:759cc13a-e9a4-451e-8863-f6f5c8b56516
+[W 01:21:56.522 LabApp] WebSocket ping timeout after 119877 ms.
+[W 01:21:56.599 LabApp] WebSocket ping timeout after 119924 ms.
+[W 01:21:57.541 LabApp] WebSocket ping timeout after 119952 ms.
+[I 01:22:01.523 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:513bdf83-52db-4b77-88a4-aa894032ebbf
+[I 01:22:01.600 LabApp] Starting buffering for efece7f1-fa22-4249-b405-220cc1154e75:b2e6a612-35d2-47c3-8b46-3026b0d0d11e
+[I 01:22:02.543 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:9cb48474-938c-48ef-8fee-9e2006c6be7d
+[W 01:22:05.502 LabApp] WebSocket ping timeout after 119941 ms.
+[I 01:22:10.504 LabApp] Starting buffering for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:759cc13a-e9a4-451e-8863-f6f5c8b56516
+[I 13:39:19.517 LabApp] 302 GET / (76.88.96.157) 0.49ms
+[I 13:39:21.941 LabApp] 301 GET /lab/workspaces/auto-R/?clone (76.88.96.157) 0.89ms
+[W 13:39:23.411 LabApp] Could not determine jupyterlab build status without nodejs
+[I 13:39:23.908 LabApp] Starting buffering for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:2c0a1ba7-4520-4dd7-8e27-e84522d4c8c0
+[I 13:40:29.224 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 13:40:35.246 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 13:42:29.730 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:03:45.090 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:25:48.737 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:29:49.583 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:31:49.770 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:33:50.142 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:34:19.063 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:34:21.404 LabApp] Kernel restarted: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 14:34:24.790 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:36:02.886 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 14:37:31.748 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[W 15:23:26.418 LabApp] WebSocket ping timeout after 119972 ms.
+[W 15:23:26.506 LabApp] WebSocket ping timeout after 119901 ms.
+[W 15:23:26.579 LabApp] WebSocket ping timeout after 119967 ms.
+[W 15:23:26.652 LabApp] WebSocket ping timeout after 119955 ms.
+[I 15:23:31.419 LabApp] Starting buffering for 377d9d7d-168f-46c3-951d-04a96450de22:023de4bb-8da0-4e5c-84b3-763157d43ad3
+[I 15:23:31.508 LabApp] Starting buffering for bede7f47-0d86-44ca-9269-6dc92f4a89c4:07f7f5ec-87f1-4536-b70f-0e7c1acb7cff
+[I 15:23:31.581 LabApp] Starting buffering for efece7f1-fa22-4249-b405-220cc1154e75:72d7a1e5-bbe1-4eaf-8627-1ca734327540
+[I 15:23:31.654 LabApp] Starting buffering for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:6e7e9d86-b006-4af2-8c94-0fa01b79d539
+[I 15:28:57.680 LabApp] Restoring connection for 377d9d7d-168f-46c3-951d-04a96450de22:023de4bb-8da0-4e5c-84b3-763157d43ad3
+[I 15:28:57.742 LabApp] Restoring connection for efece7f1-fa22-4249-b405-220cc1154e75:72d7a1e5-bbe1-4eaf-8627-1ca734327540
+[I 15:28:57.819 LabApp] Restoring connection for bede7f47-0d86-44ca-9269-6dc92f4a89c4:07f7f5ec-87f1-4536-b70f-0e7c1acb7cff
+[I 15:28:57.906 LabApp] Restoring connection for d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0:6e7e9d86-b006-4af2-8c94-0fa01b79d539
+[I 16:12:37.333 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 16:12:48.688 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 16:14:04.143 LabApp] Shutting down on /api/shutdown request.
+[I 16:14:04.144 LabApp] Shutting down 4 kernels
+[I 16:14:04.446 LabApp] Kernel shutdown: 377d9d7d-168f-46c3-951d-04a96450de22
+[I 16:14:04.447 LabApp] Kernel shutdown: bede7f47-0d86-44ca-9269-6dc92f4a89c4
+[I 16:14:04.648 LabApp] Kernel shutdown: efece7f1-fa22-4249-b405-220cc1154e75
+[I 16:14:04.648 LabApp] Kernel shutdown: d3b04669-3b2c-4a8c-b7c8-be8c6ee26ff0
+nbenv package not found: automatic saving of conda environment disabled
+jupytext package not found: jupytext.TextFileContentsManager not available
+[I 07:54:47.505 LabApp] JupyterLab extension loaded from /home/zonca/zonca/p/software/healpy/healpyvenv/lib/python3.7/site-packages/jupyterlab
+[I 07:54:47.506 LabApp] JupyterLab application directory is /home/zonca/zonca/p/software/healpy/healpyvenv/share/jupyter/lab
+[W 07:54:47.511 LabApp] Error loading server extension jupyterlab-slurm
+    Traceback (most recent call last):
+      File "/home/zonca/zonca/p/software/healpy/healpyvenv/lib/python3.7/site-packages/notebook/notebookapp.py", line 1670, in init_server_extensions
+        mod = importlib.import_module(modulename)
+      File "/usr/lib/python3.7/importlib/__init__.py", line 127, in import_module
+        return _bootstrap._gcd_import(name[level:], package, level)
+      File "<frozen importlib._bootstrap>", line 1006, in _gcd_import
+      File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+      File "<frozen importlib._bootstrap>", line 965, in _find_and_load_unlocked
+    ModuleNotFoundError: No module named 'jupyterlab-slurm'
+[I 07:54:47.512 LabApp] Serving notebooks from local directory: /home/zonca/zonca/p/software/mapsims/mapsims/data
+[I 07:54:47.512 LabApp] The Jupyter Notebook is running at:
+[I 07:54:47.512 LabApp] http://nebula.sdsc.edu:23232/?token=14dbff322f2c4a58ff8c9825b422943c5e20cbef8dfd6e61
+[I 07:54:47.512 LabApp]  or http://127.0.0.1:23232/?token=14dbff322f2c4a58ff8c9825b422943c5e20cbef8dfd6e61
+[I 07:54:47.512 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 07:54:47.518 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/zonca/.local/share/jupyter/runtime/nbserver-9263-open.html
+    Or copy and paste one of these URLs:
+        http://nebula.sdsc.edu:23232/?token=14dbff322f2c4a58ff8c9825b422943c5e20cbef8dfd6e61
+     or http://127.0.0.1:23232/?token=14dbff322f2c4a58ff8c9825b422943c5e20cbef8dfd6e61
+[I 07:54:55.692 LabApp] 302 GET /?token=14dbff322f2c4a58ff8c9825b422943c5e20cbef8dfd6e61 (76.167.212.157) 1.11ms
+[W 07:54:58.718 LabApp] Could not determine jupyterlab build status without nodejs
+[W 07:54:59.893 LabApp] 404 GET /api/contents/run_mapsims_onthefly.ipynb?content=0&1592924099401 (76.167.212.157): No such file or directory: run_mapsims_onthefly.ipynb
+[W 07:54:59.893 LabApp] No such file or directory: run_mapsims_onthefly.ipynb
+[W 07:54:59.893 LabApp] 404 GET /api/contents/run_mapsims_onthefly.ipynb?content=0&1592924099401 (76.167.212.157) 3.45ms referer=http://nebula.sdsc.edu:23232/lab
+[I 07:55:08.551 LabApp] Kernel started: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+[I 07:57:08.885 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 07:57:44.761 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 07:57:46.823 LabApp] Starting buffering for be00e4fe-971d-42ab-ad4d-c3d121de60d4:fcacf6f0-ac3f-46da-baa8-c8ec11ef3b2d
+[I 09:07:41.073 LabApp] 302 GET /?token=14dbff322f2c4a58ff8c9825b422943c5e20cbef8dfd6e61 (76.167.212.157) 0.73ms
+[W 09:07:44.235 LabApp] Could not determine jupyterlab build status without nodejs
+[I 09:08:18.325 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 09:08:23.500 LabApp] Kernel restarted: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+[I 09:09:44.030 LabApp] Kernel restarted: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+[I 09:09:47.909 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 09:10:07.165 LabApp] Kernel restarted: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+[I 09:10:18.225 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 09:10:20.313 LabApp] Kernel restarted: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+[I 09:10:22.811 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 09:11:30.112 LabApp] Kernel restarted: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+[I 09:11:32.898 LabApp] Saving file at /extract_so_instrument_parameters.ipynb
+[I 09:36:11.807 LabApp] Shutting down on /api/shutdown request.
+[I 09:36:11.808 LabApp] Shutting down 1 kernel
+[I 09:36:12.110 LabApp] Kernel shutdown: be00e4fe-971d-42ab-ad4d-c3d121de60d4
+nbenv package not found: automatic saving of conda environment disabled
+jupytext package not found: jupytext.TextFileContentsManager not available

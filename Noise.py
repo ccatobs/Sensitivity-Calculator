@@ -1,3 +1,4 @@
+# TODO: data_C, ccat_pwv_cor, el_noise_params
 import numpy as np
 
 
@@ -27,7 +28,7 @@ def get_atmosphere_C(freqs, el=None):
         el = 50.
     el_correction = np.sin(50.*np.pi/180) / np.sin(el*np.pi/180)
     ccat_pwv_cor = 0.6/1.0
-    data_bands = np.array([222., 280., 348., 405., 850.])
+    data_bands = np.array(freqs)
     data_C = np.array([
         # below factors from am_output/mult_pwv/get_derivative_ccat.py
         2.31956542e+05,
@@ -65,7 +66,7 @@ class SOLatType:
                 band_idx = np.array(
                     [np.argmin(abs(el_data['bands'] - b)) for b in self.bands])
                 assert(
-                    np.all(abs(np.array(el_data['bands'])[band_idx] - self.bands) < 5))
+                    np.all(abs(np.array(el_data['bands'])[band_idx] - self.bands) <= 5))
                 coeffs = el_data['coeffs']
                 white_noise_el_rescale = np.array(
                     [el_noise_func(coeffs[i], self.el) / el_noise_func(coeffs[i], 50.)
@@ -179,7 +180,7 @@ def el_noise_func(P, el):
     return a + b / np.sin(el*np.pi/180)
 
 
-class CcatLatv2b(SOLatType):
+class CCAT(SOLatType):
     """This special edition S4 LAT is equipped with an additional tube
     class, XHF, containing 280 and 350 GHz detectors and blessed with
     the calm atmosphere available at the CCAT site.  Otherwise it

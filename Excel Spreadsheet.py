@@ -229,7 +229,7 @@ def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSp
 
     return {"netW8Avg": netW8Avg, "netW8RJ":
             netW8RJ, "neiW8": neiW8, "eorNEFD": eorNEFD, "eorNEI": eorNEI, "powerPerPixel":
-            powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength}
+            powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam}
 
 
 def averageTransSE(filePath, start, end):
@@ -446,16 +446,26 @@ def getSpillEfficiency(i):
         i, 280e9, 2.75, degr, vals, showPlots=False)
 
 
-def custOutput():
-    CCAT_bands = [222., 280., 348., 405., 850.]
-    ccat = Noise.CcatLatv2b(CCAT_bands, [59/60., 47/60., 37/60., 32/60., 15/60.], [6.8, 12.7, 47.7,
-                            181.8, 305400.7], survey_years=4000/24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
+def custOutput(i, outputs, actuallyCalculate=False):
+    centerFrequency = None
+    beam = None
+    net = None
+    if not actuallyCalculate:
+        centerFrequency = [222., 280., 348., 405., 850.]
+        beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
+        net = [6.8, 12.7, 47.7, 181.8, 305400.7]
+    else:
+        centerFrequency = i['centerFrequency'][::-1]/1e9
+        beam = outputs["beam"][::-1]/60
+        net = outputs["netW8Avg"][::-1]
+    ccat = Noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
+                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
     fsky = 20000./(4*np.pi*(180/np.pi)**2)
-    lat_lmax = 8000
+    lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
         fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
-    plotTemperature = False
-    for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], CCAT_bands[:-1]):
+    plotTemperature = True
+    for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
         plt.plot(ell, curve, label=str(int(label))+' GHz')
         plt.yscale('log')
         plt.ylim(10**-5, 10**3)
@@ -463,6 +473,7 @@ def custOutput():
         plt.xlim(10**2, 10**4)
         plt.title("Temperature" if plotTemperature else "Polarization")
     plt.legend(loc='upper right')
+    plt.grid()
     plt.show()
 
 
@@ -486,4 +497,4 @@ if __name__ == "__main__":
     #sensitivityFile(outputs, valueDisplay, quartileDisplay)
     #powerFile(outputs, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    custOutput()
+    custOutput(i, outputs, actuallyCalculate=True)

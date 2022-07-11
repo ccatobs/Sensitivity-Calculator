@@ -1,11 +1,42 @@
-# import sys
+from astropy.io import fits
+from astropy.utils.data import get_pkg_data_filename
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import ccat_noise_200831 as CCAT_noise
 import scipy.optimize as op
 from astropy.table import QTable
-#import mapsims
+import mapsims
+from astropy.visualization import astropy_mpl_style
+
+
+if True:
+    simulator = mapsims.from_config("data/configuration.toml")
+    output_maps = simulator.execute(write_outputs=True)
+    mypath = 'output/simonsobs_mapsim_ST0_UHF1_nside16_1_of_1.fits'
+
+    hdul = fits.open(mypath)
+    print(hdul[1].header['NSIDE'])
+    print(hdul.info())
+    data = hdul[1].data
+    print()
+    print()
+    print(data.shape)
+    print(data.dtype.name)
+
+    plt.style.use(astropy_mpl_style)
+    image_file = get_pkg_data_filename(mypath)
+    fits.info(image_file)
+    image_data = fits.getdata(image_file, extname='xtension')
+    print(image_data.shape)
+    print(image_data.dtype)
+    image_data = image_data.TEMPERATURE
+    print(image_data.shape)
+    print(image_data.dtype)
+    plt.figure()
+    # plt.imshow(image_data)
+    plt.plot(image_data)
+    plt.colorbar()
+    plt.show()
 
 f = QTable.read("data/detectorParams.tbl", format="ascii.ipac")
 print(f.colnames)
@@ -16,36 +47,6 @@ print(f.loc["70"]["center_frequency"])
 print()
 print()
 
-if False:
-    NSIDE = 16
-    cmb = mapsims.SOPrecomputedCMB(
-        num=0,
-        nside=NSIDE,
-        lensed=False,
-        aberrated=False,
-        has_polarization=True,
-        cmb_set=0,
-        cmb_dir="mapsims/tests/data",
-        input_units="uK_CMB",
-    )
-    noise = mapsims.SONoiseSimulator(
-        nside=NSIDE,
-        return_uK_CMB=True,
-        sensitivity_mode="baseline",
-        apply_beam_correction=True,
-        apply_kludge_correction=True,
-        SA_one_over_f_mode="pessimistic",
-    )
-    simulator = mapsims.MapSim(
-        channels="tube:ST0",
-        nside=NSIDE,
-        unit="uK_CMB",
-        pysm_output_reference_frame="G",
-        pysm_components_string="a1",
-        pysm_custom_components={"cmb": cmb},
-        other_components={"noise": noise},
-    )
-    output_map = simulator.execute()
 
 plotAnything = False
 
