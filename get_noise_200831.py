@@ -30,7 +30,7 @@ if True:
     print(image_data.shape)
     print(image_data.dtype)
     x = 0
-    image_data = image_data.TEMPERATURE[:, ::10]
+    image_data = image_data.Q_POLARISATION[:, ::10]
     print(image_data.shape)
     print(image_data.dtype)
     plt.figure()

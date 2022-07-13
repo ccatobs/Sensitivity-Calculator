@@ -4,3 +4,4 @@ power.yaml
 venv
 .empty
 output
+.ipynb_checkpoints

@@ -422,7 +422,7 @@ def getColdSpillOverEfficiency(i, beamFreq, beamPixelSpacing, degrees, values, s
 
 def spillEfficiencyFile(i, calculate, spillEfficiency):
     output = calculate(45)
-    t = Texttable(max_width=0)
+    t = Texttable(max_width=110)
     t.set_cols_dtype(['i', (lambda x: "%.1f" % float(x)), 'f', 'i',
                      (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
     t.set_cols_align(['c', 'c', 'c', 'c', 'c', 'c', 'c'])
@@ -494,7 +494,7 @@ if __name__ == "__main__":
     quartileDisplay = quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    #sensitivityFile(outputs, valueDisplay, quartileDisplay)
-    #powerFile(outputs, quartileDisplay)
-    #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    custOutput(i, outputs, actuallyCalculate=True)
+    sensitivityFile(outputs, valueDisplay, quartileDisplay)
+    powerFile(outputs, quartileDisplay)
+    spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    #custOutput(i, outputs, actuallyCalculate=True)
