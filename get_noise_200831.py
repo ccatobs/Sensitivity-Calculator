@@ -12,7 +12,7 @@ from astropy.visualization import astropy_mpl_style
 if True:
     simulator = mapsims.from_config("data/configuration.toml")
     output_maps = simulator.execute(write_outputs=True)
-    mypath = 'output/simonsobs_mapsim_ST0_UHF1_nside16_1_of_1.fits'
+    mypath = 'output/simonsobs_test_sim_ST0_UHF2_nside16_1_of_1.fits'
 
     hdul = fits.open(mypath)
     print(hdul[1].header['NSIDE'])
@@ -29,12 +29,12 @@ if True:
     image_data = fits.getdata(image_file, extname='xtension')
     print(image_data.shape)
     print(image_data.dtype)
-    image_data = image_data.TEMPERATURE
+    x = 0
+    image_data = image_data.TEMPERATURE[:, ::10]
     print(image_data.shape)
     print(image_data.dtype)
     plt.figure()
-    # plt.imshow(image_data)
-    plt.plot(image_data)
+    plt.imshow(image_data)
     plt.colorbar()
     plt.show()
 
