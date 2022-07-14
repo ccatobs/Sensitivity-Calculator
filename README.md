@@ -1,5 +1,9 @@
 # CCAT-Prime Sensitivity Calculator
 
+## Warning:
+
+This is the development branch. For the lastest guarenteed working version, go to the "basic" branch.
+
 ## Usage:
 
 Clone repo to local machine. Input parameters into input.yaml. Run Excel Spreadsheet.py. Output is given in output.yaml. Requires: Python 3.9.12, numpy 1.21.5, texttable 1.6.4, matplotlib 3.5.2.
