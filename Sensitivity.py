@@ -6,17 +6,18 @@ from texttable import Texttable
 import Noise
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
-pi = np.pi
-ln = np.log
-sqrt = np.sqrt
-e = np.e
-h = 6.626e-34
-k = 1.38e-23
-c = 299792458
-arrayify = np.ndarray.tolist
+_pi = np.pi
+_ln = np.log
+_sqrt = np.sqrt
+_e = np.e
+_h = 6.626e-34
+_k = 1.38e-23
+_c = 299792458
+_arrayify = np.ndarray.tolist
 
 
 def getInputs(filePath):
+    """Returns a dictionary of variables corresponding to the yaml file at [filePath]. The key of each entry is the same as in the yaml file."""
     # Declare all variables with line breaks repesenting section breaks in the excel file this code is based on
     diameter = None
     t = None
@@ -130,20 +131,20 @@ def getInputs(filePath):
     return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "observationElevationAngle": observationElevationAngle, "outputFreq": outputFreq, "detectorSpacing": detectorSpacing, "lyotStopAngle": lyotStopAngle}
 
 
-def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
-    wavelength = c/centerFrequency*10**6
+def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
+    wavelength = _c/centerFrequency*10**6
 
     def a_to_CMB(f):
         kb = 1.3806488e-23
         T = 2.725
         v = f*1e9
-        x = h*v/(kb*T)
+        x = _h*v/(kb*T)
         return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
 
     aToCMB = np.array([a_to_CMB(i/1e9) for i in centerFrequency])
 
     # Telescope
-    a = pi*(diameter/2)**2
+    a = _pi*(diameter/2)**2
 
     # Detector
     szCamCorForPoln = abs(3-szCamNumPoln)
@@ -157,35 +158,35 @@ def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSp
     # WindowTrans's formula doesn't make sense but is the same as the sheet, and luckily is not used here nor in the sheet
     windowTrans = np.ones(len(wavelength)) * t_uhdpe_window[1]
     beam = 1.2*wavelength/diameter/1000000*206265
-    solidAngle = pi/4/ln(2)*(beam/206264)**2
+    solidAngle = _pi/4/_ln(2)*(beam/206264)**2
     nativeAOmegaLambda2 = solidAngle*a/(wavelength*0.000001)**2
-    fov = pi*0.45**2
+    fov = _pi*0.45**2
     hornFov = fov/spatialPixels
-    hornDiameter = sqrt(4*hornFov/pi)*3600
-    hornSolidAngle = pi*(hornDiameter/2/206265)**2
-    beamSolidAngle = pi/ln(2)*(beam/2/206265)**2
+    hornDiameter = _sqrt(4*hornFov/_pi)*3600
+    hornSolidAngle = _pi*(hornDiameter/2/206265)**2
+    beamSolidAngle = _pi/_ln(2)*(beam/2/206265)**2
     beamsPerHorn = hornSolidAngle/beamSolidAngle
     effectiveFovInSr = solidAngle*spatialPixels
-    effectiveFov = (180/pi)**2*effectiveFovInSr
+    effectiveFov = (180/_pi)**2*effectiveFovInSr
     fovFillingFactor = fov/effectiveFov
     pointingsIn1000SqDeg = 1000/effectiveFov
     secondsPerPointingIn4000Hrs = 4000*3600/pointingsIn1000SqDeg
-    noiseFactor1000SqDeg4000Hrs = sqrt(secondsPerPointingIn4000Hrs)
+    noiseFactor1000SqDeg4000Hrs = _sqrt(secondsPerPointingIn4000Hrs)
 
     # Weather quartiles/broadband
     e_warm = (t_uhdpe_window[:, None])*((1-eqtrans)
                                         * eta+(1-eta))+(e_window_warm[:, None])
-    ruze = 1/(e**((4*pi*wfe/(wavelength))**2))
+    ruze = 1/(_e**((4*_pi*wfe/(wavelength))**2))
     weather_t_cold = (t_cold)
     occupancy = np.ones((len(wavelength), 3)) * 1 / \
-        (e**(h*c/((wavelength)*10**(-6)*k*t))-1)[:, None]
+        (_e**(_h*_c/((wavelength)*10**(-6)*_k*t))-1)[:, None]
     acceptedModes = szCamNumPoln * \
         (coldSpillOverEfficiency)*(singleModedAOmegaLambda2)
-    powerPerPixel = h*c*e_warm*(weather_t_cold[:, None])*(acceptedModes[:, None])*occupancy*(eqbw[:, None])*doe/(
+    powerPerPixel = _h*_c*e_warm*(weather_t_cold[:, None])*(acceptedModes[:, None])*occupancy*(eqbw[:, None])*doe/(
         ((wavelength)*10**(-6))[:, None])  # Differs from excel sheet becauses of correctly using t(cold)
-    photonNoiseNEP = h*c/((wavelength)[:, None]*10**(-6))*(1/t_int*acceptedModes[:, None]*eqbw[:, None]
-                                                           * e_warm*weather_t_cold[:, None]*doe*occupancy*(1+e_warm*weather_t_cold[:, None]*doe*occupancy))**0.5
-    totalNEP = sqrt(photonNoiseNEP**2 + detectorNEP**2)
+    photonNoiseNEP = _h*_c/((wavelength)[:, None]*10**(-6))*(1/t_int*acceptedModes[:, None]*eqbw[:, None]
+                                                             * e_warm*weather_t_cold[:, None]*doe*occupancy*(1+e_warm*weather_t_cold[:, None]*doe*occupancy))**0.5
+    totalNEP = _sqrt(photonNoiseNEP**2 + detectorNEP**2)
     coldTerminatedSpillover = (coldSpillOverEfficiency)
     nef = szCamCorForPoln*totalNEP/(a*weather_t_cold[:, None]*doe*eta*ruze[:, None]
                                     * eqtrans*coldTerminatedSpillover[:, None]*backgroundSubtractionDegradationFactor)
@@ -198,41 +199,41 @@ def calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSp
     arrayNETCMB = arrayNETRJ*aToCMB[:, None]*1000
     arrayNEI = nefd/1000/((solidAngle)[:, None]) / \
         ((spatialPixels)[:, None]*pixelYield)**0.5
-    netW8Avg = sqrt(3/(1/arrayNETCMB[:, 0]**2+1/arrayNETCMB[:, 1]
-                    ** 2+1/arrayNETCMB[:, 2]**2).astype(float))
+    netW8Avg = _sqrt(3/(1/arrayNETCMB[:, 0]**2+1/arrayNETCMB[:, 1]
+                        ** 2+1/arrayNETCMB[:, 2]**2).astype(float))
     netW8RJ = netW8Avg/aToCMB
-    neiW8 = sqrt(3/(1/arrayNEI[:, 0]**2+1/arrayNEI[:, 1]
-                    ** 2+1/arrayNEI[:, 2]**2).astype(float))
+    neiW8 = _sqrt(3/(1/arrayNEI[:, 0]**2+1/arrayNEI[:, 1]
+                     ** 2+1/arrayNEI[:, 2]**2).astype(float))
     nefd = arrayNEI*(solidAngle)[:, None] * \
-        sqrt((spatialPixels)[:, None]*pixelYield)*1000
+        _sqrt((spatialPixels)[:, None]*pixelYield)*1000
 
     # EoR Spec
-    eorEqBw = c/(wavelength[:, None]*10**(-6)*r)*pi/2
+    eorEqBw = _c/(wavelength[:, None]*10**(-6)*r)*_pi/2
     eorEqTrans = eqtrans
     eorE_warm = (t_uhdpe_window)[:, None]*((1-eorEqTrans)
                                            * eta+(1-eta))+(e_window_warm)[:, None]
-    eorRuze = 1/e**((4*pi*wfe/(wavelength))**2)
+    eorRuze = 1/_e**((4*_pi*wfe/(wavelength))**2)
     eorT_cold = (t_cold)*0.9  # Always takes from 739 um in the sheet
-    eorOccupancy = 1/(e**(h*c/((wavelength)*10**(-6)*k*t))-1)
+    eorOccupancy = 1/(_e**(_h*_c/((wavelength)*10**(-6)*_k*t))-1)
     eorAcceptedModes = eorSpecNumPoln*a*(coldSpillOverEfficiency)*(solidAngle)/(
         (wavelength)*10**(-6))**2  # In sheet 1071 um is calculated incorrectly
-    eorPhotonNoiseNEP = h*c/((wavelength)[:, None]*10**(-6))*(eorAcceptedModes[:, None]*eorEqBw*eorE_warm *
-                                                              eorT_cold[:, None]*doe*eorOccupancy[:, None]*(1+eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]))**0.5
-    eorTotalNEP = sqrt(eorPhotonNoiseNEP**2 + detectorNEP**2)
+    eorPhotonNoiseNEP = _h*_c/((wavelength)[:, None]*10**(-6))*(eorAcceptedModes[:, None]*eorEqBw*eorE_warm *
+                                                                eorT_cold[:, None]*doe*eorOccupancy[:, None]*(1+eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]))**0.5
+    eorTotalNEP = _sqrt(eorPhotonNoiseNEP**2 + detectorNEP**2)
     eorColdTerminatedSpillover = (coldSpillOverEfficiency)
     eorNEF = eorSpecCorForPoln*eorTotalNEP/(a*eorT_cold[:, None]*doe*eta*eorRuze[:, None]
                                             * eorEqTrans*eorColdTerminatedSpillover[:, None]*backgroundSubtractionDegradationFactor)
     eorNEFD = eorNEF/eorEqBw*10**26*1000
     eorNEI = eorNEFD/(solidAngle)[:, None]/1000
-    eorPowerPerPixel = h*c/(wavelength[:, None]*10**(-6))*eorE_warm*eorT_cold[:, None]*eorAcceptedModes[:,
-                                                                                                        None]*eorOccupancy[:, None]*eorEqBw*doe  # Look at t_cold in excel sheet
+    eorPowerPerPixel = _h*_c/(wavelength[:, None]*10**(-6))*eorE_warm*eorT_cold[:, None]*eorAcceptedModes[:,
+                                                                                                          None]*eorOccupancy[:, None]*eorEqBw*doe  # Look at t_cold in excel sheet
 
     return {"netW8Avg": netW8Avg, "netW8RJ":
             netW8RJ, "neiW8": neiW8, "eorNEFD": eorNEFD, "eorNEI": eorNEI, "powerPerPixel":
             powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam}
 
 
-def averageTransSE(filePath, start, end):
+def _averageTransSE(filePath, start, end):
     file = open("data/" + filePath + ".out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
@@ -250,29 +251,29 @@ def averageTransSE(filePath, start, end):
     return transmission / ((end - start) * 100)
 
 
-def averageTransHelper(filePath, center, width):
-    return averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
+def _averageTransHelper(filePath, center, width):
+    return _averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
 
 
-def averageTrans(prefix, angle, percentile, center, width):
+def _averageTrans(prefix, angle, percentile, center, width):
     if angle >= 15 and angle <= 75 and int(angle) == angle:
-        return averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width)
+        return _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width)
     elif int(angle) != angle:
-        floor = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                   str(percentile) + "." + str(int(np.floor(angle))), center, width)
-        ceil = averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                  str(percentile) + "." + str(int(np.ceil(angle))), center, width)
+        floor = _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
+                                    str(percentile) + "." + str(int(np.floor(angle))), center, width)
+        ceil = _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
+                                   str(percentile) + "." + str(int(np.ceil(angle))), center, width)
         prop = angle - np.floor(angle)
         return floor * (1 - prop) + ceil * prop
     else:
         print("Angle out of range")
 
 
-def getEQTrans(angle, center, width):
-    return np.array([[averageTrans("CerroConfig/", angle, percentile, centeri, widthi) for percentile in [25, 50, 75]] for centeri, widthi in zip(center, width)])
+def _getEQTrans(angle, center, width):
+    return np.array([[_averageTrans("CerroConfig/", angle, percentile, centeri, widthi) for percentile in [25, 50, 75]] for centeri, widthi in zip(center, width)])
 
 
-def trun(array, decimalPlaces):
+def _trun(array, decimalPlaces):
     if decimalPlaces != None:
         for k1 in array:
             if type(array[k1]) == dict:
@@ -285,7 +286,7 @@ def trun(array, decimalPlaces):
         return array
 
 
-def valueDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
+def _valueDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
     if len(w) > 0:
         unit = None
         if outputFreq:
@@ -293,28 +294,29 @@ def valueDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
         else:
             unit = " um"
         dict.update({str(int(w[0])) + unit: array[0]})
-        return valueDisplayHelper(array[1:], w[1:], dict, outputFreq, decimalPlaces)
+        return _valueDisplayHelper(array[1:], w[1:], dict, outputFreq, decimalPlaces)
     else:
-        return trun(dict, decimalPlaces)
+        return _trun(dict, decimalPlaces)
 
 
 # Creates a dictionary to be put into a yaml file for broadband data
-def valueDisplay(array, outputFreq, centerFrequency, wavelength, decimalPlaces):
+def _valueDisplay(array, outputFreq, centerFrequency, wavelength, decimalPlaces):
     if type(array) == np.ndarray:
-        array = arrayify(array)
+        array = _arrayify(array)
     outputLabel = None
     if outputFreq:
         outputLabel = centerFrequency / 1e9
     else:
         outputLabel = wavelength
-    return valueDisplayHelper(array, outputLabel, {}, outputFreq, decimalPlaces)
+    return _valueDisplayHelper(array, outputLabel, {}, outputFreq, decimalPlaces)
 
 
 def valDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
-    return partial(valueDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
+    """Returns a function that takes a 1d array as input and returns a dictionary marking the data with frequency/wavelength information. [outputFreq] is a boolean flag for frequency/wavelength output."""
+    return partial(_valueDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
 
 
-def quartileDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
+def _quartileDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
     if len(w) > 0:
         unit = None
         if outputFreq:
@@ -323,42 +325,47 @@ def quartileDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
             unit = " um"
         dict.update({str(int(w[0])) + unit: {"Quartile 1": array[0][0], "Quartile 2": array[0]
                     [1], "Quartile 3": array[0][2]}})
-        return quartileDisplayHelper(array[1:], w[1:], dict, outputFreq, decimalPlaces)
+        return _quartileDisplayHelper(array[1:], w[1:], dict, outputFreq, decimalPlaces)
     else:
-        return trun(dict, decimalPlaces)
+        return _trun(dict, decimalPlaces)
 
 
 # Creates a dictionary to be put into a yaml file for data involving quartiles
-def quartileDisplay(array, outputFreq, centerFrequency, wavelength, decimalPlaces):
+def _quartileDisplay(array, outputFreq, centerFrequency, wavelength, decimalPlaces):
     if type(array) == np.ndarray:
-        array = arrayify(array)
+        array = _arrayify(array)
     outputLabel = None
     if outputFreq:
         outputLabel = centerFrequency / 1e9
     else:
         outputLabel = wavelength
-    return quartileDisplayHelper(array, outputLabel, {}, outputFreq, decimalPlaces)
+    return _quartileDisplayHelper(array, outputLabel, {}, outputFreq, decimalPlaces)
 
 
 def quartDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
-    return partial(quartileDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
+    """Returns a function that takes a 2d array as input (representing frequency on one axis and quartiles on the other) and returns a dictionary marking frequency and quartile information. [outputFreq] is a boolean flag for frequency/wavelength output."""
+    return partial(_quartileDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
 
 
 def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal):
-    partTrans = partial(getEQTrans, center=centerFrequency, width=eqbw)
-    partCalc = partial(calculate, diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency,
+    """Returns a function that takes observation zenith angle as an input and returns the following outputs in a dictionary: NET Weighted Average as "netW8Avg", NET Weighted RJ as "netW8RJ", NEI Weighted Average as "neiW8", EoR Spec NEFD as "eorNEFD", EoR Spec NEI as "eorNEI", Power per Pixel as "powerPerPixel", EoR Spec Power per Pixel as "eorPowerPerPixel", Center Wavelengths as "wavelength", Beam as "beam"."""
+
+    partTrans = partial(_getEQTrans, center=centerFrequency, width=eqbw)
+    partCalc = partial(_calculate, diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency,
                        singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal)
     return lambda x: partCalc(partTrans(x))
 
 
 def sensitivityFile(outputs, valueDisplay, quartileDisplay):
+    """Outputs output.yaml"""
     dict_file = {"NET w8 avg": valueDisplay(outputs["netW8Avg"]),
                  "NET w8 RJ": valueDisplay(outputs["netW8RJ"]), "NEI w8 Jy/sr": valueDisplay(
         outputs["neiW8"]), "EoR Spec NEFD": quartileDisplay(outputs["eorNEFD"]), "EoR Spec NEI": quartileDisplay(outputs["eorNEI"])}
     return yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
-def powerFile(outputs, quartileDisplay):
+def powerFile(outputs, calculate, quartileDisplay):
+    """Outputs power.yaml"""
     outputs60 = calculate(30)
     outputs45 = calculate(45)
 
@@ -373,7 +380,7 @@ def powerFile(outputs, quartileDisplay):
     return yaml.dump(dict_file, open("power.yaml", 'w'), sort_keys=False)
 
 
-def calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=False, f=None):
+def _calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=False, f=None):
     def power2(db):
         return 10.0**(db/10.0)
 
@@ -404,7 +411,7 @@ def calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=Fal
             la = " at %d GHz" % f
         plt.plot(np.degrees(th)[:721], power2(
             values)/np.max(power2(values)), label="Doug phi = 0" + la, linewidth=2)
-        plt.axvline(x=half_angle, color='k',
+        plt.axvline(x=half_angle, color='_k',
                     linewidth=2, label='Lyot stop angle')
         plt.legend(loc=0)
         plt.xlim(0, 180)
@@ -416,16 +423,17 @@ def calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=Fal
     return spill_eff
 
 
-def getColdSpillOverEfficiency(i, beamFreq, beamPixelSpacing, degrees, values, showPlots=False):
-    return np.array([calcSpillFromData(i["lyotStopAngle"], beamFreq / (f * (s / beamPixelSpacing)), degrees, values, showPlots=showPlots, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
+def _getColdSpillOverEfficiency(i, beamFreq, beamPixelSpacing, degrees, values, showPlots=False):
+    return np.array([_calcSpillFromData(i["lyotStopAngle"], beamFreq / (f * (s / beamPixelSpacing)), degrees, values, showPlots=showPlots, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
 
 
 def spillEfficiencyFile(i, calculate, spillEfficiency):
+    """Prints a chart comparing calculated spill efficiencies to the excel values of spill efficiencies to stdout."""
     output = calculate(45)
     t = Texttable(max_width=110)
     t.set_cols_dtype(['i', (lambda x: "%.1f" % float(x)), 'f', 'i',
                      (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
-    t.set_cols_align(['c', 'c', 'c', 'c', 'c', 'c', 'c'])
+    t.set_cols_align(['_c', '_c', '_c', '_c', '_c', '_c', '_c'])
     excelSpillEff = [.8, .5, .7, .5, .5]
     excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
     t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET (uK rt(s))', 'Calculated NET (uK rt(s))'], (-1, 1)),
@@ -435,6 +443,7 @@ def spillEfficiencyFile(i, calculate, spillEfficiency):
 
 # Load the beam file and pass the angle and value data to other functions
 def getSpillEfficiency(i):
+    """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
     data = np.genfromtxt(
         'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
     degr = data[0, :, 0]
@@ -442,11 +451,12 @@ def getSpillEfficiency(i):
     #data = np.genfromtxt('data/beam_280.txt')
     #degr = np.degrees(data[:, 0])
     #vals = np.log10((data[:, 1]**2))*10
-    return getColdSpillOverEfficiency(
+    return _getColdSpillOverEfficiency(
         i, 280e9, 2.75, degr, vals, showPlots=False)
 
 
 def custOutput(i, outputs, actuallyCalculate=False):
+    """Temporary function for playing with mapsims"""
     centerFrequency = None
     beam = None
     net = None
@@ -460,7 +470,7 @@ def custOutput(i, outputs, actuallyCalculate=False):
         net = outputs["netW8Avg"][::-1]
     ccat = Noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
                       24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
-    fsky = 20000./(4*np.pi*(180/np.pi)**2)
+    fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
         fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
@@ -495,6 +505,6 @@ if __name__ == "__main__":
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
     sensitivityFile(outputs, valueDisplay, quartileDisplay)
-    powerFile(outputs, quartileDisplay)
+    powerFile(outputs, calculate, quartileDisplay)
     spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     #custOutput(i, outputs, actuallyCalculate=True)
