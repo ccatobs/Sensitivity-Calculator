@@ -507,4 +507,4 @@ if __name__ == "__main__":
     sensitivityFile(outputs, valueDisplay, quartileDisplay)
     powerFile(outputs, calculate, quartileDisplay)
     spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    #custOutput(i, outputs, actuallyCalculate=True)
+    custOutput(i, outputs, actuallyCalculate=False)

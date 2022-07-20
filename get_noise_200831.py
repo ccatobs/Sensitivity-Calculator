@@ -29,10 +29,10 @@ if True:
     image_data = fits.getdata(image_file, extname='xtension')
     print(image_data.shape)
     print(image_data.dtype)
-    x = 0
-    image_data = image_data.Q_POLARISATION[:, ::10]
+    image_data = image_data.TEMPERATURE[:, ::10]
     print(image_data.shape)
     print(image_data.dtype)
+    print(data == image_data)
     plt.figure()
     plt.imshow(image_data)
     plt.colorbar()

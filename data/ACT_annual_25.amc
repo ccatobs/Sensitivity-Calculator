@@ -35,7 +35,7 @@
 ?  am ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >ACT_annual_25.45.out
 ?
 f %1 %2  %3 %4  %5 %6
-output f GHz  tx
+output f GHz  tx  Tb  Trj  Tsys
 za %7 %8
 tol 1e-4
 
