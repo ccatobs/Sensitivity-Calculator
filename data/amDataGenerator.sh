@@ -26,6 +26,22 @@ HigherQ1=$(bc <<<"scale=10; ($CerroChajnantorPWVQ1 + 0.01)/$ACTConfigQ1")
 HigherQ2=$(bc <<<"scale=10; ($CerroChajnantorPWVQ2 + 0.01)/$ACTConfigQ2")
 HigherQ3=$(bc <<<"scale=10; ($CerroChajnantorPWVQ3 + 0.01)/$ACTConfigQ3")
 
+echo $ACTConfigQ1
+echo $ACTConfigQ2
+echo $ACTConfigQ3
+
+echo $LowerQ1
+echo $CerroConfigQ1
+echo $HigherQ1
+
+echo $LowerQ2
+echo $CerroConfigQ2
+echo $HigherQ2
+
+echo $LowerQ3
+echo $CerroConfigQ3
+echo $HigherQ3
+
 #Create base files so ACT's PWVs are known
 for p in 25 50 75
 do
