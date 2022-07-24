@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plotCustom(filePath, label):
+def plotCustom(filePath, label, col=1):
     file = open(filePath, "r")
     data = file.readlines()
 
     x = [float(i.split(" ")[0]) for i in data]
-    y = [float(i.split(" ")[1]) for i in data]
+    y = [float(i.split(" ")[col]) for i in data]
 
     file.close()
 
@@ -86,10 +86,10 @@ def plotAll(angle):
 
 
 # Requested graphs go here
-plotAll(45)
+plotCustom("data/Higher/50/ACT_annual_50.45.out", "temp", col=2)
+#plt.ylim(ymin=0, ymax=1)
 
 
-plt.ylim(ymin=0, ymax=1)
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
 plt.legend(loc="upper right")
