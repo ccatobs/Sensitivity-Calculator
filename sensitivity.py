@@ -3,7 +3,7 @@ import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
 from texttable import Texttable
-import Noise
+import noise
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 _pi = np.pi
@@ -233,11 +233,11 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
             powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam}
 
 
-def _averageTransSE(filePath, start, end):
+def _averageTransSE(filePath, start, end, col=1):
     file = open("data/" + filePath + ".out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
-    y = [float(i.split(" ")[1]) for i in data]
+    y = [float(i.split(" ")[col]) for i in data]
     file.close()
 
     transmission = 0
@@ -251,18 +251,18 @@ def _averageTransSE(filePath, start, end):
     return transmission / ((end - start) * 100)
 
 
-def _averageTransHelper(filePath, center, width):
-    return _averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9)
+def _averageTransHelper(filePath, center, width, col=1):
+    return _averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9, col)
 
 
-def _averageTrans(prefix, angle, percentile, center, width):
+def _averageTrans(prefix, angle, percentile, center, width, col=1):
     if angle >= 15 and angle <= 75 and int(angle) == angle:
-        return _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width)
+        return _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width, col)
     elif int(angle) != angle:
         floor = _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                    str(percentile) + "." + str(int(np.floor(angle))), center, width)
+                                    str(percentile) + "." + str(int(np.floor(angle))), center, width, col)
         ceil = _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                   str(percentile) + "." + str(int(np.ceil(angle))), center, width)
+                                   str(percentile) + "." + str(int(np.ceil(angle))), center, width, col)
         prop = angle - np.floor(angle)
         return floor * (1 - prop) + ceil * prop
     else:
@@ -457,34 +457,76 @@ def getSpillEfficiency(i):
 
 def custOutput(i, outputs, actuallyCalculate=False):
     """Temporary function for playing with mapsims"""
-    centerFrequency = None
-    beam = None
-    net = None
-    if not actuallyCalculate:
-        centerFrequency = [222., 280., 348., 405., 850.]
-        beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
-        net = [6.8, 12.7, 47.7, 181.8, 305400.7]
-    else:
-        centerFrequency = i['centerFrequency'][::-1]/1e9
-        beam = outputs["beam"][::-1]/60
-        net = outputs["netW8Avg"][::-1]
-    ccat = Noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
-    fsky = 20000./(4*_pi*(180/_pi)**2)
-    lat_lmax = 10000
-    ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
-        fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
-    plotTemperature = True
-    for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
-        plt.plot(ell, curve, label=str(int(label))+' GHz')
-        plt.yscale('log')
-        plt.ylim(10**-5, 10**3)
-        plt.xscale('log')
-        plt.xlim(10**2, 10**4)
-        plt.title("Temperature" if plotTemperature else "Polarization")
-    plt.legend(loc='upper right')
-    plt.grid()
-    plt.show()
+    if False:
+        centerFrequency = None
+        beam = None
+        net = None
+        if not actuallyCalculate:
+            centerFrequency = [222., 280., 348., 405., 850.]
+            beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
+            net = [6.8, 12.7, 47.7, 181.8, 305400.7]
+        else:
+            centerFrequency = i['centerFrequency'][::-1]/1e9
+            beam = outputs["beam"][::-1]/60
+            net = outputs["netW8Avg"][::-1]
+        ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
+                          24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
+        fsky = 20000./(4*_pi*(180/_pi)**2)
+        lat_lmax = 10000
+        ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
+            fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
+        plotTemperature = True
+        for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
+            plt.plot(ell, curve, label=str(int(label))+' GHz')
+            plt.yscale('log')
+            plt.ylim(10**-5, 10**3)
+            plt.xscale('log')
+            plt.xlim(10**2, 10**4)
+            plt.title("Temperature" if plotTemperature else "Polarization")
+        plt.legend(loc='upper right')
+        plt.grid()
+        plt.show()
+    if True:
+        p = 50
+        a = 45
+        col = 3
+        higher = np.array([_averageTrans("Higher/", a, p, c, w, col)
+                           for c, w in zip(i["centerFrequency"], i["eqbw"])])
+        lower = np.array([_averageTrans("Lower/", a, p, c, w, col)
+                          for c, w in zip(i["centerFrequency"], i["eqbw"])])
+        print("Frequencies:")
+        print((i["centerFrequency"]/1e9).astype(int)[::-1])
+        #print("T slightly higher/lower for derivative use:")
+        # print(higher)
+        # print(lower)
+        derivative = (higher - lower) / 0.02
+        tB = derivative**2
+        tTh = None
+        if True:
+            t = 2.725
+            x = _h * i["centerFrequency"] / (_k * t)
+            tTh = tB * (_e**x - 1) / x
+        else:
+            def A_to_CMB(freq_in_GHz):
+                h = _h
+                kb = _k
+                T = 2.725
+                v = freq_in_GHz*1e9
+                x = h*v/(kb*T)
+                return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+            cmb = np.array([A_to_CMB(f/1e9) for f in i["centerFrequency"]])
+            tTh = tB * cmb
+        print("dT/dPWV:")
+        print(tTh[::-1])
+        print("data_C:")
+        print(np.array([
+            # below factors from am_output/mult_pwv/get_derivative_ccat.py
+            2.31956542e+05,
+            1.61527385e+06,
+            4.03473727e+07,
+            2.51490116e+08,
+            9.10884821e+13
+        ]))
 
 
 if __name__ == "__main__":
@@ -504,7 +546,19 @@ if __name__ == "__main__":
     quartileDisplay = quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    sensitivityFile(outputs, valueDisplay, quartileDisplay)
-    powerFile(outputs, calculate, quartileDisplay)
-    spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    custOutput(i, outputs, actuallyCalculate=False)
+    #sensitivityFile(outputs, valueDisplay, quartileDisplay)
+    #powerFile(outputs, calculate, quartileDisplay)
+    #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    #custOutput(i, outputs, actuallyCalculate=False)
+
+    x = _h * i["centerFrequency"] / (_k * 2.725)
+    print((_e**x - 1) / x)
+
+    def A_to_CMB(freq_in_GHz):
+        h = _h
+        kb = _k
+        T = 2.725
+        v = freq_in_GHz*1e9
+        x = h*v/(kb*T)
+        return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+    print(np.array([A_to_CMB(f/1e9) for f in i["centerFrequency"]]))
