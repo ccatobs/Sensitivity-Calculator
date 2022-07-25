@@ -1,4 +1,4 @@
-# TODO: data_C, ccat_pwv_cor, el_noise_params
+# TODO: data_C, ccat_pwv_cor
 import numpy as np
 
 
@@ -27,7 +27,7 @@ def get_atmosphere_C(freqs, el=None):
     if el is None:
         el = 50.
     el_correction = np.sin(50.*np.pi/180) / np.sin(el*np.pi/180)
-    ccat_pwv_cor = 0.6/1.0
+    ccat_pwv_cor = 0.67/1.0  # Ratio between CCAT site and ACT site
     data_bands = np.array(freqs)
     data_C = np.array([
         # below factors from am_output/mult_pwv/get_derivative_ccat.py
@@ -54,24 +54,6 @@ class SOLatType:
         return self.beams.copy()
 
     def precompute(self, N_tubes, N_tels=1):
-        white_noise_el_rescale = np.array([1.] * len(self.bands))
-        if self.el is not None:
-            el_data = self.el_noise_params
-            el_lims = el_data.get('valid')
-            if el_lims[0] == 'only':
-                # noise model only valid at one elevation...
-                assert(self.el == el_lims[1])
-            else:
-                assert(el_lims[0] <= self.el) and (self.el <= el_lims[1])
-                band_idx = np.array(
-                    [np.argmin(abs(el_data['bands'] - b)) for b in self.bands])
-                assert(
-                    np.all(abs(np.array(el_data['bands'])[band_idx] - self.bands) <= 5))
-                coeffs = el_data['coeffs']
-                white_noise_el_rescale = np.array(
-                    [el_noise_func(coeffs[i], self.el) / el_noise_func(coeffs[i], 50.)
-                     for i in band_idx])
-
         # Accumulate total white noise level and atmospheric
         # covariance matrix for this configuration.
 
@@ -224,30 +206,6 @@ class CCAT(SOLatType):
 
         # Save the elevation request.
         self.el = el
-
-        self.el_noise_params = {
-            'valid': (25., 70.),
-            'bands': [20, 27, 39, 93, 145, 222., 280., 348., 405., 850.],
-            # 20,350,410 GHz coeffs below got modified by plotting freq vs b
-            # and extrapolating by eye
-            # 20 GHz is normalized
-            'coeffs': [
-                # From B. Racine & D. Barkats.
-                (178.59719595/226.297845113, 33.72945249/226.297845113),
-                (.85, .11),                   # From Carlos Sierra and J. McMahon vvv
-                (.65, .25),
-                ((.76+.69)/2, (.17+.22)/2),
-                ((.73+.69)/2, (.19+.22)/2),
-                (.55, .32),
-                (.47, .37),
-                # (.47, .37),  # 281 &  -- hack for XHF tube "at CCAT site"
-                # below from: el_vs_NET_model_190503.py
-                (.47/1.04558491989, .37*1.1/1.04558491989),  # 350
-                (.47/1.08744564133, .37*1.18/1.08744564133),  # 410
-                # 860    -- copied from above -SC
-                (.47/1.08744564133, .37*1.18/1.08744564133),
-            ],
-        }
 
         # Factor by which to attenuate atmospheric power, given FOV
         # relative to ACT?
