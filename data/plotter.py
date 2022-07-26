@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plotCustom(filePath, label, col=1):
+def plotCustom(filePath, label, col=1, ylabel=None, title=None):
     file = open(filePath, "r")
     data = file.readlines()
 
@@ -12,9 +12,13 @@ def plotCustom(filePath, label, col=1):
     file.close()
 
     plt.plot(x, y, linewidth=1, label=label)
+    if ylabel is not None:
+        plt.ylabel(ylabel)
+    if title is not None:
+        plt.title(title)
 
 
-def plotFraction(angle, percentile, label, prefix="", approx=False):
+def plotFraction(angle, percentile, label, prefix="", approx=False, col=1):
     if prefix == None:
         prefix = ""
     if angle >= 15 and angle <= 75 and int(angle) == angle:
@@ -25,13 +29,13 @@ def plotFraction(angle, percentile, label, prefix="", approx=False):
                          str(percentile) + "." + str(int(np.floor(angle))) + ".out", "r")
         floorData = floorFile.readlines()
         floorx = [float(i.split(" ")[0]) for i in floorData]
-        floory = [float(i.split(" ")[1]) for i in floorData]
+        floory = [float(i.split(" ")[col]) for i in floorData]
         floorFile.close()
 
         ceilFile = open("data/" + prefix + str(percentile) + ("_approx" if approx else "") + "/ACT_annual_" +
                         str(percentile) + "." + str(int(np.ceil(angle))) + ".out", "r")
         ceilData = ceilFile.readlines()
-        ceily = [float(i.split(" ")[1]) for i in ceilData]
+        ceily = [float(i.split(" ")[col]) for i in ceilData]
         ceilFile.close()
 
         prop = angle - np.floor(angle)
@@ -60,6 +64,8 @@ def plotExcel(percentile):
         y = [t[int(percentile/25)-1], t[int(percentile/25)-1]]
         plt.plot(x, y,
                  linewidth=2, label=("Excel " + str(int(f/1e9)) + " GHz"))
+    plt.ylim(ymin=0, ymax=1)
+    plt.ylabel("Transmission")
 
 
 # Plots the current transmission graphs, and excel sheet if angle is 45 degrees and excelTrans is True
@@ -74,6 +80,8 @@ def plotCurrent(angle, percentile, label=None, excelTrans=False):
         plotExcel(percentile)
     plt.title("Transmission at " +
               str(angle) + " degrees Zenith Angle, Q" + str(int(percentile/25)))
+    plt.ylim(ymin=0, ymax=1)
+    plt.ylabel("Transmission")
 
 
 # Plots all transmission graphs
@@ -83,16 +91,18 @@ def plotAll(angle):
     plotCurrent(angle, 75, "Q3")
     plt.title("Transmission at " + str(90 - angle) +
               " Observation Elevation Angle")
+    plt.ylim(ymin=0, ymax=1)
+    plt.ylabel("Transmission")
 
 
 # Requested graphs go here
-plotCustom("data/Higher/50/ACT_annual_50.45.out", "temp", col=2)
-#plt.ylim(ymin=0, ymax=1)
+plotCustom("data/Lower/50/ACT_annual_50.45.out", "Lower PWV", col=2)
+plotCustom("data/Higher/50/ACT_annual_50.45.out", "Higher PWV", col=2,
+           ylabel="Brightness Temperature", title="Temperature for Derivative Calculations")
 
 
 plt.xlim(xmin=0, xmax=1000)
 plt.grid(which="both", axis="y")
-plt.legend(loc="upper right")
+plt.legend(loc="best")
 plt.xlabel("Frequency (GHz)")
-plt.ylabel("Transmission")
 plt.show()
