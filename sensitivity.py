@@ -10,8 +10,8 @@ _pi = np.pi
 _ln = np.log
 _sqrt = np.sqrt
 _e = np.e
-_h = 6.626e-34
-_k = 1.38e-23
+_h = 6.62606957e-34
+_k = 1.3806488e-23
 _c = 299792458
 _arrayify = np.ndarray.tolist
 
@@ -457,7 +457,7 @@ def getSpillEfficiency(i):
 
 def custOutput(i, outputs, actuallyCalculate=False):
     """Temporary function for playing with mapsims"""
-    if False:
+    if True:
         centerFrequency = None
         beam = None
         net = None
@@ -486,7 +486,7 @@ def custOutput(i, outputs, actuallyCalculate=False):
         plt.legend(loc='upper right')
         plt.grid()
         plt.show()
-    if True:
+    if False:
         p = 50
         a = 45
         col = 3
@@ -500,22 +500,19 @@ def custOutput(i, outputs, actuallyCalculate=False):
         # print(higher)
         # print(lower)
         derivative = (higher - lower) / 0.02
+        print("Slopes:")
+        print(((derivative*10).astype(int)/10)[::-1])
         tB = derivative**2
-        tTh = None
-        if True:
-            t = 2.725
-            x = _h * i["centerFrequency"] / (_k * t)
-            tTh = tB * (_e**x - 1) / x
-        else:
-            def A_to_CMB(freq_in_GHz):
-                h = _h
-                kb = _k
-                T = 2.725
-                v = freq_in_GHz*1e9
-                x = h*v/(kb*T)
-                return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-            cmb = np.array([A_to_CMB(f/1e9) for f in i["centerFrequency"]])
-            tTh = tB * cmb
+
+        def A_to_CMB(freq_in_GHz):
+            h = _h
+            kb = _k
+            T = 2.725
+            v = freq_in_GHz*1e9
+            x = h*v/(kb*T)
+            return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+        cmb = np.array([A_to_CMB(f/1e9) for f in i["centerFrequency"]])
+        tTh = tB * cmb
         print("dT/dPWV:")
         print(tTh[::-1])
         print("data_C:")
@@ -527,6 +524,16 @@ def custOutput(i, outputs, actuallyCalculate=False):
             2.51490116e+08,
             9.10884821e+13
         ]))
+        for s, f in zip(derivative[::-1], i["centerFrequency"][::-1]/1e9):
+            print("freq=%.1f; slope = %.1f" % (f, s))
+
+        last = (_averageTrans("Higher/", a, p, 145e9, 145*0.276e9, col) -
+                _averageTrans("Lower/", a, p, 145e9, 145*0.276e9, col))/0.02
+        dataCs = np.array([])
+        for n in range(len(i["centerFrequency"])):
+            dataCs = np.append(dataCs,
+                               (derivative[n]*A_to_CMB(i["centerFrequency"][n]/1e9)/(last*A_to_CMB(145)))**2)
+        print(dataCs[::-1]*1.2e4)
 
 
 if __name__ == "__main__":
@@ -549,16 +556,17 @@ if __name__ == "__main__":
     #sensitivityFile(outputs, valueDisplay, quartileDisplay)
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    #custOutput(i, outputs, actuallyCalculate=False)
+    custOutput(i, outputs, actuallyCalculate=False)
+    if False:
+        x = _h * i["centerFrequency"] / (_k * 2.725)
+        print(((np.exp(x) - 1) / x).astype(int))
 
-    x = _h * i["centerFrequency"] / (_k * 2.725)
-    print((_e**x - 1) / x)
-
-    def A_to_CMB(freq_in_GHz):
-        h = _h
-        kb = _k
-        T = 2.725
-        v = freq_in_GHz*1e9
-        x = h*v/(kb*T)
-        return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-    print(np.array([A_to_CMB(f/1e9) for f in i["centerFrequency"]]))
+        def A_to_CMB(freq_in_GHz):
+            h = _h
+            kb = _k
+            T = 2.725
+            v = freq_in_GHz*1e9
+            x = h*v/(kb*T)
+            return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+        print(np.array([A_to_CMB(f/1e9)
+                        for f in i["centerFrequency"]]).astype(int))

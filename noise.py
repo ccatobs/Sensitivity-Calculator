@@ -1,8 +1,9 @@
 # TODO: data_C, ccat_pwv_cor
+import pwvCalculator as pwv
 import numpy as np
 
 
-def get_atmosphere_C(freqs, el=None):
+def get_atmosphere_C(freqs, el=None, data_C=None):
     """
     Returns atmospheric noise power at ell=1000, for an ACTPol optics
     tube.  In units of [uK^2 sec].  This only works for a few special
@@ -27,16 +28,18 @@ def get_atmosphere_C(freqs, el=None):
     if el is None:
         el = 50.
     el_correction = np.sin(50.*np.pi/180) / np.sin(el*np.pi/180)
-    ccat_pwv_cor = 0.67/1.0  # Ratio between CCAT site and ACT site
+    # Ratio between CCAT site and ACT site
+    ccat_pwv_cor = 0.67/pwv.configPWV(50)
     data_bands = np.array(freqs)
-    data_C = np.array([
-        # below factors from am_output/mult_pwv/get_derivative_ccat.py
-        2.31956542e+05,
-        1.61527385e+06,
-        4.03473727e+07,
-        2.51490116e+08,
-        9.10884821e+13
-    ])
+    if data_C is None:
+        data_C = np.array([
+            # below factors from am_output/mult_pwv/get_derivative_ccat.py
+            2.31956542e+05,
+            1.61527385e+06,
+            4.03473727e+07,
+            2.51490116e+08,
+            9.10884821e+13
+        ])
     data = {}
     for b, C in zip(data_bands, data_C):
         data[b] = C
@@ -53,7 +56,7 @@ class SOLatType:
     def get_beams(self):
         return self.beams.copy()
 
-    def precompute(self, N_tubes, N_tels=1):
+    def precompute(self, N_tubes, N_tels=1, data_C=None):
         # Accumulate total white noise level and atmospheric
         # covariance matrix for this configuration.
 
@@ -70,7 +73,8 @@ class SOLatType:
         self.band_sens[s] = band_weights[s]**-0.5
 
         # Special for atmospheric noise model.
-        self.Tatmos_C = get_atmosphere_C(self.bands, el=self.el) * self.FOV_mod
+        self.Tatmos_C = get_atmosphere_C(
+            self.bands, el=self.el, data_C=data_C) * self.FOV_mod
         self.Tatmos_ell = 1000. + np.zeros(self.n_bands)
         self.Tatmos_alpha = -3.5 + np.zeros(self.n_bands)
 
@@ -172,7 +176,7 @@ class CCAT(SOLatType):
     """
     atm_version = 1
 
-    def __init__(self, centerFrequency, beam, net,
+    def __init__(self, centerFrequency, beam, net, data_C=None,
                  N_tubes=None, N_tels=None,
                  survey_years=4000/24./365.24,
                  survey_efficiency=1.0,
@@ -224,4 +228,4 @@ class CCAT(SOLatType):
         else:
             N_tubes = [(b, x) for (b, n), x in zip(ref_tubes, N_tubes)]
 
-        self.precompute(N_tubes, N_tels)
+        self.precompute(N_tubes, N_tels, data_C=data_C)

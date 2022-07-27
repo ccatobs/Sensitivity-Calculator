@@ -5,3 +5,4 @@ venv
 .empty
 output
 .ipynb_checkpoints
+.vscode

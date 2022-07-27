@@ -19,4 +19,5 @@ def configPWV(percentile):
     return configPWVHelper("data/" + str(percentile) + "/ACT_annual_" + str(percentile) + ".45.err")
 
 
-print(configPWV(sys.argv[1]))
+if __name__ == '__main__':
+    print(configPWV(sys.argv[1]))

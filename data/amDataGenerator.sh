@@ -7,9 +7,9 @@ CerroChajnantorPWVQ2=0.67
 CerroChajnantorPWVQ3=1.28
 
 #PWV values in ACT configuration files
-ACTConfigQ1=$(python3 data/pwvCalculator.py 25)
-ACTConfigQ2=$(python3 data/pwvCalculator.py 50)
-ACTConfigQ3=$(python3 data/pwvCalculator.py 75)
+ACTConfigQ1=$(python3 pwvCalculator.py 25)
+ACTConfigQ2=$(python3 pwvCalculator.py 50)
+ACTConfigQ3=$(python3 pwvCalculator.py 75)
 
 #Ratio of PWVs used in CCAT site data generation
 CerroConfigQ1=$(bc <<<"scale=10; $CerroChajnantorPWVQ1/$ACTConfigQ1")
