@@ -457,20 +457,79 @@ def getSpillEfficiency(i):
 
 def custOutput(i, outputs, actuallyCalculate=False):
     """Temporary function for playing with mapsims"""
+    def data_C_calc():
+        p = 50
+        a = 45
+        col = 2
+
+        def averageTemp(prefix, angle, percentile, start, end):
+            file = open("data/" + prefix + "/" + str(percentile) +
+                        "/ACT_annual_" + str(percentile) + "." + str(angle) + ".out", "r")
+            data = file.readlines()
+            x = [float(i.split(" ")[0]) for i in data]
+            y = [float(i.split(" ")[col]) for i in data]
+            file.close()
+            d_nu = x[1]-x[0]
+            ghzStart = start/1e9
+            ghzEnd = end/1e9
+
+            temperature = 0
+            for (f, temp) in zip(x, y):
+                if f < ghzStart:
+                    continue
+                if f >= ghzEnd:
+                    break
+                temperature += temp*(f*10**9)**2*d_nu
+
+            corr = 0
+            for f in x:
+                if f < ghzStart:
+                    continue
+                if f >= ghzEnd:
+                    break
+                corr += (f*10**9)**2*d_nu
+
+            return temperature/corr
+
+        higher = np.array([averageTemp("Higher", a, p, c-w/2, c+w/2)
+                          for c, w in zip(i["centerFrequency"], i["eqbw"])])
+        lower = np.array([averageTemp("Lower", a, p, c-w/2, c+w/2)
+                          for c, w in zip(i["centerFrequency"], i["eqbw"])])
+        derivative = (higher - lower) / 0.02
+        print(derivative*10.6/13.2)
+
+        def A_to_CMB(freq_in_GHz):
+            h = _h
+            kb = _k
+            T = 2.725
+            v = freq_in_GHz*1e9
+            x = h*v/(kb*T)
+            return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+        last = (_averageTrans("Higher/", a, p, 145e9, 145*0.276e9, col) -
+                _averageTrans("Lower/", a, p, 145e9, 145*0.276e9, col))/0.02
+        dataCs = np.array([])
+        for n in range(len(i["centerFrequency"])):
+            dataCs = np.append(dataCs,
+                               (derivative[n]*A_to_CMB(i["centerFrequency"][n]/1e9)/(last*A_to_CMB(145)))**2)
+        print(dataCs[::-1]*1.2e4)
+        return dataCs[::-1]*1.2e4
     if True:
         centerFrequency = None
         beam = None
         net = None
+        data_C = None
         if not actuallyCalculate:
             centerFrequency = [222., 280., 348., 405., 850.]
             beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
             net = [6.8, 12.7, 47.7, 181.8, 305400.7]
+            data_C = None  # Automatic values
         else:
             centerFrequency = i['centerFrequency'][::-1]/1e9
             beam = outputs["beam"][::-1]/60
             net = outputs["netW8Avg"][::-1]
+            data_C = data_C_calc()
         ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                          24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45.)
+                          24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
         fsky = 20000./(4*_pi*(180/_pi)**2)
         lat_lmax = 10000
         ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -556,17 +615,4 @@ if __name__ == "__main__":
     #sensitivityFile(outputs, valueDisplay, quartileDisplay)
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    custOutput(i, outputs, actuallyCalculate=False)
-    if False:
-        x = _h * i["centerFrequency"] / (_k * 2.725)
-        print(((np.exp(x) - 1) / x).astype(int))
-
-        def A_to_CMB(freq_in_GHz):
-            h = _h
-            kb = _k
-            T = 2.725
-            v = freq_in_GHz*1e9
-            x = h*v/(kb*T)
-            return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-        print(np.array([A_to_CMB(f/1e9)
-                        for f in i["centerFrequency"]]).astype(int))
+    custOutput(i, outputs, actuallyCalculate=True)
