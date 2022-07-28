@@ -35,7 +35,7 @@
 ?  am ACT_annual_75.amc  0 GHz  300 GHz  10 MHz  0 deg  1.0
 ?
 f %1 %2  %3 %4  %5 %6
-output f GHz  tx  Tb  Trj  Tsys
+output f GHz  tx  Trj
 za %7 %8
 tol 1e-4
 
