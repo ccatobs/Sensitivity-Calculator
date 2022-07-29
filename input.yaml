@@ -15,13 +15,13 @@ sz-camNumPoln: 1
 eor-specNumPoln: 2
 
 #Instrument
-t_filter_cold: [.593, .840, .909, .922, .890]
+t_filter_cold: [.890, .922, .909, .840, .593]
 t_lens_cold: [.98, .98, .98, .98, .98]
-t_uhdpe_window: [.96, .97, .97, .97, .97]
+t_uhdpe_window: [.97, .97, .97, .97, .96]
 singleModedAOmegaLambda2: [1., 1., 1., 1., 1.]
-spatialPixels: [36450, 20808, 10368, 10368, 7938] #Pixels in each detector
-eqbw: [9.7e+10, 3.e+10, 3.6e+10, 7.e+10, 5.6e+10] #Detector bandwidth
-centerFrequency: [8.5e+11, 4.05e+11, 3.48e+11, 2.85e+11, 2.22e+11] #Center of the detector's frequency range
+spatialPixels: [7938, 10368, 10368, 20808, 36450] #Pixels in each detector
+eqbw: [5.6e+10, 7.e+10, 3.6e+10, 3.e+10, 9.7e+10] #Detector bandwidth
+centerFrequency: [2.22e+11, 2.85e+11, 3.48e+11, 4.05e+11, 8.5e+11] #Center of the detector's frequency range
 detectorNEP: 0
 backgroundSubtractionDegradationFactor: 1
 
@@ -39,5 +39,5 @@ r:
 decimalPlaces: 3
 observationElevationAngle: 45
 outputFreq: True #Units of the output; False = wavelength, True = frequency
-detectorSpacing: [1.51, 1.97, 2.75, 2.75, 3.13] #Spacing of pixels in the detector, in mm
+detectorSpacing: [3.13, 2.75, 2.75, 1.97, 1.51] #Spacing of pixels in the detector, in mm
 lyotStopAngle: 13.4
