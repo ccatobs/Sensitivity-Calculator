@@ -9,7 +9,7 @@ CerroChajnantorPWVQ3=1.28
 #Create base files so ACT's PWVs are known
 for p in 25 50 75
 do
-    am data/ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >data/$((p))/ACT_annual_$((p)).45.out 2>data/$((p))/ACT_annual_$((p)).45.err
+    am data/ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >/dev/null 2>data/ACTPWV/ACT_annual_$((p)).45.err
 done
 
 #PWV values in ACT configuration files
@@ -54,19 +54,19 @@ echo $HigherQ3
 for i in {15..75}
 do
     #CerroConfig Calculations
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ1 >data/CerroConfig/25/ACT_annual_25.$((i)).out 2>data/CerroConfig/25/ACT_annual_25.$((i)).err
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ2 >data/CerroConfig/50/ACT_annual_50.$((i)).out 2>data/CerroConfig/50/ACT_annual_50.$((i)).err
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ3 >data/CerroConfig/75/ACT_annual_75.$((i)).out 2>data/CerroConfig/75/ACT_annual_75.$((i)).err
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ1 >data/CerroConfig/25/ACT_annual_25.$((i)).out 2>/dev/null
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ2 >data/CerroConfig/50/ACT_annual_50.$((i)).out 2>/dev/null
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ3 >data/CerroConfig/75/ACT_annual_75.$((i)).out 2>/dev/null
 
     #Lower PWV
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ1 >data/Lower/25/ACT_annual_25.$((i)).out 2>data/Lower/25/ACT_annual_25.$((i)).err
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ2 >data/Lower/50/ACT_annual_50.$((i)).out 2>data/Lower/50/ACT_annual_50.$((i)).err
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ3 >data/Lower/75/ACT_annual_75.$((i)).out 2>data/Lower/75/ACT_annual_75.$((i)).err
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ1 >data/Lower/25/ACT_annual_25.$((i)).out 2>/dev/null
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ2 >data/Lower/50/ACT_annual_50.$((i)).out 2>/dev/null
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ3 >data/Lower/75/ACT_annual_75.$((i)).out 2>/dev/null
 
     #Higher PWV
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ1 >data/Higher/25/ACT_annual_25.$((i)).out 2>data/Higher/25/ACT_annual_25.$((i)).err
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ2 >data/Higher/50/ACT_annual_50.$((i)).out 2>data/Higher/50/ACT_annual_50.$((i)).err
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ3 >data/Higher/75/ACT_annual_75.$((i)).out 2>data/Higher/75/ACT_annual_75.$((i)).err
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ1 >data/Higher/25/ACT_annual_25.$((i)).out 2>/dev/null
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ2 >data/Higher/50/ACT_annual_50.$((i)).out 2>/dev/null
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ3 >data/Higher/75/ACT_annual_75.$((i)).out 2>/dev/null
 
     PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61/2")
     SIGN="%"
@@ -77,7 +77,7 @@ for i in 45 40
 do
     for s in {1..40}
     do
-        am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>data/VariablePWV/ACT_annual_$((s)).$((i)).err
+        am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
         if [ $((i)) -eq 45 ]
         then
             PERCENT=$(bc <<<"scale=0; $((s))/0.4/4+50")

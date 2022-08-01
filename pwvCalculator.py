@@ -16,7 +16,7 @@ def configPWVHelper(filePath):
 
 
 def configPWV(percentile):
-    return configPWVHelper("data/" + str(percentile) + "/ACT_annual_" + str(percentile) + ".45.err")
+    return configPWVHelper("data/ACTPWV/ACT_annual_" + str(percentile) + ".45.err")
 
 
 if __name__ == '__main__':
