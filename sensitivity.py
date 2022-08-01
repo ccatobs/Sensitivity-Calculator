@@ -1,3 +1,4 @@
+from sklearn.metrics import plot_det_curve
 import yaml
 import numpy as np
 from functools import partial
@@ -457,149 +458,158 @@ def getSpillEfficiency(i):
         i, 280e9, 2.75, degr, vals, showPlots=False)
 
 
-def custOutput(i, outputs, actuallyCalculate=False):
+def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percentile=None):
+    if filePath is None:
+        filePath = prefix + "/" + \
+            str(percentile) + "/ACT_annual_" + \
+            str(percentile) + "." + str(angle)
+    file = open("data/" + filePath + ".out", "r")
+    data = file.readlines()
+    x = [float(i.split(" ")[0]) for i in data]
+    y = [float(i.split(" ")[col]) for i in data]
+    file.close()
+    d_nu = x[1]-x[0]
+    ghzStart = start/1e9
+    ghzEnd = end/1e9
+
+    temperature = 0
+    for (f, temp) in zip(x, y):
+        if f < ghzStart:
+            continue
+        if f >= ghzEnd:
+            break
+        temperature += temp*(f*10**9)**2*d_nu
+
+    corr = 0
+    for f in x:
+        if f < ghzStart:
+            continue
+        if f >= ghzEnd:
+            break
+        corr += (f*10**9)**2*d_nu
+
+    return temperature/corr
+
+
+def _tangent_line_slope(cf, eqbw, col, a, p):
+    # V1 Derivatives
+    higher = np.array([_averageTemp(c-w/2, c+w/2, col, prefix="Higher", angle=a, percentile=p)
+                       for c, w in zip(cf, eqbw)])
+    lower = np.array([_averageTemp(c-w/2, c+w/2, col, prefix="Lower", angle=a, percentile=p)
+                      for c, w in zip(cf, eqbw)])
+    derivative = (higher - lower) / 0.02
+    return derivative
+
+
+def _least_squares_slope(cf, eqbw, col, a, graph=False):
+    # V2 Derivatives
+    temps = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(i) + "." + str(a)))
+                       for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+
+    def line(x, m, b):
+        return m*x + b
+    derivative = []
+    ccatMedPWV = 0.67/pwv.configPWV(50)
+    pwvs = (np.array(range(40))+1) / 20*ccatMedPWV
+    for i in range(len(cf)):
+        popt = op.curve_fit(line, pwvs, temps[:, i])[0]
+        # print(popt)
+        derivative.append(popt[0])
+    derivative = np.array(derivative)
+    if graph:
+        print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
+        print("CCAT 50th percentile PWV:", ccatMedPWV)
+        for i in np.array(range(len(cf)))[::-1]:
+            plt.plot(pwvs, temps[:, i], linewidth=1,
+                     label=str(int(cf[i]/1e9))+' GHz')
+        plt.ylim(bottom=0)
+        plt.ylabel("Power (arbitrary unit)")
+        plt.xlim(left=0, right=ccatMedPWV*2)
+        plt.xlabel("PWV (mm)")
+        plt.legend(loc='best')
+        plt.grid()
+        plt.show()
+    return derivative
+
+
+def _data_C_calc(i, table=False, graphSlopes=False):
+    p = 50
+    a = 40
+    col = 2
+
+    cf = np.append(145e9, i["centerFrequency"])
+    eqbw = np.append(145*0.276e9, i["eqbw"])
+
+    def A_to_CMB(freq_in_GHz):
+        h = _h
+        kb = _k
+        T = 2.725
+        v = freq_in_GHz*1e9
+        x = h*v/(kb*T)
+        return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+    dataCs = np.array([])
+    # Choose method
+    derivative = _tangent_line_slope(cf, eqbw, col, a, p)
+    for n in range(1, len(cf)):
+        dataCs = np.append(dataCs,
+                           (derivative[n]*A_to_CMB(cf[n]/1e9)/(derivative[0]*A_to_CMB(cf[0]/1e9)))**2)
+    if table:
+        t = Texttable(max_width=110)
+        table_header = np.append("Method", np.char.add(
+            (cf/1e9).astype(int).astype(str), ' GHz'))
+        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, col, a, p)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, col, a, graph=graphSlopes)), np.append("Corrected PWV Previous Method",
+                                                                                                                                                                                                                              np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
+                                                                                                                                                                                                                                                                                        np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
+        t.add_rows(table, header=True)
+        print(t.draw())
+    elif graphSlopes:
+        _least_squares_slope(cf, eqbw, col, a, graph=True)
+    return dataCs*1.2e4
+
+
+def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False):
     """Temporary function for playing with mapsims"""
-    def data_C_calc(i):
-        p = 50
-        a = 40
-        col = 2
-
-        def _averageTemp(start, end, filePath=None, prefix=None, angle=None, percentile=None):
-            if filePath is None:
-                filePath = prefix + "/" + \
-                    str(percentile) + "/ACT_annual_" + \
-                    str(percentile) + "." + str(angle)
-            file = open("data/" + filePath + ".out", "r")
-            data = file.readlines()
-            x = [float(i.split(" ")[0]) for i in data]
-            y = [float(i.split(" ")[col]) for i in data]
-            file.close()
-            d_nu = x[1]-x[0]
-            ghzStart = start/1e9
-            ghzEnd = end/1e9
-
-            temperature = 0
-            for (f, temp) in zip(x, y):
-                if f < ghzStart:
-                    continue
-                if f >= ghzEnd:
-                    break
-                temperature += temp*(f*10**9)**2*d_nu
-
-            corr = 0
-            for f in x:
-                if f < ghzStart:
-                    continue
-                if f >= ghzEnd:
-                    break
-                corr += (f*10**9)**2*d_nu
-
-            return temperature/corr
-
-        cf = np.append(145e9, i["centerFrequency"])
-        eqbw = np.append(145*0.276e9, i["eqbw"])
-
-        def derivativeV1():
-            # V1 Derivatives
-            higher = np.array([_averageTemp(c-w/2, c+w/2, prefix="Higher", angle=a, percentile=p)
-                               for c, w in zip(cf, eqbw)])
-            lower = np.array([_averageTemp(c-w/2, c+w/2, prefix="Lower", angle=a, percentile=p)
-                              for c, w in zip(cf, eqbw)])
-            derivativeV1 = (higher - lower) / 0.02
-            return derivativeV1
-
-        def derivativeV2():
-            # V2 Derivatives
-            temps = np.array([[_averageTemp(c-w/2, c+w/2, filePath=("VariablePWV/ACT_annual_" + str(i) + "." + str(a)))
-                               for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-
-            def line(x, m, b):
-                return m*x + b
-            derivativeV2 = []
-            pwvs = (np.array(range(40))+1) / 20*0.67/pwv.configPWV(50)
-            for i in range(len(cf)):
-                popt = op.curve_fit(line, pwvs, temps[:, i])[0]
-                # print(popt)
-                derivativeV2.append(popt[0])
-            derivativeV2 = np.array(derivativeV2)
-            if False:
-                print(0.3*.7192506910)
-                print(3*.7192506910)
-                print(0.67/pwv.configPWV(50))
-                for i in range(len(cf)):
-                    plt.plot(pwvs, temps[:, i], linewidth=1,
-                             label=str(int(cf[i]/1e9))+' GHz')
-                plt.ylim(bottom=0)
-                plt.xlim(left=0)
-                plt.legend(loc='best')
-                plt.grid()
-                plt.show()
-            return derivativeV2
-
-        def A_to_CMB(freq_in_GHz):
-            h = _h
-            kb = _k
-            T = 2.725
-            v = freq_in_GHz*1e9
-            x = h*v/(kb*T)
-            return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-        dataCs = np.array([])
-        # Choose method
-        derivative = derivativeV1()
-        for n in range(1, len(cf)):
-            dataCs = np.append(dataCs,
-                               (derivative[n]*A_to_CMB(cf[n]/1e9)/(derivative[0]*A_to_CMB(cf[0]/1e9)))**2)
-        if False:
-            t = Texttable(max_width=110)
-            table_header = np.append("Method", np.char.add(
-                (cf/1e9).astype(int).astype(str), ' GHz'))
-            table = np.array([table_header, np.append("Tangent Line", derivativeV1()), np.append("Least Squares Regression Line", derivativeV2()), np.append("Corrected PWV Previous Method",
-                                                                                                                                                             np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
-                                                                                                                                                                                                                       np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
-            t.add_rows(table, header=True)
-            print(t.draw())
-        print(dataCs*1.2e4)
-        return dataCs*1.2e4
-    if True:
-        centerFrequency = None
-        beam = None
-        net = None
+    centerFrequency = None
+    beam = None
+    net = None
+    data_C = None
+    if calculate == 'original':
+        centerFrequency = [222., 280., 348., 405., 850.]
+        beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
+        net = [6.8, 12.7, 47.7, 181.8, 305400.7]
+        data_C = None  # Automatic values
+    elif calculate == 'change' or calculate == 'dataC' or calculate == 'data_C':
+        centerFrequency = i['centerFrequency']/1e9
+        beam = outputs["beam"]/60
+        net = outputs["netW8Avg"]
         data_C = None
-        if not actuallyCalculate:
-            if True:  # Use truly original values
-                centerFrequency = [222., 280., 348., 405., 850.]
-                beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
-                net = [6.8, 12.7, 47.7, 181.8, 305400.7]
-                data_C = None  # Automatic values
-            else:  # Use values to show change in data_C
-                centerFrequency = i['centerFrequency']/1e9
-                beam = outputs["beam"]/60
-                net = outputs["netW8Avg"]
-                data_C = None
-        else:
-            centerFrequency = i['centerFrequency']/1e9
-            beam = outputs["beam"]/60
-            net = outputs["netW8Avg"]
-            data_C = data_C_calc(i)
-        ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                          24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
-        fsky = 20000./(4*_pi*(180/_pi)**2)
-        lat_lmax = 10000
-        ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
-            fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
-        if False:
-            plotTemperature = True
-            # [:-1] removes 850 GHz for plotting
-            for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
-                plt.plot(ell, curve, label=str(int(label))+' GHz')
-                plt.yscale('log')
-                plt.ylim(10**-5, 10**3)
-                plt.xscale('log')
-                plt.xlim(10**2, 10**4)
-                plt.title("Temperature" if plotTemperature else "Polarization")
-            plt.legend(loc='upper right')
-            plt.grid()
-            plt.show()
+    elif calculate == 'y' or calculate == 'yes' or calculate == 'all':
+        centerFrequency = i['centerFrequency']/1e9
+        beam = outputs["beam"]/60
+        net = outputs["netW8Avg"]
+        data_C = _data_C_calc(i, table=table, graphSlopes=graphSlopes)
+    else:
+        print("Select a valid calculate option")
+        exit(1)
+    ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
+                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
+    fsky = 20000./(4*_pi*(180/_pi)**2)
+    lat_lmax = 10000
+    ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
+        fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
+    if plotCurve is not None:
+        plotTemperature = plotCurve == 'T' or plotCurve == 't' or plotCurve == 'temp' or plotCurve == 'temperature'
+        # [:-1] removes 850 GHz for plotting
+        for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
+            plt.plot(ell, curve, label=str(int(label))+' GHz')
+            plt.yscale('log')
+            plt.ylim(10**-5, 10**3)
+            plt.xscale('log')
+            plt.xlim(10**2, 10**4)
+            plt.title("Temperature" if plotTemperature else "Polarization")
+        plt.legend(loc='upper right')
+        plt.grid()
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -622,4 +632,5 @@ if __name__ == "__main__":
     #sensitivityFile(outputs, valueDisplay, quartileDisplay)
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    custOutput(i, outputs, actuallyCalculate=True)
+    custOutput(i, outputs, calculate='all', plotCurve=None,
+               table=True, graphSlopes=True)
