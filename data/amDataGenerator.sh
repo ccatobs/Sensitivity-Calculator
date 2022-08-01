@@ -73,7 +73,7 @@ do
     echo "${PERCENT}${SIGN}"
 done
 
-for i in 45 50
+for i in 45 40
 do
     for s in {1..40}
     do
