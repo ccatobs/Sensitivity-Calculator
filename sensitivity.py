@@ -4,6 +4,8 @@ from functools import partial
 import matplotlib.pyplot as plt
 from texttable import Texttable
 import noise
+import scipy.optimize as op
+import pwvCalculator as pwv
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 _pi = np.pi
@@ -457,14 +459,17 @@ def getSpillEfficiency(i):
 
 def custOutput(i, outputs, actuallyCalculate=False):
     """Temporary function for playing with mapsims"""
-    def data_C_calc():
+    def data_C_calc(i):
         p = 50
-        a = 45
+        a = 40
         col = 2
 
-        def averageTemp(prefix, angle, percentile, start, end):
-            file = open("data/" + prefix + "/" + str(percentile) +
-                        "/ACT_annual_" + str(percentile) + "." + str(angle) + ".out", "r")
+        def _averageTemp(start, end, filePath=None, prefix=None, angle=None, percentile=None):
+            if filePath is None:
+                filePath = prefix + "/" + \
+                    str(percentile) + "/ACT_annual_" + \
+                    str(percentile) + "." + str(angle)
+            file = open("data/" + filePath + ".out", "r")
             data = file.readlines()
             x = [float(i.split(" ")[0]) for i in data]
             y = [float(i.split(" ")[col]) for i in data]
@@ -491,12 +496,45 @@ def custOutput(i, outputs, actuallyCalculate=False):
 
             return temperature/corr
 
-        higher = np.array([averageTemp("Higher", a, p, c-w/2, c+w/2)
-                          for c, w in zip(i["centerFrequency"], i["eqbw"])])
-        lower = np.array([averageTemp("Lower", a, p, c-w/2, c+w/2)
-                          for c, w in zip(i["centerFrequency"], i["eqbw"])])
-        derivative = (higher - lower) / 0.02
-        print(derivative*10.6/13.2)
+        cf = np.append(145e9, i["centerFrequency"])
+        eqbw = np.append(145*0.276e9, i["eqbw"])
+
+        def derivativeV1():
+            # V1 Derivatives
+            higher = np.array([_averageTemp(c-w/2, c+w/2, prefix="Higher", angle=a, percentile=p)
+                               for c, w in zip(cf, eqbw)])
+            lower = np.array([_averageTemp(c-w/2, c+w/2, prefix="Lower", angle=a, percentile=p)
+                              for c, w in zip(cf, eqbw)])
+            derivativeV1 = (higher - lower) / 0.02
+            return derivativeV1
+
+        def derivativeV2():
+            # V2 Derivatives
+            temps = np.array([[_averageTemp(c-w/2, c+w/2, filePath=("VariablePWV/ACT_annual_" + str(i) + "." + str(a)))
+                               for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+
+            def line(x, m, b):
+                return m*x + b
+            derivativeV2 = []
+            pwvs = (np.array(range(40))+1) / 20*0.67/pwv.configPWV(50)
+            for i in range(len(cf)):
+                popt = op.curve_fit(line, pwvs, temps[:, i])[0]
+                # print(popt)
+                derivativeV2.append(popt[0])
+            derivativeV2 = np.array(derivativeV2)
+            if False:
+                print(0.3*.7192506910)
+                print(3*.7192506910)
+                print(0.67/pwv.configPWV(50))
+                for i in range(len(cf)):
+                    plt.plot(pwvs, temps[:, i], linewidth=1,
+                             label=str(int(cf[i]/1e9))+' GHz')
+                plt.ylim(bottom=0)
+                plt.xlim(left=0)
+                plt.legend(loc='best')
+                plt.grid()
+                plt.show()
+            return derivativeV2
 
         def A_to_CMB(freq_in_GHz):
             h = _h
@@ -505,94 +543,63 @@ def custOutput(i, outputs, actuallyCalculate=False):
             v = freq_in_GHz*1e9
             x = h*v/(kb*T)
             return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-        last = (_averageTrans("Higher/", a, p, 145e9, 145*0.276e9, col) -
-                _averageTrans("Lower/", a, p, 145e9, 145*0.276e9, col))/0.02
         dataCs = np.array([])
-        for n in range(len(i["centerFrequency"])):
+        # Choose method
+        derivative = derivativeV1()
+        for n in range(1, len(cf)):
             dataCs = np.append(dataCs,
-                               (derivative[n]*A_to_CMB(i["centerFrequency"][n]/1e9)/(last*A_to_CMB(145)))**2)
-        print(dataCs[::-1]*1.2e4)
-        return dataCs[::-1]*1.2e4
+                               (derivative[n]*A_to_CMB(cf[n]/1e9)/(derivative[0]*A_to_CMB(cf[0]/1e9)))**2)
+        if False:
+            t = Texttable(max_width=110)
+            table_header = np.append("Method", np.char.add(
+                (cf/1e9).astype(int).astype(str), ' GHz'))
+            table = np.array([table_header, np.append("Tangent Line", derivativeV1()), np.append("Least Squares Regression Line", derivativeV2()), np.append("Corrected PWV Previous Method",
+                                                                                                                                                             np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
+                                                                                                                                                                                                                       np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
+            t.add_rows(table, header=True)
+            print(t.draw())
+        print(dataCs*1.2e4)
+        return dataCs*1.2e4
     if True:
         centerFrequency = None
         beam = None
         net = None
         data_C = None
         if not actuallyCalculate:
-            centerFrequency = [222., 280., 348., 405., 850.]
-            beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
-            net = [6.8, 12.7, 47.7, 181.8, 305400.7]
-            data_C = None  # Automatic values
+            if True:  # Use truly original values
+                centerFrequency = [222., 280., 348., 405., 850.]
+                beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
+                net = [6.8, 12.7, 47.7, 181.8, 305400.7]
+                data_C = None  # Automatic values
+            else:  # Use values to show change in data_C
+                centerFrequency = i['centerFrequency']/1e9
+                beam = outputs["beam"]/60
+                net = outputs["netW8Avg"]
+                data_C = None
         else:
-            centerFrequency = i['centerFrequency'][::-1]/1e9
-            beam = outputs["beam"][::-1]/60
-            net = outputs["netW8Avg"][::-1]
-            data_C = data_C_calc()
+            centerFrequency = i['centerFrequency']/1e9
+            beam = outputs["beam"]/60
+            net = outputs["netW8Avg"]
+            data_C = data_C_calc(i)
         ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
                           24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
         fsky = 20000./(4*_pi*(180/_pi)**2)
         lat_lmax = 10000
         ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
             fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
-        plotTemperature = True
-        for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
-            plt.plot(ell, curve, label=str(int(label))+' GHz')
-            plt.yscale('log')
-            plt.ylim(10**-5, 10**3)
-            plt.xscale('log')
-            plt.xlim(10**2, 10**4)
-            plt.title("Temperature" if plotTemperature else "Polarization")
-        plt.legend(loc='upper right')
-        plt.grid()
-        plt.show()
-    if False:
-        p = 50
-        a = 45
-        col = 3
-        higher = np.array([_averageTrans("Higher/", a, p, c, w, col)
-                           for c, w in zip(i["centerFrequency"], i["eqbw"])])
-        lower = np.array([_averageTrans("Lower/", a, p, c, w, col)
-                          for c, w in zip(i["centerFrequency"], i["eqbw"])])
-        print("Frequencies:")
-        print((i["centerFrequency"]/1e9).astype(int)[::-1])
-        #print("T slightly higher/lower for derivative use:")
-        # print(higher)
-        # print(lower)
-        derivative = (higher - lower) / 0.02
-        print("Slopes:")
-        print(((derivative*10).astype(int)/10)[::-1])
-        tB = derivative**2
-
-        def A_to_CMB(freq_in_GHz):
-            h = _h
-            kb = _k
-            T = 2.725
-            v = freq_in_GHz*1e9
-            x = h*v/(kb*T)
-            return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-        cmb = np.array([A_to_CMB(f/1e9) for f in i["centerFrequency"]])
-        tTh = tB * cmb
-        print("dT/dPWV:")
-        print(tTh[::-1])
-        print("data_C:")
-        print(np.array([
-            # below factors from am_output/mult_pwv/get_derivative_ccat.py
-            2.31956542e+05,
-            1.61527385e+06,
-            4.03473727e+07,
-            2.51490116e+08,
-            9.10884821e+13
-        ]))
-        for s, f in zip(derivative[::-1], i["centerFrequency"][::-1]/1e9):
-            print("freq=%.1f; slope = %.1f" % (f, s))
-
-        last = (_averageTrans("Higher/", a, p, 145e9, 145*0.276e9, col) -
-                _averageTrans("Lower/", a, p, 145e9, 145*0.276e9, col))/0.02
-        dataCs = np.array([])
-        for n in range(len(i["centerFrequency"])):
-            dataCs = np.append(dataCs,
-                               (derivative[n]*A_to_CMB(i["centerFrequency"][n]/1e9)/(last*A_to_CMB(145)))**2)
-        print(dataCs[::-1]*1.2e4)
+        if False:
+            plotTemperature = True
+            # [:-1] removes 850 GHz for plotting
+            for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
+                plt.plot(ell, curve, label=str(int(label))+' GHz')
+                plt.yscale('log')
+                plt.ylim(10**-5, 10**3)
+                plt.xscale('log')
+                plt.xlim(10**2, 10**4)
+                plt.title("Temperature" if plotTemperature else "Polarization")
+            plt.legend(loc='upper right')
+            plt.grid()
+            plt.show()
 
 
 if __name__ == "__main__":
