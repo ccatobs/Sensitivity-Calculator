@@ -32,11 +32,6 @@ HigherQ1=$(bc <<<"scale=10; ($CerroChajnantorPWVQ1 + 0.01)/$ACTConfigQ1")
 HigherQ2=$(bc <<<"scale=10; ($CerroChajnantorPWVQ2 + 0.01)/$ACTConfigQ2")
 HigherQ3=$(bc <<<"scale=10; ($CerroChajnantorPWVQ3 + 0.01)/$ACTConfigQ3")
 
-#Ratio using half the PWV
-HalfQ1=$(bc <<<"scale=10; ($CerroChajnantorPWVQ1 / 2)/$ACTConfigQ1")
-HalfQ2=$(bc <<<"scale=10; ($CerroChajnantorPWVQ2 / 2)/$ACTConfigQ2")
-HalfQ3=$(bc <<<"scale=10; ($CerroChajnantorPWVQ3 / 2)/$ACTConfigQ3")
-
 echo $ACTConfigQ1
 echo $ACTConfigQ2
 echo $ACTConfigQ3
