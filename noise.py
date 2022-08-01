@@ -9,13 +9,10 @@ def get_atmosphere_C(freqs, el=None, data_C=None):
     tube.  In units of [uK^2 sec].  This only works for a few special
     frequencies.
 
-    Basic model assumes el=50.  A simple rescaling (proportional to
+    Basic model assumes el=45.  A simple rescaling (proportional to
     csc(el)) is applied for other values of el.
 
-    version=0: This atmospheric model was used in SO V3 forecasts but
-    contains an error.
-
-    version=1: This atmospheric model is better than version=0, in
+    This atmospheric model is better than version=0, in
     that at least one error has been corrected.  The relative
     atmospheric powers have been measured in AT model, and then
     calibrated to ACT.  Low frequency results are inflated somewhat
@@ -26,8 +23,8 @@ def get_atmosphere_C(freqs, el=None, data_C=None):
     # structured (i.e. smoothed out) at lower elevation because of the
     # increased thickness.
     if el is None:
-        el = 50.
-    el_correction = np.sin(50.*np.pi/180) / np.sin(el*np.pi/180)
+        el = 45.
+    el_correction = np.sin(45.*np.pi/180) / np.sin(el*np.pi/180)
     # Ratio between CCAT site and ACT site
     ccat_pwv_cor = 0.67/pwv.configPWV(50)
     data_bands = np.array(freqs)

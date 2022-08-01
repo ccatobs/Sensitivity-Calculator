@@ -533,9 +533,9 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False):
 
 
 def _data_C_calc(i, table=False, graphSlopes=False):
-    p = 50
-    a = 40
-    col = 2
+    P = 50
+    A = 45
+    COL = 2
 
     cf = np.append(145e9, i["centerFrequency"])
     eqbw = np.append(145*0.276e9, i["eqbw"])
@@ -549,7 +549,7 @@ def _data_C_calc(i, table=False, graphSlopes=False):
         return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
     dataCs = np.array([])
     # Choose method
-    derivative = _tangent_line_slope(cf, eqbw, col, a, p)
+    derivative = _tangent_line_slope(cf, eqbw, COL, A, P)
     for n in range(1, len(cf)):
         dataCs = np.append(dataCs,
                            (derivative[n]*A_to_CMB(cf[n]/1e9)/(derivative[0]*A_to_CMB(cf[0]/1e9)))**2)
@@ -557,13 +557,13 @@ def _data_C_calc(i, table=False, graphSlopes=False):
         t = Texttable(max_width=110)
         table_header = np.append("Method", np.char.add(
             (cf/1e9).astype(int).astype(str), ' GHz'))
-        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, col, a, p)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, col, a, graph=graphSlopes)), np.append("Corrected PWV Previous Method",
+        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, P)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes)), np.append("Corrected PWV Previous Method",
                                                                                                                                                                                                                               np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
                                                                                                                                                                                                                                                                                         np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
         t.add_rows(table, header=True)
         print(t.draw())
     elif graphSlopes:
-        _least_squares_slope(cf, eqbw, col, a, graph=True)
+        _least_squares_slope(cf, eqbw, COL, A, graph=True)
     return dataCs*1.2e4
 
 

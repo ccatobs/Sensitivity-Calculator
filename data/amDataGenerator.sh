@@ -68,25 +68,15 @@ do
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ2 >data/Higher/50/ACT_annual_50.$((i)).out 2>/dev/null
     am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ3 >data/Higher/75/ACT_annual_75.$((i)).out 2>/dev/null
 
-    PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61/2")
+    PERCENT=$(bc <<<"scale=0; ($((i))-14)*9/0.61/10")
     SIGN="%"
     echo "${PERCENT}${SIGN}"
 done
 
-for i in 45 40
+for s in {1..40}
 do
-    for s in {1..40}
-    do
-        am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
-        if [ $((i)) -eq 45 ]
-        then
-            PERCENT=$(bc <<<"scale=0; $((s))/0.4/4+50")
-            SIGN="%"
-            echo "${PERCENT}${SIGN}"
-        else
-            PERCENT=$(bc <<<"scale=0; $((s))/0.4/4+75")
-            SIGN="%"
-            echo "${PERCENT}${SIGN}"
-        fi
-    done
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).45.out 2>/dev/null
+    PERCENT=$(bc <<<"scale=0; $((s))/0.4/10+90")
+    SIGN="%"
+    echo "${PERCENT}${SIGN}"
 done
