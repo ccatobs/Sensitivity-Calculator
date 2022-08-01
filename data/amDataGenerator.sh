@@ -1,4 +1,4 @@
-#To use this, you must be in the Excel Spreadsheet folder and have the am code installed. It takes approximately 2 minutes to run, and produces no output to stdout. The only things created should be files inside folders in data/
+#To use this, you must be in the Excel Spreadsheet folder and have the am code installed. It takes approximately 2 minutes to run, and lists percentage completed to stdout. The files should only be created inside folders inside data/
 #! usr/bin/bash
 
 #Values taken from https://arxiv.org/pdf/2007.04262.pdf
@@ -42,19 +42,16 @@ echo $ACTConfigQ2
 echo $ACTConfigQ3
 
 echo "----------------------------------------------"
-echo $HalfQ1
 echo $LowerQ1
 echo $CerroConfigQ1
 echo $HigherQ1
 
 echo "----------------------------------------------"
-echo $HalfQ2
 echo $LowerQ2
 echo $CerroConfigQ2
 echo $HigherQ2
 
 echo "----------------------------------------------"
-echo $HalfQ3
 echo $LowerQ3
 echo $CerroConfigQ3
 echo $HigherQ3
@@ -76,12 +73,25 @@ do
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ2 >data/Higher/50/ACT_annual_50.$((i)).out 2>data/Higher/50/ACT_annual_50.$((i)).err
     am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ3 >data/Higher/75/ACT_annual_75.$((i)).out 2>data/Higher/75/ACT_annual_75.$((i)).err
 
-    #Half PWV
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HalfQ1 >data/Half/25/ACT_annual_25.$((i)).out 2>data/Half/25/ACT_annual_25.$((i)).err
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HalfQ2 >data/Half/50/ACT_annual_50.$((i)).out 2>data/Half/50/ACT_annual_50.$((i)).err
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HalfQ3 >data/Half/75/ACT_annual_75.$((i)).out 2>data/Half/75/ACT_annual_75.$((i)).err
-
-    PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61")
+    PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61/2")
     SIGN="%"
     echo "${PERCENT}${SIGN}"
+done
+
+for i in 45 50
+do
+    for s in {1..40}
+    do
+        am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>data/VariablePWV/ACT_annual_$((s)).$((i)).err
+        if [ $((i)) -eq 45 ]
+        then
+            PERCENT=$(bc <<<"scale=0; $((s))/0.4/4+50")
+            SIGN="%"
+            echo "${PERCENT}${SIGN}"
+        else
+            PERCENT=$(bc <<<"scale=0; $((s))/0.4/4+75")
+            SIGN="%"
+            echo "${PERCENT}${SIGN}"
+        fi
+    done
 done
