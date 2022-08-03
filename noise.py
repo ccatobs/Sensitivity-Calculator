@@ -198,12 +198,12 @@ class CCAT(SOLatType):
             # from MFH:
             # 'UHF': nar([   0,   0,   0,   0,   0,12.5,30.0,    0,    0,0]),
             # from gordon's spreadsheet for 1
-            'HF1': nar([net[0],    0,    0,    0, 0]),
-            'HF2': nar([0, net[1],    0,    0, 0]),
-            'HF3': nar([0,   0, net[2],    0, 0]),
-            'HF4': nar([0,   0,    0, net[3], 0]),
-            'HF5': nar([0,   0,    0,    0, net[4]]),
         }
+        for i in range(len(net)):
+            temp = np.zeros(len(net))
+            temp[i] = net[i]
+            self.tube_configs['HF' + str(i + 1)] = temp
+        print(self.tube_configs)
 
         # Save the elevation request.
         self.el = el
@@ -214,8 +214,10 @@ class CCAT(SOLatType):
         self.FOV_mod = 0.5
 
         # The reference tube config.
-        ref_tubes = [('HF1', 1), ('HF2', 1), ('HF3', 1),
-                     ('HF4', 1), ('HF5', 1)]
+        ref_tubes = []
+        for i in self.tube_configs:
+            ref_tubes.append((i, 1))
+        print(ref_tubes)
 
         if N_tels is None:
             N_tels = 1
