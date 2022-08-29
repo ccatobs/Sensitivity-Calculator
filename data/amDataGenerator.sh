@@ -105,7 +105,9 @@ do
     echo "${PERCENT}${SIGN}"
 done
 
-am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/VariablePWV/.err
+am data/MaunaKea/25.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/25/.err
+am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/50/.err
+am data/MaunaKea/75.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/75/.err
 for s in {1..40}
 do
     am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; 1/20*$((s))") >data/MaunaKea/VariablePWV/$((s)).45.out 2>/dev/null
