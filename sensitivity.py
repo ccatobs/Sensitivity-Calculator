@@ -564,7 +564,7 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
         return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
     dataCs = np.array([])
     # Choose method
-    derivative = _tangent_line_slope(cf, eqbw, COL, A, P)
+    derivative = _tangent_line_slope(cf, eqbw, COL, A, P, maunaKea=maunaKea)
     for n in range(1, len(cf)):
         dataCs = np.append(dataCs,
                            (derivative[n]*A_to_CMB(cf[n]/1e9)/(derivative[0]*A_to_CMB(cf[0]/1e9)))**2)
@@ -572,9 +572,9 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
         t = Texttable(max_width=110)
         table_header = np.append("Method", np.char.add(
             (cf/1e9).astype(int).astype(str), ' GHz'))
-        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, P)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Corrected PWV Previous Method",
-                                                                                                                                                                                                                                                 np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
-                                                                                                                                                                                                                                                                                                           np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
+        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, P, maunaKea=maunaKea)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Corrected PWV Previous Method",
+                                                                                                                                                                                                                                                                    np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
+                                                                                                                                                                                                                                                                                                                              np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
         t.add_rows(table, header=True)
         print(t.draw())
     elif graphSlopes:
