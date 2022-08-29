@@ -588,7 +588,7 @@ def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSl
         beam = outputs["beam"]/60
         net = outputs["netW8Avg"]
         data_C = _data_C_calc(i, table=table, graphSlopes=graphSlopes)
-        print(data_C)
+        # print(data_C)
     else:
         print("Select a valid calculate option")
         exit(1)

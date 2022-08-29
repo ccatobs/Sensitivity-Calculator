@@ -203,7 +203,7 @@ class CCAT(SOLatType):
             temp = np.zeros(len(net))
             temp[i] = net[i]
             self.tube_configs['HF' + str(i + 1)] = temp
-        print(self.tube_configs)
+        # print(self.tube_configs)
 
         # Save the elevation request.
         self.el = el
@@ -217,7 +217,7 @@ class CCAT(SOLatType):
         ref_tubes = []
         for i in self.tube_configs:
             ref_tubes.append((i, 1))
-        print(ref_tubes)
+        # print(ref_tubes)
 
         if N_tels is None:
             N_tels = 1
