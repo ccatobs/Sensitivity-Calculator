@@ -491,25 +491,39 @@ def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percen
     return temperature/corr
 
 
-def _tangent_line_slope(cf, eqbw, col, a, p):
+def _tangent_line_slope(cf, eqbw, col, a, p, maunaKea=False):
+    higher = ""
+    lower = ""
+    if not maunaKea:
+        higher = "Higher"
+        lower = "Lower"
+    else:
+        higher = "MaunaKea/Higher"
+        lower = "MaunaKea/Lower"
     # V1 Derivatives
-    higher = np.array([_averageTemp(c-w/2, c+w/2, col, prefix="Higher", angle=a, percentile=p)
+    higher = np.array([_averageTemp(c-w/2, c+w/2, col, prefix=higher, angle=a, percentile=p)
                        for c, w in zip(cf, eqbw)])
-    lower = np.array([_averageTemp(c-w/2, c+w/2, col, prefix="Lower", angle=a, percentile=p)
+    lower = np.array([_averageTemp(c-w/2, c+w/2, col, prefix=lower, angle=a, percentile=p)
                       for c, w in zip(cf, eqbw)])
     derivative = (higher - lower) / 0.02
     return derivative
 
 
-def _least_squares_slope(cf, eqbw, col, a, graph=False):
+def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
     # V2 Derivatives
-    temps = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(i) + "." + str(a)))
+    filePath = "VariablePWV/ACT_annual_"
+    if maunaKea:
+        filePath = "MaunaKea/VariablePWV/"
+    temps = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(filePath + str(i) + "." + str(a)))
                        for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
 
     def line(x, m, b):
         return m*x + b
     derivative = []
     ccatMedPWV = 0.67/pwv.configPWV(50)
+    if maunaKea:
+        ccatMedPWV = pwv.configPWVHelper("data/MaunaKea/VariablePWV/.err")
+        print(ccatMedPWV)
     pwvs = (np.array(range(40))+1) / 20*ccatMedPWV
     for i in range(len(cf)):
         popt = op.curve_fit(line, pwvs, temps[:, i])[0]
@@ -517,13 +531,14 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False):
         derivative.append(popt[0])
     derivative = np.array(derivative)
     if graph:
-        print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
-        print("CCAT 50th percentile PWV:", ccatMedPWV)
+        if not maunaKea:
+            print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
+            print("CCAT 50th percentile PWV:", ccatMedPWV)
         for i in np.array(range(len(cf)))[::-1]:
             plt.plot(pwvs, temps[:, i], linewidth=1,
                      label=str(int(cf[i]/1e9))+' GHz')
         plt.ylim(bottom=0)
-        plt.ylabel("Power (arbitrary unit)")
+        plt.ylabel("Weighted Temperature (arbitrary unit)")
         plt.xlim(left=0, right=ccatMedPWV*2)
         plt.xlabel("PWV (mm)")
         plt.legend(loc='best')
@@ -532,7 +547,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False):
     return derivative
 
 
-def _data_C_calc(i, table=False, graphSlopes=False):
+def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
     P = 50
     A = 45
     COL = 2
@@ -557,17 +572,17 @@ def _data_C_calc(i, table=False, graphSlopes=False):
         t = Texttable(max_width=110)
         table_header = np.append("Method", np.char.add(
             (cf/1e9).astype(int).astype(str), ' GHz'))
-        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, P)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes)), np.append("Corrected PWV Previous Method",
-                                                                                                                                                                                                                              np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
-                                                                                                                                                                                                                                                                                        np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
+        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, P)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Corrected PWV Previous Method",
+                                                                                                                                                                                                                                                 np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
+                                                                                                                                                                                                                                                                                                           np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
         t.add_rows(table, header=True)
         print(t.draw())
     elif graphSlopes:
-        _least_squares_slope(cf, eqbw, COL, A, graph=True)
+        _least_squares_slope(cf, eqbw, COL, A, graph=True, maunaKea=maunaKea)
     return dataCs*1.2e4
 
 
-def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False):
+def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False):
     """Temporary function for playing with mapsims"""
     centerFrequency = None
     beam = None
@@ -587,7 +602,8 @@ def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSl
         centerFrequency = i['centerFrequency']/1e9
         beam = outputs["beam"]/60
         net = outputs["netW8Avg"]
-        data_C = _data_C_calc(i, table=table, graphSlopes=graphSlopes)
+        data_C = _data_C_calc(
+            i, table=table, graphSlopes=graphSlopes, maunaKea=maunaKea)
         # print(data_C)
     else:
         print("Select a valid calculate option")
@@ -634,4 +650,4 @@ if __name__ == "__main__":
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     custOutput(i, outputs, calculate='all', plotCurve=None,
-               table=True, graphSlopes=False)
+               table=True, graphSlopes=True, maunaKea=True)

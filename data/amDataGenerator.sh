@@ -76,11 +76,31 @@ done
 for s in {1..40}
 do
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).45.out 2>/dev/null
-    PERCENT=$(bc <<<"scale=0; $((s))/0.4/10/2+90")
+    PERCENT=$(bc <<<"scale=0; $((s))/0.4/10+90")
     SIGN="%"
     echo "${PERCENT}${SIGN}"
 done
 
+echo "ACT Calculations Complete"
+
+for i in {15..75}
+do
+    #Lower PWV
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.99 >data/MaunaKea/Lower/25/ACT_annual_25.$((i)).out 2>/dev/null
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.99 >data/MaunaKea/Lower/50/ACT_annual_50.$((i)).out 2>/dev/null
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  0.99 >data/MaunaKea/Lower/75/ACT_annual_75.$((i)).out 2>/dev/null
+
+    #Higher PWV
+    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.01 >data/MaunaKea/Higher/25/ACT_annual_25.$((i)).out 2>/dev/null
+    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.01 >data/MaunaKea/Higher/50/ACT_annual_50.$((i)).out 2>/dev/null
+    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.01 >data/MaunaKea/Higher/75/ACT_annual_75.$((i)).out 2>/dev/null
+
+    PERCENT=$(bc <<<"scale=0; ($((i))-14)*9/0.61/10")
+    SIGN="%"
+    echo "${PERCENT}${SIGN}"
+done
+
+am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/VariablePWV/.err
 for s in {1..40}
 do
     am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; 1/20*$((s))") >data/MaunaKea/VariablePWV/$((s)).45.out 2>/dev/null
