@@ -10,6 +10,7 @@ CerroChajnantorPWVQ3=1.28
 for p in 25 50 75
 do
     am data/ACT_annual_$((p)).amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >/dev/null 2>data/ACTPWV/ACT_annual_$((p)).45.err
+    am data/MaunaKea/$((p)).amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/$((p))/.err
 done
 
 #PWV values in ACT configuration files
@@ -105,9 +106,6 @@ do
     echo "${PERCENT}${SIGN}"
 done
 
-am data/MaunaKea/25.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/25/.err
-am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/50/.err
-am data/MaunaKea/75.amc  0 GHz  1000 GHz  10 MHz  45 deg  1 >/dev/null 2>data/MaunaKea/Default/75/.err
 for s in {1..40}
 do
     am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; 1/20*$((s))") >data/MaunaKea/VariablePWV/$((s)).45.out 2>/dev/null

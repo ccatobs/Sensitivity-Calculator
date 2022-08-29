@@ -490,7 +490,7 @@ def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percen
 
     return temperature/corr
 
-
+#Current issue is that it requires higher and lower calculations, should just use variable pwv
 def _tangent_line_slope(cf, eqbw, col, a, p, maunaKea=False, filePath=None):
     higher = ""
     lower = ""
@@ -577,7 +577,7 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
         t = Texttable(max_width=110)
         table_header = np.append("Method", np.char.add(
             (cf/1e9).astype(int).astype(str), ' GHz'))
-        table = np.array([table_header, np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Best Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 75, maunaKea=maunaKea, filePath="MaunaKea/VariablePWV/10.45")), np.append("Expected Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 50, maunaKea=maunaKea)), np.append("Worst Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 25, maunaKea=maunaKea, filePath="MaunaKea/VariablePWV/40.45")), np.append("Corrected PWV Previous Method",
+        table = np.array([table_header, np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Best Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 75, maunaKea=maunaKea, filePath="MaunaKea/VariablePWV/40.45")), np.append("Expected Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 50, maunaKea=maunaKea)), np.append("Worst Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 25, maunaKea=maunaKea, filePath="MaunaKea/VariablePWV/10.45")), np.append("Corrected PWV Previous Method",
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
         t.add_rows(table, header=True)
