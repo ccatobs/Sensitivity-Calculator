@@ -95,6 +95,11 @@ do
     am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.01 >data/MaunaKea/Higher/50/ACT_annual_50.$((i)).out 2>/dev/null
     am data/MaunaKea/75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1.01 >data/MaunaKea/Higher/75/ACT_annual_75.$((i)).out 2>/dev/null
 
+    #Default
+    am data/MaunaKea/25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1 >data/MaunaKea/Default/25/$((i)).out 2>/dev/null
+    am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1 >data/MaunaKea/Default/50/$((i)).out 2>/dev/null
+    am data/MaunaKea/75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  1 >data/MaunaKea/Default/75/$((i)).out 2>/dev/null
+
     PERCENT=$(bc <<<"scale=0; ($((i))-14)*9/0.61/10")
     SIGN="%"
     echo "${PERCENT}${SIGN}"

@@ -514,8 +514,8 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
     filePath = "VariablePWV/ACT_annual_"
     if maunaKea:
         filePath = "MaunaKea/VariablePWV/"
-    temps = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(filePath + str(i) + "." + str(a)))
-                       for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+    temps = np.concatenate(np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(filePath + str(i) + "." + str(a)))
+                                      for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1]), np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=("MaunaKea/Default/" + fPath + str(a))) for c, w in zip(cf, eqbw)] for fPath in ["25/", "75/"]]))
 
     def line(x, m, b):
         return m*x + b
@@ -572,9 +572,9 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
         t = Texttable(max_width=110)
         table_header = np.append("Method", np.char.add(
             (cf/1e9).astype(int).astype(str), ' GHz'))
-        table = np.array([table_header, np.append("Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, P, maunaKea=maunaKea)), np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Corrected PWV Previous Method",
-                                                                                                                                                                                                                                                                    np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
-                                                                                                                                                                                                                                                                                                                              np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
+        table = np.array([table_header, np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Best Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 75, maunaKea=maunaKea)), np.append("Expected Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 50, maunaKea=maunaKea)), np.append("Worst Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 25, maunaKea=maunaKea)), np.append("Corrected PWV Previous Method",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
         t.add_rows(table, header=True)
         print(t.draw())
     elif graphSlopes:
