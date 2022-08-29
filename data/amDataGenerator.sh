@@ -76,7 +76,15 @@ done
 for s in {1..40}
 do
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).45.out 2>/dev/null
-    PERCENT=$(bc <<<"scale=0; $((s))/0.4/10+90")
+    PERCENT=$(bc <<<"scale=0; $((s))/0.4/10/2+90")
+    SIGN="%"
+    echo "${PERCENT}${SIGN}"
+done
+
+for s in {1..40}
+do
+    am data/MaunaKea/50.amc  0 GHz  1000 GHz  10 MHz  45 deg  $(bc <<<"scale=10; 1/20*$((s))") >data/MaunaKea/VariablePWV/$((s)).45.out 2>/dev/null
+    PERCENT=$(bc <<<"scale=0; $((s))/0.4/10/2+95")
     SIGN="%"
     echo "${PERCENT}${SIGN}"
 done
