@@ -520,8 +520,8 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
                               for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
     rjTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
                       1e9, (c+w/2)/1e9, col=2) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-    plankTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
-                         1e9, (c+w/2)/1e9, col=3) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+    planckTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
+                                            1e9, (c+w/2)/1e9, col=3) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
     absorption = 1-np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45",
                                               (c-w/2)/1e9, (c+w/2)/1e9, col=1) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
 
@@ -539,8 +539,8 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
         derivative.append(popt[0])
     derivative = np.array(derivative)
     if graph:
-        ylabel = ["Weighted Temperature (arbitrary unit)", "RJ Temperature (K)",
-                  "Plank Temperature (K)", "Absorption"]
+        ylabel = ["Weighted Temperature (Arbitrary Units)", "RJ Temperature (K)",
+                  "Planck Temperature (K)", "Absorption"]
         if not maunaKea:
             print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
             print("CCAT 50th percentile PWV:", ccatMedPWV)
@@ -553,7 +553,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
                     plt.plot(pwvs, rjTemp[:, i], linewidth=1,
                              label=str(int(cf[i]/1e9))+' GHz')
                 if j == 2:
-                    plt.plot(pwvs, plankTemp[:, i], linewidth=1,
+                    plt.plot(pwvs, planckTemp[:, i], linewidth=1,
                              label=str(int(cf[i]/1e9))+' GHz')
                 if j == 3:
                     plt.plot(pwvs, absorption[:, i], linewidth=1,
@@ -572,10 +572,21 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
                      label=str(int(cf[i]/1e9))+' GHz Weighted RJ Temp')
             plt.plot(pwvs, rjTemp[:, i], linewidth=1,
                      label=str(int(cf[i]/1e9))+' GHz RJ Temp')
-            plt.plot(pwvs, plankTemp[:, i], linewidth=1,
-                     label=str(int(cf[i]/1e9))+' GHz Plank Temp')
+            plt.plot(pwvs, planckTemp[:, i], linewidth=1,
+                     label=str(int(cf[i]/1e9))+' GHz Planck Temp')
         plt.ylim(bottom=0)
-        plt.ylabel("Arbitrary units")
+        plt.ylabel("Arbitrary Units")
+        plt.xlim(left=0, right=ccatMedPWV*2)
+        plt.xlabel("PWV (mm)")
+        plt.legend(loc='best')
+        plt.grid()
+        plt.show()
+
+        for i in np.array(range(len(cf)))[::-1]:
+            print(wieghtedTemp[:, i]-rjTemp[:, i])
+            plt.plot(pwvs, wieghtedTemp[:, i] - rjTemp[:, i], linewidth=1,
+                     label=str(int(cf[i]/1e9))+' GHz')
+        plt.ylabel("Difference Between Weighted RJ and RJ (Arbitrary Units)")
         plt.xlim(left=0, right=ccatMedPWV*2)
         plt.xlabel("PWV (mm)")
         plt.legend(loc='best')
