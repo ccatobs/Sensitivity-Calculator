@@ -516,11 +516,14 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
     filePath = "VariablePWV/ACT_annual_"
     if maunaKea:
         filePath = "MaunaKea/VariablePWV/"
-    temps = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(filePath + str(i) + "." + str(a)))
-                       for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-    # temps = np.concatenate((temps,  np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(
-    #    "MaunaKea/Default/" + fPath + str(a))) for c, w in zip(cf, eqbw)] for fPath in ["25/", "75/"]])))
-    # print(temps)
+    wieghtedTemp = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(filePath + str(i) + "." + str(a)))
+                              for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+    rjTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
+                      1e9, (c+w/2)/1e9, col=2) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+    plankTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
+                         1e9, (c+w/2)/1e9, col=3) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+    absorption = 1-np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45",
+                                              (c-w/2)/1e9, (c+w/2)/1e9, col=1) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
 
     def line(x, m, b):
         return m*x + b
@@ -530,27 +533,55 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
         ccatMedPWV = pwv.configPWVHelper("data/MaunaKea/Default/50/.err")
         print(ccatMedPWV)
     pwvs = (np.array(range(40))+1) / 20*ccatMedPWV
-    # pwvs = np.concatenate((pwvs, [pwv.configPWVHelper(
-    #    "data/MaunaKea/Default/25/.err"), pwv.configPWVHelper("data/MaunaKea/Default/75/.err")]))
     for i in range(len(cf)):
-        popt = op.curve_fit(line, pwvs, temps[:, i])[0]
+        popt = op.curve_fit(line, pwvs, wieghtedTemp[:, i])[0]
         # print(popt)
         derivative.append(popt[0])
     derivative = np.array(derivative)
     if graph:
+        ylabel = ["Weighted Temperature (arbitrary unit)", "RJ Temperature (K)",
+                  "Plank Temperature (K)", "Absorption"]
         if not maunaKea:
             print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
             print("CCAT 50th percentile PWV:", ccatMedPWV)
-        for i in np.array(range(len(cf)))[::-1]:
-            plt.plot(pwvs, temps[:, i], linewidth=1,
-                     label=str(int(cf[i]/1e9))+' GHz')
+        for j in range(4):
+            for i in np.array(range(len(cf)))[::-1]:
+                if j == 0:
+                    plt.plot(pwvs, wieghtedTemp[:, i], linewidth=1,
+                             label=str(int(cf[i]/1e9))+' GHz')
+                if j == 1:
+                    plt.plot(pwvs, rjTemp[:, i], linewidth=1,
+                             label=str(int(cf[i]/1e9))+' GHz')
+                if j == 2:
+                    plt.plot(pwvs, plankTemp[:, i], linewidth=1,
+                             label=str(int(cf[i]/1e9))+' GHz')
+                if j == 3:
+                    plt.plot(pwvs, absorption[:, i], linewidth=1,
+                             label=str(int(cf[i]/1e9))+' GHz')
+
+            plt.ylim(bottom=0)
+            plt.ylabel(ylabel[j])
+            plt.xlim(left=0, right=ccatMedPWV*2)
+            plt.xlabel("PWV (mm)")
+            plt.legend(loc='best')
+            plt.grid()
+            plt.show()
+
+        for i in [1, 5]:  # 220 and 850 GHz
+            plt.plot(pwvs, wieghtedTemp[:, i], linewidth=1,
+                     label=str(int(cf[i]/1e9))+' GHz Weighted RJ Temp')
+            plt.plot(pwvs, rjTemp[:, i], linewidth=1,
+                     label=str(int(cf[i]/1e9))+' GHz RJ Temp')
+            plt.plot(pwvs, plankTemp[:, i], linewidth=1,
+                     label=str(int(cf[i]/1e9))+' GHz Plank Temp')
         plt.ylim(bottom=0)
-        plt.ylabel("Weighted Temperature (arbitrary unit)")
+        plt.ylabel("Arbitrary units")
         plt.xlim(left=0, right=ccatMedPWV*2)
         plt.xlabel("PWV (mm)")
         plt.legend(loc='best')
         plt.grid()
         plt.show()
+
     return derivative
 
 
@@ -658,4 +689,4 @@ if __name__ == "__main__":
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
 
     custOutput(i, outputs, calculate='all', plotCurve=None,
-               table=True, graphSlopes=True, maunaKea=False)
+               table=False, graphSlopes=True, maunaKea=False)
