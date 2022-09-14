@@ -1,4 +1,3 @@
-from sklearn.metrics import plot_det_curve
 import yaml
 import numpy as np
 from functools import partial
@@ -700,4 +699,4 @@ if __name__ == "__main__":
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
 
     custOutput(i, outputs, calculate='all', plotCurve=None,
-               table=False, graphSlopes=True, maunaKea=False)
+               table=True, graphSlopes=False, maunaKea=False)
