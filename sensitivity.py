@@ -677,6 +677,20 @@ def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSl
         plt.show()
 
 
+def otherCustomOutput(i, calculate):
+    out45 = calculate(45)
+    out60 = calculate(30)
+
+    t = Texttable(max_width=110)
+    t.set_cols_dtype(['t', 'e', 'e', 'e', 'e', 'e'])
+    table_header = np.append("Center Frequency", np.char.add(
+        (i["centerFrequency"]/1e9).astype(int).astype(str), ' GHz'))
+    table = np.array([table_header, np.append("Bandwidths", i["eqbw"]), np.append("Q1 45 Degree Loading", out45["powerPerPixel"][:, 0]), np.append("Q2 45 Degree Loading", out45["powerPerPixel"][:, 1]), np.append(
+        "Q3 45 Degree Loading", out45["powerPerPixel"][:, 2]), np.append("Q1 60 Degree Loading", out60["powerPerPixel"][:, 0]), np.append("Q2 60 Degree Loading", out60["powerPerPixel"][:, 1]), np.append("Q3 60 Degree Loading", out60["powerPerPixel"][:, 2])])
+    t.add_rows(table, header=True)
+    print(t.draw())
+
+
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
@@ -697,6 +711,7 @@ if __name__ == "__main__":
     #sensitivityFile(outputs, valueDisplay, quartileDisplay)
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    otherCustomOutput(i, calculate)
 
-    custOutput(i, outputs, calculate='all', plotCurve=None,
-               table=True, graphSlopes=False, maunaKea=False)
+    # custOutput(i, outputs, calculate='all', plotCurve=None,
+    #           table=True, graphSlopes=False, maunaKea=False)
