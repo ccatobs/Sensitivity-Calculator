@@ -530,7 +530,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
     ccatMedPWV = 0.67/pwv.configPWV(50)
     if maunaKea:
         ccatMedPWV = pwv.configPWVHelper("data/MaunaKea/Default/50/.err")
-        print(ccatMedPWV)
+        # print(ccatMedPWV)
     pwvs = (np.array(range(40))+1) / 20*ccatMedPWV
     for i in range(len(cf)):
         popt = op.curve_fit(line, pwvs, wieghtedTemp[:, i])[0]
@@ -574,15 +574,15 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
             plt.plot(pwvs, planckTemp[:, i], linewidth=1,
                      label=str(int(cf[i]/1e9))+' GHz Planck Temp')
         plt.ylim(bottom=0)
-        plt.ylabel("Arbitrary Units")
+        plt.ylabel("Brightness Temperature (K)")
         plt.xlim(left=0, right=ccatMedPWV*2)
         plt.xlabel("PWV (mm)")
         plt.legend(loc='best')
+        plt.title("Brightness Temperature vs PWV Comparison")
         plt.grid()
         plt.show()
 
         for i in np.array(range(len(cf)))[::-1]:
-            print(wieghtedTemp[:, i]-rjTemp[:, i])
             plt.plot(pwvs, wieghtedTemp[:, i] - rjTemp[:, i], linewidth=1,
                      label=str(int(cf[i]/1e9))+' GHz')
         plt.ylabel("Difference Between Weighted RJ and RJ (Arbitrary Units)")
@@ -630,7 +630,7 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
     return dataCs*1.2e4
 
 
-def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False):
+def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False, lowFreq=False):
     """Temporary function for playing with mapsims"""
     centerFrequency = None
     beam = None
@@ -662,19 +662,63 @@ def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSl
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
         fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
+
+    # Formerly under the if statement
+    plotTemperature = plotCurve == 'T' or plotCurve == 't' or plotCurve == 'temp' or plotCurve == 'temperature'
+    if False:  # Removes 850 GHz
+        N_ell_T_full = N_ell_T_full[:-1]
+        N_ell_P_full = N_ell_P_full[:-1]
+        centerFrequency = centerFrequency[:-1]
+        plt.ylim(10**-5, 10**3)
+    elif lowFreq:  # Only 280 GHz
+        N_ell_T_full = [N_ell_T_full[1]]
+        N_ell_P_full = [N_ell_P_full[1]]
+        centerFrequency = [centerFrequency[1]]
+        plt.ylim(10**-4, 10**3)
+    else:  # Only 850 GHz
+        N_ell_T_full = [N_ell_T_full[4]]
+        N_ell_P_full = [N_ell_P_full[4]]
+        centerFrequency = [centerFrequency[4]]
+        plt.ylim(10**4, 10**12)
     if plotCurve is not None:
-        plotTemperature = plotCurve == 'T' or plotCurve == 't' or plotCurve == 'temp' or plotCurve == 'temperature'
-        # [:-1] removes 850 GHz for plotting
-        for curve, label in zip(N_ell_T_full[:-1] if plotTemperature else N_ell_P_full[:-1], centerFrequency[:-1]):
+        for curve, label in zip(N_ell_T_full if plotTemperature else N_ell_P_full, centerFrequency):
             plt.plot(ell, curve, label=str(int(label))+' GHz')
             plt.yscale('log')
-            plt.ylim(10**-5, 10**3)
             plt.xscale('log')
             plt.xlim(10**2, 10**4)
             plt.title("Temperature" if plotTemperature else "Polarization")
         plt.legend(loc='upper right')
         plt.grid()
         plt.show()
+    return ell, N_ell_T_full[0], N_ell_P_full[0]
+
+
+def plotCustNoiseCurves(i, outputs, temp, lowFreq):
+    before = custOutput(i, outputs, calculate='change', plotCurve=None,
+                        table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
+    after = custOutput(i, outputs, calculate='all', plotCurve=None,
+                       table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
+
+    ell = before[0]  # Also equal to after[0]
+
+    plt.plot(ell, before[1 if temp else 2], label='Before')
+    plt.plot(ell, after[1 if temp else 2], label='After')
+
+    plt.rcParams['text.usetex'] = True
+    plt.yscale('log')
+    if lowFreq:
+        plt.ylim(10**-4, 10**3)
+    else:
+        plt.ylim(10**4, 10**12)
+    plt.ylabel('$N_{\ell}$')
+    plt.xscale('log')
+    plt.xlim(10**2, 10**4)
+    plt.xlabel('$\ell$')
+    plt.rcParams['text.usetex'] = False
+    plt.title('Noise at ' + ('280' if lowFreq else '850') + ' GHz')
+    plt.legend(loc='upper right')
+    plt.grid()
+    plt.show()
 
 
 def otherCustomOutput(i, calculate):
@@ -711,7 +755,10 @@ if __name__ == "__main__":
     #sensitivityFile(outputs, valueDisplay, quartileDisplay)
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    otherCustomOutput(i, calculate)
+    # otherCustomOutput(i, calculate) steve's request
 
-    # custOutput(i, outputs, calculate='all', plotCurve=None,
-    #           table=True, graphSlopes=False, maunaKea=False)
+    custOutput(i, outputs, calculate='all', plotCurve=None,
+               table=False, graphSlopes=True, maunaKea=False)
+
+    #plotCustNoiseCurves(i, outputs, True, lowFreq=True)
+    #plotCustNoiseCurves(i, outputs, True, lowFreq=False)
