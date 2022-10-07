@@ -359,7 +359,7 @@ def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eor
     return lambda x: partCalc(partTrans(x))
 
 
-def sensitivityFile(outputs, valueDisplay, quartileDisplay):
+def outputSensitivityFile(outputs, valueDisplay, quartileDisplay):
     """Outputs output.yaml"""
     dict_file = {"NET w8 avg": valueDisplay(outputs["netW8Avg"]),
                  "NET w8 RJ": valueDisplay(outputs["netW8RJ"]), "NEI w8 Jy/sr": valueDisplay(
@@ -367,7 +367,7 @@ def sensitivityFile(outputs, valueDisplay, quartileDisplay):
     return yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
-def powerFile(outputs, calculate, quartileDisplay):
+def outputPowerFile(outputs, calculate, quartileDisplay):
     """Outputs power.yaml"""
     outputs60 = calculate(30)
     outputs45 = calculate(45)
@@ -430,7 +430,7 @@ def _getColdSpillOverEfficiency(i, beamFreq, beamPixelSpacing, degrees, values, 
     return np.array([_calcSpillFromData(i["lyotStopAngle"], beamFreq / (f * (s / beamPixelSpacing)), degrees, values, showPlots=showPlots, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
 
 
-def spillEfficiencyFile(i, calculate, spillEfficiency):
+def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
     """Prints a chart comparing calculated spill efficiencies to the excel values of spill efficiencies to stdout."""
     output = calculate(45)
     t = Texttable(max_width=110)
@@ -631,7 +631,7 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
     return dataCs*1.2e4
 
 
-def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False, lowFreq=False):
+def outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False, lowFreq=False):
     """Temporary function for playing with mapsims"""
     centerFrequency = None
     beam = None
@@ -695,10 +695,10 @@ def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSl
 
 
 def getCustNoiseCurvesSubplot(i, outputs, temp, lowFreq, ax):
-    before = custOutput(i, outputs, calculate='change', plotCurve=None,
-                        table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
-    after = custOutput(i, outputs, calculate='all', plotCurve=None,
-                       table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
+    before = outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='change', plotCurve=None,
+                                           table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
+    after = outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None,
+                                          table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
 
     ell = before[0]  # Also equal to after[0]
 
@@ -721,7 +721,7 @@ def getCustNoiseCurvesSubplot(i, outputs, temp, lowFreq, ax):
     ax.grid()
 
 
-def plotCustNoiseCurves(i, outputs):
+def outputNoiseCurves(i, outputs):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
         2, 2, sharex='col', sharey='row')
     getCustNoiseCurvesSubplot(i, outputs, True, True, ax1)
@@ -734,7 +734,7 @@ def plotCustNoiseCurves(i, outputs):
     plt.show()
 
 
-def otherCustomOutput(i, calculate):
+def outputLoadings(i, calculate):
     out45 = calculate(45)
     out60 = calculate(30)
 
@@ -746,6 +746,11 @@ def otherCustomOutput(i, calculate):
         "Q3 45 Degree Loading", out45["powerPerPixel"][:, 2]), np.append("Q1 60 Degree Loading", out60["powerPerPixel"][:, 0]), np.append("Q2 60 Degree Loading", out60["powerPerPixel"][:, 1]), np.append("Q3 60 Degree Loading", out60["powerPerPixel"][:, 2])])
     t.add_rows(table, header=True)
     print(t.draw())
+
+
+def useLatexFont():
+    rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+    rc('text', usetex=True)
 
 
 if __name__ == "__main__":
@@ -765,14 +770,11 @@ if __name__ == "__main__":
     quartileDisplay = quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
-    #sensitivityFile(outputs, valueDisplay, quartileDisplay)
-    #powerFile(outputs, calculate, quartileDisplay)
-    #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
-    # otherCustomOutput(i, calculate) steve's request
-    rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-    rc('text', usetex=True)
-
-    custOutput(i, outputs, calculate='all', plotCurve=None,
-               table=False, graphSlopes=True, maunaKea=False)
-
-    #plotCustNoiseCurves(i, outputs)
+    # useLatexFont()
+    # outputSensitivityFile(outputs, valueDisplay, quartileDisplay)
+    # outputPowerFile(outputs, calculate, quartileDisplay)
+    # outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    # outputLoadings(i, calculate)
+    # outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None,
+    #           table=False, graphSlopes=True, maunaKea=False)
+    # outputNoiseCurves(i, outputs)
