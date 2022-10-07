@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from texttable import Texttable
 import noise
 import scipy.optimize as op
-import pwvCalculator as pwv
+import pwvCalculator as locationPWV
 from matplotlib import rc
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
@@ -134,17 +134,18 @@ def getInputs(filePath):
     return {"diameter": diameter, "t": t, "wfe": wfe, "eta": eta, "doe": doe, "t_int": t_int, "pixelYield": pixelYield, "szCamNumPoln": szCamNumPoln, "eorSpecNumPoln": eorSpecNumPoln, "t_filter_cold": t_filter_cold, "t_lens_cold": t_lens_cold, "t_uhdpe_window": t_uhdpe_window, "coldSpillOverEfficiency": coldSpillOverEfficiency, "singleModedAOmegaLambda2": singleModedAOmegaLambda2, "spatialPixels": spatialPixels, "fpi": fpi, "eqbw": eqbw, "centerFrequency": centerFrequency, "detectorNEP": detectorNEP, "backgroundSubtractionDegradationFactor": backgroundSubtractionDegradationFactor, "sensitivity": sensitivity, "hoursPerYear": hoursPerYear, "sensPerBeam": sensPerBeam, "r": r, "signal": signal, "decimalPlaces": decimalPlaces, "observationElevationAngle": observationElevationAngle, "outputFreq": outputFreq, "detectorSpacing": detectorSpacing, "lyotStopAngle": lyotStopAngle}
 
 
+def _a_to_CMB(f):
+    kb = 1.3806488e-23
+    T = 2.725
+    v = f*1e9
+    x = _h*v/(kb*T)
+    return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
+
+
 def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
     wavelength = _c/centerFrequency*10**6
 
-    def a_to_CMB(f):
-        kb = 1.3806488e-23
-        T = 2.725
-        v = f*1e9
-        x = _h*v/(kb*T)
-        return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
-
-    aToCMB = np.array([a_to_CMB(i/1e9) for i in centerFrequency])
+    aToCMB = np.array([_a_to_CMB(i/1e9) for i in centerFrequency])
 
     # Telescope
     a = _pi*(diameter/2)**2
@@ -153,7 +154,7 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
     szCamCorForPoln = abs(3-szCamNumPoln)
     eorSpecCorForPoln = abs(3-eorSpecNumPoln)
 
-    #Instrument, throughput
+    # Instrument, throughput
     t_cold = t_filter_cold*t_lens_cold**3
     e_window_warm = 1 - t_uhdpe_window
 
@@ -451,9 +452,9 @@ def getSpillEfficiency(i):
         'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
     degr = data[0, :, 0]
     vals = data[0, :, 3]
-    #data = np.genfromtxt('data/beam_280.txt')
-    #degr = np.degrees(data[:, 0])
-    #vals = np.log10((data[:, 1]**2))*10
+    # data = np.genfromtxt('data/beam_280.txt')
+    # degr = np.degrees(data[:, 0])
+    # vals = np.log10((data[:, 1]**2))*10
     return _getColdSpillOverEfficiency(
         i, 280e9, 2.75, degr, vals, showPlots=False)
 
@@ -490,10 +491,9 @@ def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percen
 
     return temperature/corr
 
-# Current issue is that it requires higher and lower calculations, should just use variable pwv
-
 
 def _tangent_line_slope(cf, eqbw, col, a, p, maunaKea=False, filePath=None):
+    """Depricated. Requires higher and lower calculations, should just use variable pwv."""
     higher = ""
     lower = ""
     if not maunaKea:
@@ -508,6 +508,20 @@ def _tangent_line_slope(cf, eqbw, col, a, p, maunaKea=False, filePath=None):
     lower = np.array([_averageTemp(c-w/2, c+w/2, col, prefix=lower, angle=a, percentile=p, filePath=filePath)
                       for c, w in zip(cf, eqbw)])
     derivative = (higher - lower) / 0.02
+    return derivative
+
+
+def _tangent_line_slopeV2(cf, eqbw, col, a, pwv):
+    ccatPWV = locationPWV.configPWV(50)
+    lower = int(pwv * 20 / ccatPWV)
+    higher = lower + 1
+    lower = np.array([_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(lower) + "." + str(a)))
+                      for c, w in zip(cf, eqbw)])
+    higher = np.array([_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(higher) + "." + str(a)))
+                       for c, w in zip(cf, eqbw)])
+
+    derivative = (higher - lower) / (ccatPWV / 20)
+
     return derivative
 
 
@@ -528,9 +542,10 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
     def line(x, m, b):
         return m*x + b
     derivative = []
-    ccatMedPWV = 0.67/pwv.configPWV(50)
+    ccatMedPWV = 0.67/locationPWV.configPWV(50)
     if maunaKea:
-        ccatMedPWV = pwv.configPWVHelper("data/MaunaKea/Default/50/.err")
+        ccatMedPWV = locationPWV.configPWVHelper(
+            "data/MaunaKea/Default/50/.err")
         # print(ccatMedPWV)
     pwvs = (np.array(range(40))+1) / 20*ccatMedPWV
     for i in range(len(cf)):
@@ -604,19 +619,12 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
     cf = np.append(145e9, i["centerFrequency"])
     eqbw = np.append(145*0.276e9, i["eqbw"])
 
-    def A_to_CMB(freq_in_GHz):
-        h = _h
-        kb = _k
-        T = 2.725
-        v = freq_in_GHz*1e9
-        x = h*v/(kb*T)
-        return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
     dataCs = np.array([])
     # Choose method
     derivative = _tangent_line_slope(cf, eqbw, COL, A, P, maunaKea=maunaKea)
     for n in range(1, len(cf)):
         dataCs = np.append(dataCs,
-                           (derivative[n]*A_to_CMB(cf[n]/1e9)/(derivative[0]*A_to_CMB(cf[0]/1e9)))**2)
+                           (derivative[n]*_a_to_CMB(cf[n]/1e9)/(derivative[0]*_a_to_CMB(cf[0]/1e9)))**2)
     if table:
         t = Texttable(max_width=110)
         table_header = np.append("Method", np.char.add(
@@ -628,6 +636,23 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
         print(t.draw())
     elif graphSlopes:
         _least_squares_slope(cf, eqbw, COL, A, graph=True, maunaKea=maunaKea)
+    return dataCs*1.2e4
+
+
+def _data_C_calcV2(i):
+    P = 50
+    A = 45
+    COL = 2
+
+    cf = np.append(145e9, i["centerFrequency"])
+    eqbw = np.append(145*0.276e9, i["eqbw"])
+
+    dataCs = np.array([])
+    derivative = _tangent_line_slopeV2(
+        cf, eqbw, COL, A, locationPWV.configPWV(P))
+    for n in range(1, len(cf)):
+        dataCs = np.append(dataCs,
+                           (derivative[n]*_a_to_CMB(cf[n]/1e9)/(derivative[0]*_a_to_CMB(cf[0]/1e9)))**2)
     return dataCs*1.2e4
 
 
@@ -758,7 +783,7 @@ def getNoiseCurves(i, outputs):
     centerFrequency = i['centerFrequency']/1e9
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
-    data_C = _data_C_calc(i)
+    data_C = _data_C_calcV2(i)
     ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
                       24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
@@ -794,4 +819,6 @@ if __name__ == "__main__":
     #           table=False, graphSlopes=True, maunaKea=False)
     # outputNoiseCurves(i, outputs)
 
-    getNoiseCurves(i, outputs)
+    print(_data_C_calc(i))
+    print(_data_C_calcV2(i))
+    #getNoiseCurves(i, outputs)

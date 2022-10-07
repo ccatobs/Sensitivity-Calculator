@@ -22,35 +22,6 @@ CerroConfigQ1=$(bc <<<"scale=10; $CerroChajnantorPWVQ1/$ACTConfigQ1")
 CerroConfigQ2=$(bc <<<"scale=10; $CerroChajnantorPWVQ2/$ACTConfigQ2")
 CerroConfigQ3=$(bc <<<"scale=10; $CerroChajnantorPWVQ3/$ACTConfigQ3")
 
-#Ratio using PWV of 0.01 lower
-LowerQ1=$(bc <<<"scale=10; ($CerroChajnantorPWVQ1 - 0.01)/$ACTConfigQ1")
-LowerQ2=$(bc <<<"scale=10; ($CerroChajnantorPWVQ2 - 0.01)/$ACTConfigQ2")
-LowerQ3=$(bc <<<"scale=10; ($CerroChajnantorPWVQ3 - 0.01)/$ACTConfigQ3")
-
-#Ratio using PWV of 0.01 higher
-HigherQ1=$(bc <<<"scale=10; ($CerroChajnantorPWVQ1 + 0.01)/$ACTConfigQ1")
-HigherQ2=$(bc <<<"scale=10; ($CerroChajnantorPWVQ2 + 0.01)/$ACTConfigQ2")
-HigherQ3=$(bc <<<"scale=10; ($CerroChajnantorPWVQ3 + 0.01)/$ACTConfigQ3")
-
-echo $ACTConfigQ1
-echo $ACTConfigQ2
-echo $ACTConfigQ3
-
-echo "----------------------------------------------"
-echo $LowerQ1
-echo $CerroConfigQ1
-echo $HigherQ1
-
-echo "----------------------------------------------"
-echo $LowerQ2
-echo $CerroConfigQ2
-echo $HigherQ2
-
-echo "----------------------------------------------"
-echo $LowerQ3
-echo $CerroConfigQ3
-echo $HigherQ3
-
 for i in {15..75}
 do
     #CerroConfig Calculations
@@ -58,17 +29,7 @@ do
     am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ2 >data/CerroConfig/50/ACT_annual_50.$((i)).out 2>/dev/null
     am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $CerroConfigQ3 >data/CerroConfig/75/ACT_annual_75.$((i)).out 2>/dev/null
 
-    #Lower PWV
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ1 >data/Lower/25/ACT_annual_25.$((i)).out 2>/dev/null
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ2 >data/Lower/50/ACT_annual_50.$((i)).out 2>/dev/null
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $LowerQ3 >data/Lower/75/ACT_annual_75.$((i)).out 2>/dev/null
-
-    #Higher PWV
-    am data/ACT_annual_25.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ1 >data/Higher/25/ACT_annual_25.$((i)).out 2>/dev/null
-    am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ2 >data/Higher/50/ACT_annual_50.$((i)).out 2>/dev/null
-    am data/ACT_annual_75.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $HigherQ3 >data/Higher/75/ACT_annual_75.$((i)).out 2>/dev/null
-
-    PERCENT=$(bc <<<"scale=0; ($((i))-14)*9/0.61/10")
+    PERCENT=$(bc <<<"scale=0; ($((i))-14)*10/6/10")
     SIGN="%"
     echo "${PERCENT}${SIGN}"
 done
