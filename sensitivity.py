@@ -753,6 +753,21 @@ def useLatexFont():
     rc('text', usetex=True)
 
 
+def getNoiseCurves(i, outputs):
+    """Temporary function for playing with mapsims"""
+    centerFrequency = i['centerFrequency']/1e9
+    beam = outputs["beam"]/60
+    net = outputs["netW8Avg"]
+    data_C = _data_C_calc(i)
+    ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
+                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
+    fsky = 20000./(4*_pi*(180/_pi)**2)
+    lat_lmax = 10000
+    ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
+        fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
+    return ell, N_ell_T_full, N_ell_P_full
+
+
 if __name__ == "__main__":
     i = getInputs("input.yaml")
     angle = 90 - i["observationElevationAngle"]
@@ -778,3 +793,5 @@ if __name__ == "__main__":
     # outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None,
     #           table=False, graphSlopes=True, maunaKea=False)
     # outputNoiseCurves(i, outputs)
+
+    getNoiseCurves(i, outputs)
