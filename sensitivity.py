@@ -6,6 +6,7 @@ from texttable import Texttable
 import noise
 import scipy.optimize as op
 import pwvCalculator as pwv
+from matplotlib import rc
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 _pi = np.pi
@@ -538,13 +539,13 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
         derivative.append(popt[0])
     derivative = np.array(derivative)
     if graph:
-        ylabel = ["Weighted Temperature (Arbitrary Units)", "RJ Temperature (K)",
+        ylabel = ["Weighted Rayleigh-Jeans Temperature (K)", "RJ Temperature (K)",
                   "Planck Temperature (K)", "Absorption"]
         if not maunaKea:
             print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
             print("CCAT 50th percentile PWV:", ccatMedPWV)
         for j in range(4):
-            for i in np.array(range(len(cf)))[::-1]:
+            for i in np.array(range(len(cf)))[::-1][:-1]:
                 if j == 0:
                     plt.plot(pwvs, wieghtedTemp[:, i], linewidth=1,
                              label=str(int(cf[i]/1e9))+' GHz')
@@ -557,7 +558,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
                 if j == 3:
                     plt.plot(pwvs, absorption[:, i], linewidth=1,
                              label=str(int(cf[i]/1e9))+' GHz')
-
+            plt.title("Brightness Temperature vs PWV")
             plt.ylim(bottom=0)
             plt.ylabel(ylabel[j])
             plt.xlim(left=0, right=ccatMedPWV*2)
@@ -693,7 +694,7 @@ def custOutput(i, outputs, calculate='all', plotCurve=None, table=False, graphSl
     return ell, N_ell_T_full[0], N_ell_P_full[0]
 
 
-def plotCustNoiseCurves(i, outputs, temp, lowFreq):
+def getCustNoiseCurvesSubplot(i, outputs, temp, lowFreq, ax):
     before = custOutput(i, outputs, calculate='change', plotCurve=None,
                         table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
     after = custOutput(i, outputs, calculate='all', plotCurve=None,
@@ -701,23 +702,35 @@ def plotCustNoiseCurves(i, outputs, temp, lowFreq):
 
     ell = before[0]  # Also equal to after[0]
 
-    plt.plot(ell, before[1 if temp else 2], label='Before')
-    plt.plot(ell, after[1 if temp else 2], label='After')
+    ax.plot(ell, before[1 if temp else 2], label='Before')
+    ax.plot(ell, after[1 if temp else 2],
+            ('-' if temp else '--'), label='After')
 
-    plt.rcParams['text.usetex'] = True
-    plt.yscale('log')
+    ax.set_yscale('log')
     if lowFreq:
-        plt.ylim(10**-4, 10**3)
+        ax.set_ylim(10**-4, 10**3)
     else:
-        plt.ylim(10**4, 10**12)
-    plt.ylabel('$N_{\ell}$')
-    plt.xscale('log')
-    plt.xlim(10**2, 10**4)
-    plt.xlabel('$\ell$')
-    plt.rcParams['text.usetex'] = False
-    plt.title('Noise at ' + ('280' if lowFreq else '850') + ' GHz')
-    plt.legend(loc='upper right')
-    plt.grid()
+        ax.set_ylim(10**4, 10**12)
+    ax.set_ylabel('$N_{\ell} (\mu K^2)$')
+    ax.set_xscale('log')
+    ax.set_xlim(10**2, 10**4)
+    ax.set_xlabel('$\ell$')
+    ax.set_title(('Temperature' if temp else 'Polarization') +
+                 ' Noise at ' + ('280' if lowFreq else '850') + ' GHz')
+    ax.legend(loc='upper right')
+    ax.grid()
+
+
+def plotCustNoiseCurves(i, outputs):
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
+        2, 2, sharex='col', sharey='row')
+    getCustNoiseCurvesSubplot(i, outputs, True, True, ax1)
+    getCustNoiseCurvesSubplot(i, outputs, False, True, ax2)
+    getCustNoiseCurvesSubplot(i, outputs, True, False, ax3)
+    getCustNoiseCurvesSubplot(i, outputs, False, False, ax4)
+    for ax in fig.get_axes():
+        ax.label_outer()
+    fig.tight_layout()
     plt.show()
 
 
@@ -756,9 +769,10 @@ if __name__ == "__main__":
     #powerFile(outputs, calculate, quartileDisplay)
     #spillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     # otherCustomOutput(i, calculate) steve's request
+    rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+    rc('text', usetex=True)
 
     custOutput(i, outputs, calculate='all', plotCurve=None,
                table=False, graphSlopes=True, maunaKea=False)
 
-    #plotCustNoiseCurves(i, outputs, True, lowFreq=True)
-    #plotCustNoiseCurves(i, outputs, True, lowFreq=False)
+    #plotCustNoiseCurves(i, outputs)
