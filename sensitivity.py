@@ -5,8 +5,13 @@ import matplotlib.pyplot as plt
 from texttable import Texttable
 import noise
 import scipy.optimize as op
-import pwvCalculator as locationPWV
+import pwvCalculator as ACTPWV
 from matplotlib import rc
+
+# Values taken from https://arxiv.org/pdf/2007.04262.pdf
+ccatPWVQ1 = 0.36
+ccatPWVQ2 = 0.67
+ccatPWVQ3 = 1.28
 
 # These functions work on numpy arrays (componentwise) and help with code clarity
 _pi = np.pi
@@ -512,15 +517,14 @@ def _tangent_line_slope(cf, eqbw, col, a, p, maunaKea=False, filePath=None):
 
 
 def _tangent_line_slopeV2(cf, eqbw, col, a, pwv):
-    ccatPWV = locationPWV.configPWV(50)
-    lower = int(pwv * 20 / ccatPWV)
+    lower = int(pwv * 20 / ccatPWVQ2)
     higher = lower + 1
     lower = np.array([_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(lower) + "." + str(a)))
                       for c, w in zip(cf, eqbw)])
     higher = np.array([_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(higher) + "." + str(a)))
                        for c, w in zip(cf, eqbw)])
 
-    derivative = (higher - lower) / (ccatPWV / 20)
+    derivative = (higher - lower) / (ccatPWVQ2 / 20)
 
     return derivative
 
@@ -542,12 +546,12 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
     def line(x, m, b):
         return m*x + b
     derivative = []
-    ccatMedPWV = 0.67/locationPWV.configPWV(50)
+    temp = ccatPWVQ2
     if maunaKea:
-        ccatMedPWV = locationPWV.configPWVHelper(
+        temp = ACTPWV.configPWVHelper(
             "data/MaunaKea/Default/50/.err")
         # print(ccatMedPWV)
-    pwvs = (np.array(range(40))+1) / 20*ccatMedPWV
+    pwvs = (np.array(range(40))+1) / 20*temp
     for i in range(len(cf)):
         popt = op.curve_fit(line, pwvs, wieghtedTemp[:, i])[0]
         # print(popt)
@@ -558,7 +562,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
                   "Planck Temperature (K)", "Absorption"]
         if not maunaKea:
             print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
-            print("CCAT 50th percentile PWV:", ccatMedPWV)
+            print("CCAT 50th percentile PWV:", ccatPWVQ2)
         for j in range(4):
             for i in np.array(range(len(cf)))[::-1][:-1]:
                 if j == 0:
@@ -576,7 +580,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
             plt.title("Brightness Temperature vs PWV")
             plt.ylim(bottom=0)
             plt.ylabel(ylabel[j])
-            plt.xlim(left=0, right=ccatMedPWV*2)
+            plt.xlim(left=0, right=ccatPWVQ2*2)
             plt.xlabel("PWV (mm)")
             plt.legend(loc='best')
             plt.grid()
@@ -591,7 +595,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
                      label=str(int(cf[i]/1e9))+' GHz Planck Temp')
         plt.ylim(bottom=0)
         plt.ylabel("Brightness Temperature (K)")
-        plt.xlim(left=0, right=ccatMedPWV*2)
+        plt.xlim(left=0, right=ccatPWVQ2*2)
         plt.xlabel("PWV (mm)")
         plt.legend(loc='best')
         plt.title("Brightness Temperature vs PWV Comparison")
@@ -602,11 +606,30 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
             plt.plot(pwvs, wieghtedTemp[:, i] - rjTemp[:, i], linewidth=1,
                      label=str(int(cf[i]/1e9))+' GHz')
         plt.ylabel("Difference Between Weighted RJ and RJ (Arbitrary Units)")
-        plt.xlim(left=0, right=ccatMedPWV*2)
+        plt.xlim(left=0, right=ccatPWVQ2*2)
         plt.xlabel("PWV (mm)")
         plt.legend(loc='best')
         plt.grid()
         plt.show()
+
+    return derivative
+
+
+def _least_squares_slopeV2(cf, eqbw, col, a, lowPWV, highPWV):
+    wieghtedTemp = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(i) + "." + str(a)))
+                              for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
+
+    def line(x, m, b):
+        return m*x + b
+    derivative = []
+    pwvs = (np.array(range(40))+1) / 20*ccatPWVQ2
+
+    valid = np.all([np.where(pwvs > lowPWV, True, False),
+                   np.where(pwvs < highPWV, True, False)], axis=0)
+    for i in range(len(cf)):
+        popt = op.curve_fit(line, pwvs[valid], wieghtedTemp[:, i][valid])[0]
+        derivative.append(popt[0])
+    derivative = np.array(derivative)
 
     return derivative
 
@@ -640,7 +663,6 @@ def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
 
 
 def _data_C_calcV2(i):
-    P = 50
     A = 45
     COL = 2
 
@@ -648,8 +670,7 @@ def _data_C_calcV2(i):
     eqbw = np.append(145*0.276e9, i["eqbw"])
 
     dataCs = np.array([])
-    derivative = _tangent_line_slopeV2(
-        cf, eqbw, COL, A, locationPWV.configPWV(P))
+    derivative = _least_squares_slopeV2(cf, eqbw, COL, A, ccatPWVQ1, ccatPWVQ3)
     for n in range(1, len(cf)):
         dataCs = np.append(dataCs,
                            (derivative[n]*_a_to_CMB(cf[n]/1e9)/(derivative[0]*_a_to_CMB(cf[0]/1e9)))**2)
@@ -821,4 +842,4 @@ if __name__ == "__main__":
 
     print(_data_C_calc(i))
     print(_data_C_calcV2(i))
-    #getNoiseCurves(i, outputs)
+    # getNoiseCurves(i, outputs)
