@@ -1,3 +1,4 @@
+from tomlkit import string
 import yaml
 import numpy as np
 from functools import partial
@@ -242,6 +243,10 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
             powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam}
 
 
+def _pwvToTick(pwv):
+    return int(pwv/(ccatPWVQ2/20))
+
+
 def _averageTransSE(filePath, start, end, col=1):
     file = open("data/" + filePath + ".out", "r")
     data = file.readlines()
@@ -264,14 +269,18 @@ def _averageTransHelper(filePath, center, width, col=1):
     return _averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9, col)
 
 
-def _averageTrans(prefix, angle, percentile, center, width, col=1):
+def _averageTrans(prefix, angle, percentile, center, width, col=1, newFilePathFormat=False):
+    filePath = prefix + str(percentile) + \
+        "/ACT_annual_" + str(percentile) + "."
+    if newFilePathFormat:
+        filePath = prefix + "ACT_annual_" + str(percentile) + "."
     if angle >= 15 and angle <= 75 and int(angle) == angle:
-        return _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" + str(percentile) + "." + str(angle), center, width, col)
+        return _averageTransHelper(filePath + str(angle), center, width, col)
     elif int(angle) != angle:
-        floor = _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                    str(percentile) + "." + str(int(np.floor(angle))), center, width, col)
-        ceil = _averageTransHelper(prefix + str(percentile) + "/ACT_annual_" +
-                                   str(percentile) + "." + str(int(np.ceil(angle))), center, width, col)
+        floor = _averageTransHelper(
+            filePath + str(int(np.floor(angle))), center, width, col)
+        ceil = _averageTransHelper(
+            filePath + str(int(np.ceil(angle))), center, width, col)
         prop = angle - np.floor(angle)
         return floor * (1 - prop) + ceil * prop
     else:
@@ -280,6 +289,20 @@ def _averageTrans(prefix, angle, percentile, center, width, col=1):
 
 def _getEQTrans(angle, center, width):
     return np.array([[_averageTrans("CerroConfig/", angle, percentile, centeri, widthi) for percentile in [25, 50, 75]] for centeri, widthi in zip(center, width)])
+
+
+def _getEQTransV2(angle, center, width):
+    lower = np.array([[_averageTrans("VariablePWV/", angle, pwvTick, centeri, widthi, newFilePathFormat=True)
+                     for pwvTick in [_pwvToTick(ccatPWVQ1), _pwvToTick(ccatPWVQ2), _pwvToTick(ccatPWVQ3)]] for centeri, widthi in zip(center, width)])
+    higher = np.array([[_averageTrans("VariablePWV/", angle, pwvTick, centeri, widthi, newFilePathFormat=True)
+                      for pwvTick in [_pwvToTick(ccatPWVQ1)+1, _pwvToTick(ccatPWVQ3)+1]] for centeri, widthi in zip(center, width)])
+    propQ1 = ccatPWVQ1/(ccatPWVQ2/20)-_pwvToTick(ccatPWVQ1)
+    propQ3 = ccatPWVQ3/(ccatPWVQ2/20)-_pwvToTick(ccatPWVQ3)
+    trueQ1 = lower[:, 0]*(1-propQ1)+higher[:, 0]*propQ1
+    trueQ3 = lower[:, 2]*(1-propQ3)+higher[:, 1]*propQ3
+
+    linearApprox = np.array([trueQ1, lower[:, 1], trueQ3]).T
+    return linearApprox
 
 
 def _trun(array, decimalPlaces):
@@ -359,7 +382,7 @@ def quartDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
 def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal):
     """Returns a function that takes observation zenith angle as an input and returns the following outputs in a dictionary: NET Weighted Average as "netW8Avg", NET Weighted RJ as "netW8RJ", NEI Weighted Average as "neiW8", EoR Spec NEFD as "eorNEFD", EoR Spec NEI as "eorNEI", Power per Pixel as "powerPerPixel", EoR Spec Power per Pixel as "eorPowerPerPixel", Center Wavelengths as "wavelength", Beam as "beam"."""
 
-    partTrans = partial(_getEQTrans, center=centerFrequency, width=eqbw)
+    partTrans = partial(_getEQTransV2, center=centerFrequency, width=eqbw)
     partCalc = partial(_calculate, diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency,
                        singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal)
     return lambda x: partCalc(partTrans(x))
@@ -678,7 +701,6 @@ def _data_C_calcV2(i):
 
 
 def outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False, lowFreq=False):
-    """Temporary function for playing with mapsims"""
     centerFrequency = None
     beam = None
     net = None
@@ -800,7 +822,6 @@ def useLatexFont():
 
 
 def getNoiseCurves(i, outputs):
-    """Temporary function for playing with mapsims"""
     centerFrequency = i['centerFrequency']/1e9
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
@@ -812,6 +833,30 @@ def getNoiseCurves(i, outputs):
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
         fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
     return ell, N_ell_T_full, N_ell_P_full
+
+
+def outputDataCChanges(i):
+    old = _data_C_calc(i)
+    new = _data_C_calcV2(i)
+    change = 100*(old-new)/new
+
+    t = Texttable(max_width=110)
+    t.set_cols_dtype(['t', 'e', 'e', 'e', 'e', 'e'])
+    t.set_cols_width([20, 10, 10, 10, 10, 10])
+    table_header = np.append("Center Frequency", np.char.add(
+        (i["centerFrequency"]/1e9).astype(int).astype(str), ' GHz'))
+    table = np.array([table_header, np.append("5% to 200% of Q2 PWV", old), np.append(
+        "Q1 PWV to Q3 PWV", new)])
+    t.add_rows(table, header=True)
+    print(t.draw())
+
+    t = Texttable(max_width=110)
+    t.set_cols_dtype(['t', 'f', 'f', 'f', 'f', 'f'])
+    t.set_precision(1)
+    t.set_cols_width([20, 10, 10, 10, 10, 10])
+    table = np.array([np.append("Percentage Change", change)])
+    t.add_rows(table, header=False)
+    print(t.draw())
 
 
 if __name__ == "__main__":
@@ -839,7 +884,6 @@ if __name__ == "__main__":
     # outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None,
     #           table=False, graphSlopes=True, maunaKea=False)
     # outputNoiseCurves(i, outputs)
+    # outputDataCChanges(i)
 
-    print(_data_C_calc(i))
-    print(_data_C_calcV2(i))
-    # getNoiseCurves(i, outputs)
+    #getNoiseCurves(i, outputs)
