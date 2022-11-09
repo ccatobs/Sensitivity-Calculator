@@ -2,6 +2,8 @@
 
 #! usr/bin/bash
 
+fullData=true
+
 #Values taken from https://arxiv.org/pdf/2007.04262.pdf
 CerroChajnantorPWVQ1=0.36
 CerroChajnantorPWVQ2=0.67
@@ -16,14 +18,26 @@ ACTConfigQ2=$(python3 pwvCalculator.py 50)
 #Ratio of PWVs used in CCAT site data generation
 CerroConfigQ2=$(bc <<<"scale=10; $CerroChajnantorPWVQ2/$ACTConfigQ2")
 
-
-for i in {15..75}
-do
-    for s in {1..40}
+if [ "$fullData" = true ] ; then
+    for i in {15..75}
     do
-        am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
+        for s in {1..40}
+        do
+            am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
+        done
+        PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61")
+        SIGN="%"
+        echo "${PERCENT}${SIGN}"
     done
-    PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61")
-    SIGN="%"
-    echo "${PERCENT}${SIGN}"
-done
+else
+    for i in {30..65..5}
+    do
+        for s in {1..40}
+        do
+            am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
+        done
+        PERCENT=$(bc <<<"scale=0; ($((i))-25)/0.4")
+        SIGN="%"
+        echo "${PERCENT}${SIGN}"
+    done
+fi
