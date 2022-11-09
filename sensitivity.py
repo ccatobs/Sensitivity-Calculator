@@ -1,4 +1,3 @@
-from tomlkit import string
 import yaml
 import numpy as np
 from functools import partial
@@ -7,7 +6,15 @@ from texttable import Texttable
 import noise
 import scipy.optimize as op
 import pwvCalculator as ACTPWV
-from matplotlib import rc
+from matplotlib import rc, rcParams
+# import mapsims
+# from ad_fns import *
+# import healpy as hp
+import warnings
+warnings.filterwarnings("ignore")
+
+
+fullData = True
 
 # Values taken from https://arxiv.org/pdf/2007.04262.pdf
 ccatPWVQ1 = 0.36
@@ -274,17 +281,30 @@ def _averageTrans(prefix, angle, percentile, center, width, col=1, newFilePathFo
         "/ACT_annual_" + str(percentile) + "."
     if newFilePathFormat:
         filePath = prefix + "ACT_annual_" + str(percentile) + "."
-    if angle >= 15 and angle <= 75 and int(angle) == angle:
-        return _averageTransHelper(filePath + str(angle), center, width, col)
-    elif int(angle) != angle:
-        floor = _averageTransHelper(
-            filePath + str(int(np.floor(angle))), center, width, col)
-        ceil = _averageTransHelper(
-            filePath + str(int(np.ceil(angle))), center, width, col)
-        prop = angle - np.floor(angle)
-        return floor * (1 - prop) + ceil * prop
+    if fullData:
+        if angle >= 15 and angle <= 75 and int(angle) == angle:
+            return _averageTransHelper(filePath + str(angle), center, width, col)
+        elif int(angle) != angle:
+            floor = _averageTransHelper(
+                filePath + str(int(np.floor(angle))), center, width, col)
+            ceil = _averageTransHelper(
+                filePath + str(int(np.ceil(angle))), center, width, col)
+            prop = angle - np.floor(angle)
+            return floor * (1 - prop) + ceil * prop
+        else:
+            print("Angle out of range")
     else:
-        print("Angle out of range")
+        if angle >= 30 and angle <= 65 and int(angle/5) == angle/5:
+            return _averageTransHelper(filePath + str(angle), center, width, col)
+        elif int(angle/5) != angle/5:
+            floor = _averageTransHelper(
+                filePath + str(int(np.floor(angle/5)*5)), center, width, col)
+            ceil = _averageTransHelper(
+                filePath + str(int(np.ceil(angle/5)*5)), center, width, col)
+            prop = angle/5 - np.floor(angle/5)
+            return floor * (1 - prop) + ceil * prop
+        else:
+            print("Angle out of range")
 
 
 def _getEQTrans(angle, center, width):
@@ -292,6 +312,7 @@ def _getEQTrans(angle, center, width):
 
 
 def _getEQTransV2(angle, center, width):
+    #print(center, width)
     lower = np.array([[_averageTrans("VariablePWV/", angle, pwvTick, centeri, widthi, newFilePathFormat=True)
                      for pwvTick in [_pwvToTick(ccatPWVQ1), _pwvToTick(ccatPWVQ2), _pwvToTick(ccatPWVQ3)]] for centeri, widthi in zip(center, width)])
     higher = np.array([[_averageTrans("VariablePWV/", angle, pwvTick, centeri, widthi, newFilePathFormat=True)
@@ -701,6 +722,7 @@ def _data_C_calcV2(i):
 
 
 def outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False, lowFreq=False):
+    """NOTE: Deprecated from removal of old am data."""
     centerFrequency = None
     beam = None
     net = None
@@ -790,6 +812,7 @@ def getCustNoiseCurvesSubplot(i, outputs, temp, lowFreq, ax):
 
 
 def outputNoiseCurves(i, outputs):
+    """NOTE: Deprecated from removal of old am data."""
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
         2, 2, sharex='col', sharey='row')
     getCustNoiseCurvesSubplot(i, outputs, True, True, ax1)
@@ -803,6 +826,7 @@ def outputNoiseCurves(i, outputs):
 
 
 def outputLoadings(i, calculate):
+    """Output the loadings at 45 and 60 degree angles of elevation for Q1, Q2, and Q3 PWV at all frequencies."""
     out45 = calculate(45)
     out60 = calculate(30)
 
@@ -822,12 +846,13 @@ def useLatexFont():
 
 
 def getNoiseCurves(i, outputs):
+    """Returns a tuple of (ell, N_ell_T_full, N_ell_P_full) for the given inputs and outputs from the rest of the sensitivity calculator."""
     centerFrequency = i['centerFrequency']/1e9
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
     ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
+                      24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -836,6 +861,7 @@ def getNoiseCurves(i, outputs):
 
 
 def outputDataCChanges(i):
+    """NOTE: Deprecated from removal of old am data."""
     old = _data_C_calc(i)
     new = _data_C_calcV2(i)
     change = 100*(old-new)/new
@@ -857,6 +883,187 @@ def outputDataCChanges(i):
     table = np.array([np.append("Percentage Change", change)])
     t.add_rows(table, header=False)
     print(t.draw())
+
+
+def mapsimsstuffs(i, outputs, noiseCurves):
+    NSIDE = 128
+    lat_lmax = 1500
+    pysm_string = "d0,s0"
+    cmb = mapsims.SOPrecomputedCMB(
+        num=0,
+        nside=NSIDE,
+        lensed=False,
+        aberrated=False,
+        has_polarization=True,
+        cmb_set=0,
+        cmb_dir="/home/amm487/cloned_repos/mapsims/mapsims/tests/data",
+        input_units="uK_CMB",
+    )
+    noise = mapsims.SONoiseSimulator(
+        nside=NSIDE,
+        return_uK_CMB=True,
+        sensitivity_mode="baseline",
+        apply_beam_correction=False,
+        apply_kludge_correction=False,
+        homogeneous=False,
+        rolloff_ell=50,
+        ell_max=lat_lmax,
+        survey_efficiency=1.0,
+        full_covariance=False,
+        LA_years=5,
+        elevation=50,
+        SA_years=5,
+        SA_one_over_f_mode="pessimistic"
+    )
+    print(noise)
+    chs = ["tube:LC1", "tube:LC2", "tube:LC3"]
+
+    final = []
+
+    for ch in chs:
+        simulator = mapsims.MapSim(
+            channels="all",
+            nside=NSIDE,
+            unit="uK_CMB",
+            pysm_output_reference_frame="C",
+            pysm_components_string=pysm_string,
+            # output_filename_template = filename,
+            pysm_custom_components={"cmb": cmb},
+            other_components={"noise": noise},
+        )
+        output_map_full = simulator.execute()
+
+        # Now Apodize
+        for det in output_map_full.keys():
+            for pol in np.arange(output_map_full[det].shape[0]):
+                output_map_full[det][pol] = apodize_map(
+                    output_map_full[det][pol])
+
+        final.append(output_map_full)
+    final = np.array(final)
+    pols = ["T", "Q", "U"]
+    for h in final:
+        for k in h.keys():
+            for pol in np.arange(h[k].shape[0]):
+                hp.mollview(h[k][pol], title=str(k)+" "+pols[pol])
+                plt.show()
+
+
+def _eorCalculate(diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, eqtrans, spatialPixels, pixelYield, eorEqBw, detIndex, fnum):
+    temp = eorEqBw[fnum]
+    eorEqBw = np.zeros(len(spatialPixels))
+    eorEqBw[detIndex] = temp
+    eorEqBw = eorEqBw[:, None]
+
+    wavelength = _c/centerFrequency*10**6
+
+    # Telescope
+    a = _pi*(diameter/2)**2
+
+    # Detector
+    eorSpecCorForPoln = abs(3-eorSpecNumPoln)
+
+    # Instrument, throughput
+    t_cold = t_filter_cold*t_lens_cold**3
+    e_window_warm = 1 - t_uhdpe_window
+
+    # Instrument, beams/area of focal plane
+    beam = 1.2*wavelength/diameter/1000000*206265
+    solidAngle = _pi/4/_ln(2)*(beam/206264)**2
+
+    # EoR Spec
+    eorEqTrans = eqtrans
+    eorE_warm = (t_uhdpe_window)[:, None]*((1-eorEqTrans)
+                                           * eta+(1-eta))+(e_window_warm)[:, None]
+    eorRuze = 1/_e**((4*_pi*wfe/(wavelength))**2)
+    # Always takes from 739 um in the sheet, also weird formula
+    eorT_cold = (t_cold)*0.9
+    eorOccupancy = 1/(_e**(_h*_c/((wavelength)*10**(-6)*_k*t))-1)
+    eorAcceptedModes = eorSpecNumPoln*a*(coldSpillOverEfficiency)*(solidAngle)/(
+        (wavelength)*10**(-6))**2  # In sheet 1071 um is calculated incorrectly
+    eorPhotonNoiseNEP = _h*_c/((wavelength)[:, None]*10**(-6))*(eorAcceptedModes[:, None]*eorEqBw*eorE_warm *
+                                                                eorT_cold[:, None]*doe*eorOccupancy[:, None]*(1+eorE_warm*eorT_cold[:, None]*doe*eorOccupancy[:, None]))**0.5
+    eorTotalNEP = _sqrt(eorPhotonNoiseNEP**2 + detectorNEP**2)
+    eorColdTerminatedSpillover = (coldSpillOverEfficiency)
+    eorNEF = eorSpecCorForPoln*eorTotalNEP/(a*eorT_cold[:, None]*doe*eta*eorRuze[:, None]
+                                            * eorEqTrans*eorColdTerminatedSpillover[:, None]*backgroundSubtractionDegradationFactor)
+    eorNEFD = eorNEF/eorEqBw*10**26*1000
+    eorNEI = eorNEFD/(solidAngle)[:, None]/1000
+    eorPowerPerPixel = _h*_c/(wavelength[:, None]*10**(-6))*eorE_warm*eorT_cold[:, None]*eorAcceptedModes[:,
+                                                                                                          None]*eorOccupancy[:, None]*eorEqBw*doe  # Look at t_cold in excel sheet
+
+    # Inference from non-eor stuffs
+    net = eorNEFD*10**(-29)/((solidAngle)[:, None])*((wavelength)
+                                                     [:, None]*0.000001)**2/(2*1.38*10**(-23))*1000
+    arrayNETRJ = (net/((spatialPixels)[:, None]*pixelYield)**0.5)
+    aToCMB = np.array([_a_to_CMB(i/1e9) for i in centerFrequency])
+    arrayNETCMB = arrayNETRJ*aToCMB[:, None]*1000
+    netw8avg = _sqrt(3/(1/arrayNETCMB[:, 0]**2+1/arrayNETCMB[:, 1]
+                        ** 2+1/arrayNETCMB[:, 2]**2).astype(float))
+    return {"eorNEFD": eorNEFD, "eorNEI": eorNEI, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam, "netW8Avg": netw8avg}
+
+
+def _eorCalcByFreqR(angle, diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, detectorNEP, backgroundSubtractionDegradationFactor, spatialPixels, pixelYield, eqbw):
+    """Returns a function that takes observation zenith angle as an input and returns the following outputs in a dictionary: EoR Spec NEFD as "eorNEFD", EoR Spec NEI as "eorNEI", Power per Pixel as "powerPerPixel", EoR Spec Power per Pixel as "eorPowerPerPixel", Center Wavelengths as "wavelength", Beam as "beam"."""
+    partTrans = partial(_getEQTransV2, angle=angle)
+    partCalc = partial(_eorCalculate, diameter=diameter, t=t, wfe=wfe, eta=eta, doe=doe, eorSpecNumPoln=eorSpecNumPoln,  t_filter_cold=t_filter_cold,  t_lens_cold=t_lens_cold,  t_uhdpe_window=t_uhdpe_window,
+                       coldSpillOverEfficiency=coldSpillOverEfficiency, detectorNEP=detectorNEP,  backgroundSubtractionDegradationFactor=backgroundSubtractionDegradationFactor, spatialPixels=spatialPixels, pixelYield=pixelYield, eorEqBw=eqbw)
+    return lambda f, detIndex, fnum: partCalc(centerFrequency=f, detIndex=detIndex, fnum=fnum, eqtrans=partTrans(center=f, width=eqbw))
+
+
+def _geteqbw(f, r):
+    return f / (10 * r) * _pi / 2
+
+
+def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9):
+    """Returns a list of noise curves (ell, N_ell_T_full, N_ell_P_full) corresponding to rfpairs, a list of finesse-frequency pairs, and detector arrays i. frequencyRanges is an optional parameter 
+    for modifying the frequency range of the detector arrays."""
+    angle = 90 - i["observationElevationAngle"]
+    coldSpillOverEfficiency = getSpillEfficiency(i)
+
+    i["eqbw"] = _geteqbw(rfpairs[:, 1], rfpairs[:, 0])
+    calculate = _eorCalcByFreqR(angle, i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["eorSpecNumPoln"],
+                                i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency,
+                                i["detectorNEP"], i["backgroundSubtractionDegradationFactor"], i["spatialPixels"], i["pixelYield"], i["eqbw"])
+
+    def _outsourcedCalculation(i, output):
+        centerFrequency = i["centerFrequency"] / 1e9
+        beam = output["beam"] / 60
+        netw8avg = output["netW8Avg"]
+        data_C = _data_C_calcV2(i)
+        ccat = noise.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
+                          24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+        fsky = 20000./(4*_pi*(180/_pi)**2)
+        lat_lmax = 10000
+        ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
+            fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
+        return ell, N_ell_T_full, N_ell_P_full
+
+    results = {}
+    for count, (ri, fi) in enumerate(rfpairs):
+        index = 0
+        for j in range(len(frequencyRanges)):
+            if frequencyRanges[j][0] <= fi <= frequencyRanges[j][1]:
+                index = j
+                break
+        else:
+            print("Skipped " + str(ri) + ", " + str(fi) +
+                  " for not being in any frequency ranges")
+            continue
+        centerFrequency = np.zeros(len(i["spatialPixels"]))
+        centerFrequency[index] = fi
+        i["centerFrequency"] = centerFrequency
+
+        r = np.zeros(len(i["spatialPixels"]))
+        r[index] = ri
+        i["r"] = r
+
+        output = calculate(i["centerFrequency"], index, count)
+        ell, N_ell_T_full, N_ell_P_full = _outsourcedCalculation(i, output)
+        N_ell_T_full = N_ell_T_full[index]
+        N_ell_P_full = N_ell_P_full[index]
+        results[(ri, fi)] = (ell, N_ell_T_full, N_ell_P_full)
+    return results
 
 
 if __name__ == "__main__":
@@ -881,9 +1088,13 @@ if __name__ == "__main__":
     # outputPowerFile(outputs, calculate, quartileDisplay)
     # outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     # outputLoadings(i, calculate)
-    # outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None,
-    #           table=False, graphSlopes=True, maunaKea=False)
-    # outputNoiseCurves(i, outputs)
-    # outputDataCChanges(i)
 
-    #getNoiseCurves(i, outputs)
+    # noiseCurves = getNoiseCurves(i, outputs)
+    # mapsimsstuffs(i, outputs, noiseCurves)
+    inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
+              'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
+              'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
+              'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
+    rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
+                       (103, 275*10**9), (104, 100*10**9)])
+    print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])

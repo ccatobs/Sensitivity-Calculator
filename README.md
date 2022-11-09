@@ -1,13 +1,8 @@
 # CCAT-Prime Sensitivity Calculator
 
-## Warning:
-
-This is the development branch. For the lastest guarenteed working version, go to the "basic" branch.
-
 ## Usage:
 
-Clone repo to local machine. Input parameters into input.yaml. Run Excel Spreadsheet.py. Output is given in output.yaml. Requires: Python 3.9.12, numpy 1.21.5, texttable 1.6.4, matplotlib 3.5.2.
-If data needs to be regenrated (such as due to updated PWV measurements), then run data/amDataGenerator.sh (with updated PWV values) with GNU bc 1.07.1 and am 12.0
+See usage.ipynb.
 
 ## Transmission Graphing:
 
@@ -28,3 +23,7 @@ Spill efficiency is approximated by taking a beam profile for specific frequency
 Power per pixel uses t(cold) from the corresponding frequencies instead of 850 GHz.
 EoR t(cold) uses t(cold) from the corresponding frequencies instead of 405 GHz.
 EoR Accepted Modes uses spill efficiency from corresponding frequencies instead of 1071um using 861um's spill efficiency
+
+## Requires:
+Python 3.9.12, numpy 1.21.5, texttable 1.6.4, matplotlib 3.5.2.
+If data needs to be regenrated (such as due to updated PWV measurements), then run data/amDataGenerator.sh (with updated PWV values) with GNU bc 1.07.1 and am 12.0
