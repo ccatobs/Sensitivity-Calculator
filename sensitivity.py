@@ -464,7 +464,7 @@ def _calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=Fa
             la = " at %d GHz" % f
         plt.plot(np.degrees(th)[:721], power2(
             values)/np.max(power2(values)), label="Doug phi = 0" + la, linewidth=2)
-        plt.axvline(x=half_angle, color='_k',
+        plt.axvline(x=half_angle, color='k',
                     linewidth=2, label='Lyot stop angle')
         plt.legend(loc=0)
         plt.xlim(0, 180)
@@ -487,8 +487,8 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
     t.set_cols_dtype(['i', (lambda x: "%.1f" % float(x)), 'f', 'i',
                      (lambda x: "%.2f" % float(x)), (lambda x: "%.1f" % float(x)), 'f'])
     t.set_cols_align(['_c', '_c', '_c', '_c', '_c', '_c', '_c'])
-    excelSpillEff = [.8, .5, .7, .5, .5]
-    excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8]
+    excelSpillEff = [.8, .5, .7, .5, .5][::-1]
+    excelNET = [241440.5, 181.8, 56.3, 11.4, 6.8][::-1]
     t.add_rows(np.concatenate((np.reshape(['Center Frequency (GHz)', 'Excel Spill Efficiency', 'Calculated Spill Efficiency', '# Pixels', 'Pixel Spacing (mm)', 'Excel NET (uK rt(s))', 'Calculated NET (uK rt(s))'], (-1, 1)),
                                np.array([[int(f/1e9), exSpillEf, spillEf, numDetect, detectSpacing, exNet, net] for f, spillEf, net, exSpillEf, numDetect, detectSpacing, exNet in zip(i['centerFrequency'], spillEfficiency, output['netW8Avg'], excelSpillEff, i["spatialPixels"], i['detectorSpacing'], excelNET)])[::-1].T), axis=1).T)
     print(t.draw())
@@ -497,15 +497,22 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
 # Load the beam file and pass the angle and value data to other functions
 def getSpillEfficiency(i):
     """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
-    data = np.genfromtxt(
-        'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
-    degr = data[0, :, 0]
-    vals = data[0, :, 3]
-    # data = np.genfromtxt('data/beam_280.txt')
-    # degr = np.degrees(data[:, 0])
-    # vals = np.log10((data[:, 1]**2))*10
-    return _getColdSpillOverEfficiency(
-        i, 280e9, 2.75, degr, vals, showPlots=False)
+    if False:
+        data = np.genfromtxt(
+            'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
+        degr = data[0, :, 0]
+        vals = data[0, :, 3]
+        # data = np.genfromtxt('data/beam_280.txt')
+        # degr = np.degrees(data[:, 0])
+        # vals = np.log10((data[:, 1]**2))*10
+        return _getColdSpillOverEfficiency(
+            i, 280e9, 2.75, degr, vals, showPlots=False)
+    else:
+        data = np.genfromtxt(
+            'data/ccat350_2p75_pitch_250um_step_v1run10_12AUG2022_beam_350GHz.txt')
+        degr = data[:, 0]
+        vals = np.log10((data[:, 1]**2))*10
+        return _getColdSpillOverEfficiency(i, 350e9, 2.75, degr, vals, showPlots=False)
 
 
 def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percentile=None):
@@ -1086,7 +1093,7 @@ if __name__ == "__main__":
     # useLatexFont()
     # outputSensitivityFile(outputs, valueDisplay, quartileDisplay)
     # outputPowerFile(outputs, calculate, quartileDisplay)
-    # outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     # outputLoadings(i, calculate)
 
     # noiseCurves = getNoiseCurves(i, outputs)
@@ -1097,4 +1104,4 @@ if __name__ == "__main__":
               'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
     rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
                        (103, 275*10**9), (104, 100*10**9)])
-    print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
+    #print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
