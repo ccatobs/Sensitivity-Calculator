@@ -3,9 +3,9 @@ import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
 from texttable import Texttable
-import noise
+import sensitivity_calculator.noise as noise
 import scipy.optimize as op
-import pwvCalculator as ACTPWV
+import sensitivity_calculator.pwvCalculator as ACTPWV
 from matplotlib import rc, rcParams
 # import mapsims
 # from ad_fns import *

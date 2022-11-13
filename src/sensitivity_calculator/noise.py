@@ -1,5 +1,5 @@
 # TODO: data_C, ccat_pwv_cor
-import pwvCalculator as pwv
+import sensitivity_calculator.pwvCalculator as pwv
 import numpy as np
 
 
