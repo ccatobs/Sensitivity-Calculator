@@ -7,3 +7,5 @@ output
 .ipynb_checkpoints
 .vscode
 src/sensitivity_calculator.egg-info
+build
+dist
