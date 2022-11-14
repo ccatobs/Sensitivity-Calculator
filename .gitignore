@@ -9,3 +9,6 @@ output
 src/sensitivity_calculator.egg-info
 build
 dist
+.coverage
+.tox
+.pytest_cache

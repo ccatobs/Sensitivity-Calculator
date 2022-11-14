@@ -417,7 +417,7 @@ def outputSensitivityFile(outputs, valueDisplay, quartileDisplay):
     return yaml.dump(dict_file, open("output.yaml", 'w'), sort_keys=False)
 
 
-def outputPowerFile(outputs, calculate, quartileDisplay):
+def outputPowerFile(i, outputs, calculate, quartileDisplay):
     """Outputs power.yaml"""
     outputs60 = calculate(30)
     outputs45 = calculate(45)
@@ -1092,8 +1092,8 @@ if __name__ == "__main__":
 
     # useLatexFont()
     # outputSensitivityFile(outputs, valueDisplay, quartileDisplay)
-    # outputPowerFile(outputs, calculate, quartileDisplay)
-    outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    # outputPowerFile(i, outputs, calculate, quartileDisplay)
+    # outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     # outputLoadings(i, calculate)
 
     # noiseCurves = getNoiseCurves(i, outputs)
