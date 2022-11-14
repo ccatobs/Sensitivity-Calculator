@@ -1,4 +1,4 @@
 from setuptools import setup
 
 if __name__ == "__main__":
-    setup()
+    setup(package_data={'sensitivity_calculator': ['data/*', 'input.yaml']})
