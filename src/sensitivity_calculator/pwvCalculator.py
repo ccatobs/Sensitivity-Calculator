@@ -21,5 +21,9 @@ def configPWV(percentile):
     return configPWVHelper(os.path.join(absolute_path, "data/ACTPWV/ACT_annual_") + str(percentile) + ".45.err")
 
 
+def datagen(percentile):
+    return configPWVHelper("src/sensitivity_calculator/data/ACTPWV/ACT_annual_" + str(percentile) + ".45.err")
+
+
 if __name__ == '__main__':
-    print(configPWV(sys.argv[1]))
+    print(datagen(sys.argv[1]))
