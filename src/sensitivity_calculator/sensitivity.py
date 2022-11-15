@@ -263,10 +263,9 @@ def _averageTransHelper(filePath, center, width, col=1):
 
 
 def _averageTrans(prefix, angle, percentile, center, width, col=1, newFilePathFormat=False):
-    filePath = prefix + str(percentile) + \
-        "/ACT_annual_" + str(percentile) + "."
+    filePath = f"{prefix}{percentile}/ACT_annual_{percentile}."
     if newFilePathFormat:
-        filePath = prefix + "ACT_annual_" + str(percentile) + "."
+        filePath = f"{prefix}ACT_annual_{percentile}."
     if fullData:
         if angle >= 15 and angle <= 75 and int(angle) == angle:
             return _averageTransHelper(filePath + str(angle), center, width, col)
@@ -484,8 +483,8 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
 def getSpillEfficiency(i, oldFile=False):
     """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
     if oldFile:
-        data = np.genfromtxt(
-            'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
+        data = np.genfromtxt(os.path.join(absolute_path,
+                                          'data/tolTEC_staircase_singleHorn_280GHz.txt'), skip_header=2).reshape(-1, 721, 8)
         degr = data[0, :, 0]
         vals = data[0, :, 3]
         # data = np.genfromtxt('data/beam_280.txt')
@@ -503,9 +502,7 @@ def getSpillEfficiency(i, oldFile=False):
 
 def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percentile=None):
     if filePath is None:
-        filePath = prefix + "/" + \
-            str(percentile) + "/ACT_annual_" + \
-            str(percentile) + "." + str(angle)
+        filePath = f"{prefix}/{percentile}/ACT_annual_{percentile}.{angle}"
     file = open(filePath + ".out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
@@ -1040,8 +1037,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
                 index = j
                 break
         else:
-            print("Skipped " + str(ri) + ", " + str(fi) +
-                  " for not being in any frequency ranges")
+            print(f"Skipped {ri}, {fi} for not being in any frequency ranges")
             continue
         centerFrequency = np.zeros(len(i["spatialPixels"]))
         centerFrequency[index] = fi
