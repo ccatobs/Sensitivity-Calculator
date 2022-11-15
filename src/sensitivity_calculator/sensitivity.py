@@ -1,3 +1,4 @@
+import os
 import yaml
 import numpy as np
 from functools import partial
@@ -12,7 +13,7 @@ from matplotlib import rc, rcParams
 # import healpy as hp
 import warnings
 warnings.filterwarnings("ignore")
-
+absolute_path = os.path.dirname(__file__)
 
 fullData = True
 
@@ -313,9 +314,9 @@ def _getEQTrans(angle, center, width):
 
 def _getEQTransV2(angle, center, width):
     #print(center, width)
-    lower = np.array([[_averageTrans("src/sensitivity_calculator/data/VariablePWV/", angle, pwvTick, centeri, widthi, newFilePathFormat=True)
+    lower = np.array([[_averageTrans(os.path.join(absolute_path, "data/VariablePWV/"), angle, pwvTick, centeri, widthi, newFilePathFormat=True)
                      for pwvTick in [_pwvToTick(ccatPWVQ1), _pwvToTick(ccatPWVQ2), _pwvToTick(ccatPWVQ3)]] for centeri, widthi in zip(center, width)])
-    higher = np.array([[_averageTrans("src/sensitivity_calculator/data/VariablePWV/", angle, pwvTick, centeri, widthi, newFilePathFormat=True)
+    higher = np.array([[_averageTrans(os.path.join(absolute_path, "data/VariablePWV/"), angle, pwvTick, centeri, widthi, newFilePathFormat=True)
                       for pwvTick in [_pwvToTick(ccatPWVQ1)+1, _pwvToTick(ccatPWVQ3)+1]] for centeri, widthi in zip(center, width)])
     propQ1 = ccatPWVQ1/(ccatPWVQ2/20)-_pwvToTick(ccatPWVQ1)
     propQ3 = ccatPWVQ3/(ccatPWVQ2/20)-_pwvToTick(ccatPWVQ3)
@@ -495,9 +496,9 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
 
 
 # Load the beam file and pass the angle and value data to other functions
-def getSpillEfficiency(i):
+def getSpillEfficiency(i, oldFile=False):
     """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
-    if False:
+    if oldFile:
         data = np.genfromtxt(
             'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
         degr = data[0, :, 0]
@@ -509,7 +510,7 @@ def getSpillEfficiency(i):
             i, 280e9, 2.75, degr, vals, showPlots=False)
     else:
         data = np.genfromtxt(
-            'src/sensitivity_calculator/data/ccat350_2p75_pitch_250um_step_v1run10_12AUG2022_beam_350GHz.txt')
+            os.path.join(absolute_path, 'data/ccat350_2p75_pitch_250um_step_v1run10_12AUG2022_beam_350GHz.txt'))
         degr = data[:, 0]
         vals = np.log10((data[:, 1]**2))*10
         return _getColdSpillOverEfficiency(i, 350e9, 2.75, degr, vals, showPlots=False)
@@ -667,7 +668,7 @@ def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
 
 
 def _least_squares_slopeV2(cf, eqbw, col, a, lowPWV, highPWV):
-    wieghtedTemp = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=("src/sensitivity_calculator/data/VariablePWV/ACT_annual_" + str(i) + "." + str(a)))
+    wieghtedTemp = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(os.path.join(absolute_path, "data/VariablePWV/ACT_annual_") + str(i) + "." + str(a)))
                               for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
 
     def line(x, m, b):
@@ -1073,8 +1074,61 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
     return results
 
 
+def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180):
+    def spillPlot(half_angle, contractFactor, degrees, values, label):
+        def power2(db):
+            return 10.0**(db/10.0)
+
+        def invPower(x):
+            return np.log10(x)*10
+
+        myDegrees = degrees * contractFactor
+        th = np.radians(myDegrees)
+
+        # Normalize the data
+        data = invPower(power2(values)/power2(np.max(values)))
+
+        tot_cutoff = np.where(np.abs(th) <= np.radians(180))[0]
+        tot_cutoff = tot_cutoff[tot_cutoff < len(data)]
+        tot = np.trapz(power2(data[tot_cutoff]) *
+                       np.sin(th[tot_cutoff]), th[tot_cutoff])
+
+        th_cutoff = np.where(np.abs(th) < np.radians(half_angle))[0]
+
+        beam = np.trapz(power2(data[th_cutoff]) *
+                        np.sin(th[th_cutoff]), th[th_cutoff])
+
+        spill_eff = beam/tot
+        plt.plot(np.degrees(th)[:721], power2(
+            values)/np.max(power2(values)), label=label + f", spill efficiency = {spill_eff:.2f}", linewidth=2)
+        plt.legend(loc=0)
+        plt.xlim(0, maxangle)
+        plt.yscale('log')
+        plt.xlabel('angle [deg]')
+        plt.ylabel('normalized beam')
+
+    data = np.genfromtxt(
+        os.path.join(absolute_path, 'data/tolTEC_staircase_singleHorn_280GHz.txt'), skip_header=2).reshape(-1, 721, 8)
+    degr = data[0, :, 0]
+    vals = data[0, :, 3]
+    oldPlot = spillPlot(lyotStopAngle, (280e9 / f)
+                        * (ds / 2.75), degr, vals, "280 GHz beam")
+    data = np.genfromtxt(
+        os.path.join(absolute_path, 'data/ccat350_2p75_pitch_250um_step_v1run10_12AUG2022_beam_350GHz.txt'))
+    degr = data[:, 0]
+    vals = np.log10((data[:, 1]**2))*10
+    newPlot = spillPlot(lyotStopAngle, (350e9 / f)
+                        * (ds / 2.75), degr, vals, "350 GHz beam")
+    plt.axvline(x=lyotStopAngle, color='k',
+                linewidth=2, label='Lyot stop angle')
+    plt.title(f"Beams scaled to {f/1e9:.0f} GHz and {ds} mm detector spacing")
+    plt.show()
+    plt.clf()
+
+
 if __name__ == "__main__":
-    i = getInputs("src/sensitivity_calculator/input.yaml")
+    i = getInputs(os.path.join(
+        absolute_path, "input.yaml"))
     angle = 90 - i["observationElevationAngle"]
     coldSpillOverEfficiency = getSpillEfficiency(i)
 
@@ -1083,12 +1137,12 @@ if __name__ == "__main__":
                             i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
                             i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
 
-    outputs = calculate(angle)
+    #outputs = calculate(angle)
 
-    valueDisplay = valDisplayPartial(
-        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-    quartileDisplay = quartDisplayPartial(
-        i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+    # valueDisplay = valDisplayPartial(
+    #    i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
+    # quartileDisplay = quartDisplayPartial(
+    #    i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
     # useLatexFont()
     # outputSensitivityFile(outputs, valueDisplay, quartileDisplay)
@@ -1105,3 +1159,5 @@ if __name__ == "__main__":
     rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
                        (103, 275*10**9), (104, 100*10**9)])
     # print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
+
+    spillEfficiencyComparison(f=280e9, maxangle=180)

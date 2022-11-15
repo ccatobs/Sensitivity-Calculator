@@ -1,6 +1,6 @@
 # CCAT-Prime Sensitivity Calculator
 
-Install with `git clone git@github.com:ccatp/Sensitivity-Calculator.git`. Then, navigate to the `Sensitivity-Calculator` folder and run `pip install .`.
+Install with `git clone git@github.com:ccatp/Sensitivity-Calculator.git`. Then, navigate to the `Sensitivity-Calculator` folder and run `pip install .`. Note that this will take several minutes due to the large size of the repository.
 
 ## Usage:
 

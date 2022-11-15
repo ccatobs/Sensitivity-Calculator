@@ -10,10 +10,10 @@ CerroChajnantorPWVQ2=0.67
 CerroChajnantorPWVQ3=1.28
 
 #Create base files so ACT's PWVs are known
-am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >/dev/null 2>src/sensitivity_calculator/data/ACTPWV/ACT_annual_50.45.err
+am src/sensitivity_calculator/data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  45 deg  1.0 >/dev/null 2>src/sensitivity_calculator/data/ACTPWV/ACT_annual_50.45.err
 
 #PWV values in ACT configuration files
-ACTConfigQ2=$(python3 pwvCalculator.py 50)
+ACTConfigQ2=$(python3 src/sensitivity_calculator/pwvCalculator.py 50)
 
 #Ratio of PWVs used in CCAT site data generation
 CerroConfigQ2=$(bc <<<"scale=10; $CerroChajnantorPWVQ2/$ACTConfigQ2")
@@ -23,7 +23,7 @@ if [ "$fullData" = true ] ; then
     do
         for s in {1..40}
         do
-            am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >src/sensitivity_calculator/data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
+            am src/sensitivity_calculator/data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >src/sensitivity_calculator/data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
         done
         PERCENT=$(bc <<<"scale=0; ($((i))-14)/0.61")
         SIGN="%"
@@ -34,7 +34,7 @@ else
     do
         for s in {1..40}
         do
-            am data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >src/sensitivity_calculator/data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
+            am src/sensitivity_calculator/data/ACT_annual_50.amc  0 GHz  1000 GHz  10 MHz  $((i)) deg  $(bc <<<"scale=10; $CerroConfigQ2/20*$((s))") >src/sensitivity_calculator/data/VariablePWV/ACT_annual_$((s)).$((i)).out 2>/dev/null
         done
         PERCENT=$(bc <<<"scale=0; ($((i))-25)/0.4")
         SIGN="%"
