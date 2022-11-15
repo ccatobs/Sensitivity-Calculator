@@ -15,7 +15,7 @@ import warnings
 warnings.filterwarnings("ignore")
 absolute_path = os.path.dirname(__file__)
 
-fullData = False
+fullData = True
 
 # Values taken from https://arxiv.org/pdf/2007.04262.pdf
 ccatPWVQ1 = 0.36

@@ -2,7 +2,7 @@
 
 #! usr/bin/bash
 
-fullData=false
+fullData=true
 
 #Values taken from https://arxiv.org/pdf/2007.04262.pdf
 CerroChajnantorPWVQ1=0.36
