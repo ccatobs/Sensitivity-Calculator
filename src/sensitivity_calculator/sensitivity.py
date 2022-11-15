@@ -156,7 +156,7 @@ def _a_to_CMB(f):
     return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
 
 
-def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
+def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, r, eqtrans):
     wavelength = _c/centerFrequency*10**6
 
     aToCMB = np.array([_a_to_CMB(i/1e9) for i in centerFrequency])
@@ -173,23 +173,8 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
     e_window_warm = 1 - t_uhdpe_window
 
     # Instrument, beams/area of focal plane
-    # WindowTrans's formula doesn't make sense but is the same as the sheet, and luckily is not used here nor in the sheet
-    windowTrans = np.ones(len(wavelength)) * t_uhdpe_window[1]
     beam = 1.2*wavelength/diameter/1000000*206265
     solidAngle = _pi/4/_ln(2)*(beam/206264)**2
-    nativeAOmegaLambda2 = solidAngle*a/(wavelength*0.000001)**2
-    fov = _pi*0.45**2
-    hornFov = fov/spatialPixels
-    hornDiameter = _sqrt(4*hornFov/_pi)*3600
-    hornSolidAngle = _pi*(hornDiameter/2/206265)**2
-    beamSolidAngle = _pi/_ln(2)*(beam/2/206265)**2
-    beamsPerHorn = hornSolidAngle/beamSolidAngle
-    effectiveFovInSr = solidAngle*spatialPixels
-    effectiveFov = (180/_pi)**2*effectiveFovInSr
-    fovFillingFactor = fov/effectiveFov
-    pointingsIn1000SqDeg = 1000/effectiveFov
-    secondsPerPointingIn4000Hrs = 4000*3600/pointingsIn1000SqDeg
-    noiseFactor1000SqDeg4000Hrs = _sqrt(secondsPerPointingIn4000Hrs)
 
     # Weather quartiles/broadband
     e_warm = (t_uhdpe_window[:, None])*((1-eqtrans)
@@ -401,12 +386,12 @@ def quartDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
     return partial(_quartileDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
 
 
-def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal):
+def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, r):
     """Returns a function that takes observation zenith angle as an input and returns the following outputs in a dictionary: NET Weighted Average as "netW8Avg", NET Weighted RJ as "netW8RJ", NEI Weighted Average as "neiW8", EoR Spec NEFD as "eorNEFD", EoR Spec NEI as "eorNEI", Power per Pixel as "powerPerPixel", EoR Spec Power per Pixel as "eorPowerPerPixel", Center Wavelengths as "wavelength", Beam as "beam"."""
 
     partTrans = partial(_getEQTransV2, center=centerFrequency, width=eqbw)
     partCalc = partial(_calculate, diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency,
-                       singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal)
+                       singleModedAOmegaLambda2, spatialPixels, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, r)
     return lambda x: partCalc(partTrans(x))
 
 
@@ -1111,14 +1096,14 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
         os.path.join(absolute_path, 'data/tolTEC_staircase_singleHorn_280GHz.txt'), skip_header=2).reshape(-1, 721, 8)
     degr = data[0, :, 0]
     vals = data[0, :, 3]
-    oldPlot = spillPlot(lyotStopAngle, (280e9 / f)
-                        * (ds / 2.75), degr, vals, "280 GHz beam")
+    spillPlot(lyotStopAngle, (280e9 / f)
+              * (ds / 2.75), degr, vals, "280 GHz beam")
     data = np.genfromtxt(
         os.path.join(absolute_path, 'data/ccat350_2p75_pitch_250um_step_v1run10_12AUG2022_beam_350GHz.txt'))
     degr = data[:, 0]
     vals = np.log10((data[:, 1]**2))*10
-    newPlot = spillPlot(lyotStopAngle, (350e9 / f)
-                        * (ds / 2.75), degr, vals, "350 GHz beam")
+    spillPlot(lyotStopAngle, (350e9 / f)
+              * (ds / 2.75), degr, vals, "350 GHz beam")
     plt.axvline(x=lyotStopAngle, color='k',
                 linewidth=2, label='Lyot stop angle')
     plt.title(f"Beams scaled to {f/1e9:.0f} GHz and {ds} mm detector spacing")
@@ -1134,8 +1119,8 @@ if __name__ == "__main__":
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
                             i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
-                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
-                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+                            i["spatialPixels"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                            i["backgroundSubtractionDegradationFactor"], i["r"])
 
     #outputs = calculate(angle)
 
