@@ -11,8 +11,8 @@ def broadband_output():
 
     calculate = sens.calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
                                  i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
-                                 i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
-                                 i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+                                 i["spatialPixels"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                                 i["backgroundSubtractionDegradationFactor"], i["r"])
 
     outputs = calculate(angle)
 
