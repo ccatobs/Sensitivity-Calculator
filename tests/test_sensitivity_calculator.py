@@ -1,28 +1,30 @@
-import sensitivity_calculator.sensitivity as sens
+import sensitivity_calculator as sens
 import numpy as np
 
 
 def test_broadband_sensitivity_file(broadband_output):
     i, coldSpillOverEfficiency, calculate, outputs, valueDisplay, quartileDisplay = broadband_output
-    sens.outputSensitivityFile(outputs, valueDisplay, quartileDisplay)
+    sens.sensitivity.outputSensitivityFile(
+        outputs, valueDisplay, quartileDisplay)
     assert True
 
 
 def test_broadband_power_file(broadband_output):
     i, coldSpillOverEfficiency, calculate, outputs, valueDisplay, quartileDisplay = broadband_output
-    sens.outputPowerFile(i, outputs, calculate, quartileDisplay)
+    sens.sensitivity.outputPowerFile(i, outputs, calculate, quartileDisplay)
     assert True
 
 
 def test_broadband_spill_efficiency_file(broadband_output):
     i, coldSpillOverEfficiency, calculate, outputs, valueDisplay, quartileDisplay = broadband_output
-    sens.outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
+    sens.sensitivity.outputSpillEfficiencyFile(
+        i, calculate, coldSpillOverEfficiency)
     assert True
 
 
 def test_broadband_loadings(broadband_output):
     i, coldSpillOverEfficiency, calculate, outputs, valueDisplay, quartileDisplay = broadband_output
-    sens.outputLoadings(i, calculate)
+    sens.sensitivity.outputLoadings(i, calculate)
     assert True
 
 

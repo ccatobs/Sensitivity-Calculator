@@ -1,5 +1,5 @@
 import pytest
-import sensitivity_calculator.sensitivity as sens
+import sensitivity_calculator as sens
 import sys
 
 
@@ -16,9 +16,9 @@ def broadband_output():
 
     outputs = calculate(angle)
 
-    valueDisplay = sens.valDisplayPartial(
+    valueDisplay = sens.sensitivity.valDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
-    quartileDisplay = sens.quartDisplayPartial(
+    quartileDisplay = sens.sensitivity.quartDisplayPartial(
         i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
 
     return i, coldSpillOverEfficiency, calculate, outputs, valueDisplay, quartileDisplay
