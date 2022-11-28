@@ -8,8 +8,8 @@ import sensitivity_calculator.noise as noise
 import scipy.optimize as op
 import sensitivity_calculator.pwvCalculator as ACTPWV
 from matplotlib import rc, rcParams
-# import mapsims
-# from ad_fns import *
+import mapsims
+from sensitivity_calculator.ad_fns import *
 # import healpy as hp
 import warnings
 warnings.filterwarnings("ignore")
@@ -875,70 +875,6 @@ def outputDataCChanges(i):
     print(t.draw())
 
 
-def mapsimsstuffs(i, outputs, noiseCurves):
-    NSIDE = 128
-    lat_lmax = 1500
-    pysm_string = "d0,s0"
-    cmb = mapsims.SOPrecomputedCMB(
-        num=0,
-        nside=NSIDE,
-        lensed=False,
-        aberrated=False,
-        has_polarization=True,
-        cmb_set=0,
-        cmb_dir="/home/amm487/cloned_repos/mapsims/mapsims/tests/data",
-        input_units="uK_CMB",
-    )
-    noise = mapsims.SONoiseSimulator(
-        nside=NSIDE,
-        return_uK_CMB=True,
-        sensitivity_mode="baseline",
-        apply_beam_correction=False,
-        apply_kludge_correction=False,
-        homogeneous=False,
-        rolloff_ell=50,
-        ell_max=lat_lmax,
-        survey_efficiency=1.0,
-        full_covariance=False,
-        LA_years=5,
-        elevation=50,
-        SA_years=5,
-        SA_one_over_f_mode="pessimistic"
-    )
-    print(noise)
-    chs = ["tube:LC1", "tube:LC2", "tube:LC3"]
-
-    final = []
-
-    for ch in chs:
-        simulator = mapsims.MapSim(
-            channels="all",
-            nside=NSIDE,
-            unit="uK_CMB",
-            pysm_output_reference_frame="C",
-            pysm_components_string=pysm_string,
-            # output_filename_template = filename,
-            pysm_custom_components={"cmb": cmb},
-            other_components={"noise": noise},
-        )
-        output_map_full = simulator.execute()
-
-        # Now Apodize
-        for det in output_map_full.keys():
-            for pol in np.arange(output_map_full[det].shape[0]):
-                output_map_full[det][pol] = apodize_map(
-                    output_map_full[det][pol])
-
-        final.append(output_map_full)
-    final = np.array(final)
-    pols = ["T", "Q", "U"]
-    for h in final:
-        for k in h.keys():
-            for pol in np.arange(h[k].shape[0]):
-                hp.mollview(h[k][pol], title=str(k)+" "+pols[pol])
-                plt.show()
-
-
 def _eorCalculate(diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, eqtrans, spatialPixels, pixelYield, eorEqBw, detIndex, fnum):
     temp = eorEqBw[fnum]
     eorEqBw = np.zeros(len(spatialPixels))
@@ -1107,7 +1043,71 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
     plt.clf()
 
 
-if __name__ == "__main__":
+def mapsimsstuffs(i, outputs, noiseCurves):
+    NSIDE = 128
+    lat_lmax = 1500
+    pysm_string = "d0,s0"
+    cmb = mapsims.SOPrecomputedCMB(
+        num=0,
+        nside=NSIDE,
+        lensed=False,
+        aberrated=False,
+        has_polarization=True,
+        cmb_set=0,
+        cmb_dir="/home/amm487/cloned_repos/mapsims/mapsims/tests/data",
+        input_units="uK_CMB",
+    )
+    noise = mapsims.SONoiseSimulator(
+        nside=NSIDE,
+        return_uK_CMB=True,
+        sensitivity_mode="baseline",
+        apply_beam_correction=False,
+        apply_kludge_correction=False,
+        homogeneous=False,
+        rolloff_ell=50,
+        ell_max=lat_lmax,
+        survey_efficiency=1.0,
+        full_covariance=False,
+        LA_years=5,
+        elevation=50,
+        SA_years=5,
+        SA_one_over_f_mode="pessimistic"
+    )
+    print(noise)
+    chs = ["tube:LC1", "tube:LC2", "tube:LC3"]
+
+    final = []
+
+    for ch in chs:
+        simulator = mapsims.MapSim(
+            channels="all",
+            nside=NSIDE,
+            unit="uK_CMB",
+            pysm_output_reference_frame="C",
+            pysm_components_string=pysm_string,
+            # output_filename_template = filename,
+            pysm_custom_components={"cmb": cmb},
+            other_components={"noise": noise},
+        )
+        output_map_full = simulator.execute()
+
+        # Now Apodize
+        for det in output_map_full.keys():
+            for pol in np.arange(output_map_full[det].shape[0]):
+                output_map_full[det][pol] = apodize_map(
+                    output_map_full[det][pol])
+
+        final.append(output_map_full)
+    final = np.array(final)
+    pols = ["T", "Q", "U"]
+    for h in final:
+        for k in h.keys():
+            for pol in np.arange(h[k].shape[0]):
+                hp.mollview(h[k][pol], title=str(k)+" "+pols[pol])
+                plt.show()
+
+
+def _main():
     i = getInputs(os.path.join(
         absolute_path, "input.yaml"))
     angle = 90 - i["observationElevationAngle"]
@@ -1118,7 +1118,7 @@ if __name__ == "__main__":
                             i["spatialPixels"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
                             i["backgroundSubtractionDegradationFactor"], i["r"])
 
-    #outputs = calculate(angle)
+    outputs = calculate(angle)
 
     # valueDisplay = valDisplayPartial(
     #    i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
@@ -1131,8 +1131,8 @@ if __name__ == "__main__":
     # outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     # outputLoadings(i, calculate)
 
-    # noiseCurves = getNoiseCurves(i, outputs)
-    # mapsimsstuffs(i, outputs, noiseCurves)
+    noiseCurves = getNoiseCurves(i, outputs)
+    mapsimsstuffs(i, outputs, noiseCurves)
     inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
               'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
               'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
@@ -1141,4 +1141,8 @@ if __name__ == "__main__":
                        (103, 275*10**9), (104, 100*10**9)])
     # print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
 
-    spillEfficiencyComparison(f=280e9, maxangle=180)
+    # spillEfficiencyComparison(f=280e9, maxangle=180)
+
+
+if __name__ == "__main__":
+    _main()
