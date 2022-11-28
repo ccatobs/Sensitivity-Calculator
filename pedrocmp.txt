@@ -1,0 +1,84 @@
+import sys
+(sys.path).insert(1, '/home/amm487/cloned_repos/ccat_mapsims_v1.0') #change to path for the downloaded module
+
+import mapsims
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+import numpy as np
+import healpy as hp
+import matplotlib
+from pixell import enmap, enplot, reproject, utils, curvedsky
+from ad_fns import *
+from astropy.io import fits
+from matplotlib import rcParams
+rcParams.update({'figure.autolayout': True})
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from ccat_models import ccat_noise as CCAT_noise
+import scipy.optimize as op
+
+NSIDE = 128
+lat_lmax = 1500
+pysm_string = "d0,s0"
+
+cmb = mapsims.SOPrecomputedCMB(
+        num=0,
+        nside=NSIDE,
+        lensed=False,
+        aberrated=False,
+        has_polarization=True,
+        cmb_set=0,
+        cmb_dir="/home/amm487/cloned_repos/mapsims/mapsims/tests/data",
+        input_units="uK_CMB",
+    )
+
+noise = mapsims.SONoiseSimulator(
+            nside=NSIDE,
+            return_uK_CMB = True,
+            sensitivity_mode = "baseline",
+            apply_beam_correction = False,
+            apply_kludge_correction = False,
+            homogeneous=False,
+            rolloff_ell = 50,
+            ell_max = lat_lmax,
+            survey_efficiency = 1.0,
+            full_covariance = False,
+            LA_years = 5,
+            LA_noise_model = "CcatLatv2b",
+            elevation = 50,
+            SA_years = 5,
+            SA_one_over_f_mode = "pessimistic"
+        )
+print(noise.LA_noise_model)
+
+chs = ["tube:LC1","tube:LC2","tube:LC3"]
+
+final = []
+
+for ch in chs:
+    simulator = mapsims.MapSim(
+        channels=ch,
+        nside=NSIDE,
+        unit="uK_CMB",
+        pysm_output_reference_frame="C",
+        pysm_components_string=pysm_string,
+        pysm_custom_components={"cmb": cmb},
+        other_components={"noise": noise},
+    )
+    output_map_full = simulator.execute()
+
+    for det in output_map_full.keys():
+        for pol in np.arange(output_map_full[det].shape[0]):
+            output_map_full[det][pol] = apodize_map(output_map_full[det][pol])
+
+    final.append(output_map_full)
+
+final = np.array(final)
+
+pols = ["T", "Q","U"]
+for h in final:
+    for k in h.keys():
+        for pol in np.arange(h[k].shape[0]):
+            hp.mollview(h[k][pol], title = str(k)+" "+pols[pol])
+            plt.show()

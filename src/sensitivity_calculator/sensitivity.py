@@ -10,7 +10,7 @@ import sensitivity_calculator.pwvCalculator as ACTPWV
 from matplotlib import rc, rcParams
 import mapsims
 from sensitivity_calculator.ad_fns import *
-# import healpy as hp
+import healpy as hp
 import warnings
 warnings.filterwarnings("ignore")
 absolute_path = os.path.dirname(__file__)
@@ -1080,17 +1080,17 @@ def mapsimsstuffs(i, outputs, noiseCurves):
 
     for ch in chs:
         simulator = mapsims.MapSim(
-            channels="all",
+            channels=ch,
             nside=NSIDE,
             unit="uK_CMB",
             pysm_output_reference_frame="C",
             pysm_components_string=pysm_string,
             # output_filename_template = filename,
             pysm_custom_components={"cmb": cmb},
-            other_components={"noise": noise},
+            # other_components={"noise": noise},
         )
         output_map_full = simulator.execute()
-
+        print(output_map_full)
         # Now Apodize
         for det in output_map_full.keys():
             for pol in np.arange(output_map_full[det].shape[0]):
@@ -1105,7 +1105,8 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             for pol in np.arange(h[k].shape[0]):
                 hp.mollview(h[k][pol], title=str(k)+" "+pols[pol])
                 plt.show()
-
+                print("here")
+    print("done")
 
 def _main():
     i = getInputs(os.path.join(
