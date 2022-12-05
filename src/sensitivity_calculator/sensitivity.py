@@ -1075,7 +1075,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
         SA_one_over_f_mode="pessimistic"
     )
     print("noise", noise)
-    chs = ["tube:HF1", "tube:HF2", "tube:HF3"]
+    chs = ["tube:LF1", "tube:LF2"]
 
     final = []
 
