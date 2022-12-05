@@ -1075,7 +1075,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
         SA_one_over_f_mode="pessimistic"
     )
     print("noise", noise)
-    chs = ["tube:LF1", "tube:LF2"]
+    chs = ["tube:HF1", "tube:HF2", "tube:HF3"]
 
     final = []
 
@@ -1091,6 +1091,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             other_components={"noise": noise},
             instrument_parameters="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl"
         )
+        print(simulator.channels)
         output_map_full = simulator.execute()
         print("execute output", output_map_full)
         # Now Apodize
