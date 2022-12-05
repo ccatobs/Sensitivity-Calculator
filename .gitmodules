@@ -1,2 +1,3 @@
-[submodule "mapsims"]
-	branch = stable
+[submodule "src/sensitivity_calculator/mapsims"]
+	path = src/sensitivity_calculator/mapsims
+	url = https://github.com/galsci/mapsims.git
