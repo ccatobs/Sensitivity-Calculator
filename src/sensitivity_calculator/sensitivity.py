@@ -8,7 +8,7 @@ import sensitivity_calculator.noise as noise
 import scipy.optimize as op
 import sensitivity_calculator.pwvCalculator as ACTPWV
 from matplotlib import rc
-import sensitivity_calculator.mapsims as mapsims
+import mapsims
 from sensitivity_calculator.ad_fns import *
 import healpy as hp
 import warnings
