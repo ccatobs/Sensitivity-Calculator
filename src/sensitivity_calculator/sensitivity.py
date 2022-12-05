@@ -1092,7 +1092,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             instrument_parameters="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters"
         )
         output_map_full = simulator.execute()
-        print(output_map_full)
+        print("execute output", output_map_full)
         # Now Apodize
         for det in output_map_full.keys():
             for pol in np.arange(output_map_full[det].shape[0]):
