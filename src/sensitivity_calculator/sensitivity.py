@@ -7,8 +7,8 @@ from texttable import Texttable
 import sensitivity_calculator.noise as noise
 import scipy.optimize as op
 import sensitivity_calculator.pwvCalculator as ACTPWV
-from matplotlib import rc, rcParams
-import mapsims
+from matplotlib import rc
+import sensitivity_calculator.mapsims.mapsims as mapsims
 from sensitivity_calculator.ad_fns import *
 import healpy as hp
 import warnings
