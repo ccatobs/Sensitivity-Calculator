@@ -1089,7 +1089,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             # output_filename_template = filename,
             pysm_custom_components={"cmb": cmb},
             other_components={"noise": noise},
-            instrument_parameters="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters"
+            instrument_parameters="simonsobs_instrument_parameters_2020.06"
         )
         output_map_full = simulator.execute()
         print("execute output", output_map_full)
