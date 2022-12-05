@@ -174,6 +174,7 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
 
     # Instrument, beams/area of focal plane
     beam = 1.2*wavelength/diameter/1000000*206265
+    print(beam)
     solidAngle = _pi/4/_ln(2)*(beam/206264)**2
 
     # Weather quartiles/broadband
@@ -1074,7 +1075,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
         SA_one_over_f_mode="pessimistic"
     )
     print(noise)
-    chs = ["tube:LC1", "tube:LC2", "tube:LC3"]
+    chs = ["tube:HF1", "tube:HF2", "tube:HF3"]
 
     final = []
 
@@ -1087,7 +1088,8 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             pysm_components_string=pysm_string,
             # output_filename_template = filename,
             pysm_custom_components={"cmb": cmb},
-            # other_components={"noise": noise},
+            other_components={"noise": noise},
+            instrument_parameters="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters"
         )
         output_map_full = simulator.execute()
         print(output_map_full)
@@ -1107,6 +1109,7 @@ def mapsimsstuffs(i, outputs, noiseCurves):
                 plt.show()
                 print("here")
     print("done")
+
 
 def _main():
     i = getInputs(os.path.join(
