@@ -8,6 +8,8 @@ from pathlib import Path
 #log = logging.getLogger("mapsims")
 #logging.basicConfig(level=logging.INFO)
 #log.setLevel(logging.INFO)
+instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
+hitmap_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data")
 NSIDE = 256
 cmb = mapsims.SOPrecomputedCMB(
     num=0,
@@ -19,12 +21,6 @@ cmb = mapsims.SOPrecomputedCMB(
     cmb_dir="data/mapsimscmb",
     input_units="uK_CMB",
 )
-"""cmb = so_pysm_models.PrecomputedAlms(
-        "data/mapsimscmb/fullskyUnlensedUnabberatedCMB_alm_set00_00000.fits",
-        nside=NSIDE, 
-        from_cl=False, 
-        from_cl_seed=0
-)"""
 noise = mapsims.SONoiseSimulator(
     nside=NSIDE,
     return_uK_CMB=True,
@@ -32,6 +28,7 @@ noise = mapsims.SONoiseSimulator(
     apply_beam_correction=True,
     apply_kludge_correction=True,
     SA_one_over_f_mode="pessimistic",
+    instrument_parameters=instrument_path
 )
 def smooth_map(m, n_it = 5, width=0.1):
     """Helper to get_window"""
@@ -64,11 +61,9 @@ def apodize_map(map0,n_it =5):
     output = tmp*m_apo
     return output
 
-chs = ["tube:LT0"]
+chs = ["tube:LC1"]
 final = []
 
-instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
-print(instrument_path)
 for ch in chs:
     simulator = mapsims.MapSim(
         channels=ch,
