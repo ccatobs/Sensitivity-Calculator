@@ -4,7 +4,7 @@ import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
 from texttable import Texttable
-import sensitivity_calculator.noise as noise
+import sensitivity_calculator.noise as noise_file
 import scipy.optimize as op
 import sensitivity_calculator.pwvCalculator as ACTPWV
 from matplotlib import rc
@@ -12,6 +12,7 @@ import mapsims
 from sensitivity_calculator.ad_fns import *
 import healpy as hp
 import warnings
+from pathlib import Path
 warnings.filterwarnings("ignore")
 absolute_path = os.path.dirname(__file__)
 
@@ -738,7 +739,7 @@ def outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None, t
     else:
         print("Select a valid calculate option")
         exit(1)
-    ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
+    ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=4000 /
                       24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
@@ -842,7 +843,7 @@ def getNoiseCurves(i, outputs):
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
-    ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
+    ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=4000 /
                       24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
@@ -958,7 +959,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         beam = output["beam"] / 60
         netw8avg = output["netW8Avg"]
         data_C = _data_C_calcV2(i)
-        ccat = noise.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
+        ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
                           24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
         fsky = 20000./(4*_pi*(180/_pi)**2)
         lat_lmax = 10000
@@ -1043,11 +1044,10 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
     plt.show()
     plt.clf()
 
-
-def mapsimsstuffs(i, outputs, noiseCurves):
-    NSIDE = 128
-    lat_lmax = 1500
-    pysm_string = "d0,s0"
+def mapsimsstuffs(i, outputs, noiseCurves): 
+    instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
+    hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"
+    NSIDE = 256
     cmb = mapsims.SOPrecomputedCMB(
         num=0,
         nside=NSIDE,
@@ -1055,28 +1055,52 @@ def mapsimsstuffs(i, outputs, noiseCurves):
         aberrated=False,
         has_polarization=True,
         cmb_set=0,
-        cmb_dir="/home/amm487/cloned_repos/mapsims/mapsims/tests/data",
+        cmb_dir="data/mapsimscmb",
         input_units="uK_CMB",
     )
-    noise = mapsims.SONoiseSimulator(
+    ccat_survey = noise_file.CCAT(i["centerFrequency"], outputs["beam"], outputs["netW8Avg"])
+    channels_list = mapsims.parse_channels(instrument_parameters=instrument_path)
+    noise = mapsims.noise.ExternalNoiseSimulator(
         nside=NSIDE,
         return_uK_CMB=True,
         sensitivity_mode="baseline",
-        apply_beam_correction=False,
-        apply_kludge_correction=False,
-        homogeneous=False,
-        rolloff_ell=50,
-        ell_max=lat_lmax,
-        survey_efficiency=1.0,
-        full_covariance=False,
-        LA_years=5,
-        elevation=50,
-        SA_years=5,
-        SA_one_over_f_mode="pessimistic"
+        apply_beam_correction=True,
+        apply_kludge_correction=True,
+        survey=ccat_survey,
+        channels_list=channels_list
     )
-    print("noise", noise)
-    chs = ["tube:HF1", "tube:HF2", "tube:HF3"]
+    def smooth_map(m, n_it = 5, width=0.1):
+        """Helper to get_window"""
+        i = 0
+        m_apo = m
+        while i<= n_it:
+            m_apo[m_apo<0.8] =0
+            m_apo = hp.smoothing(m_apo, fwhm = width)
+            m_apo[m_apo<0] = 0
+            m_apo /= np.max(m_apo)
+            i+=1
+        return m_apo
+    def get_window(mapk,n_it=5,width = 0.1):
+        """Helper to apodize_map"""
+        m_apo = np.copy(mapk)*0
+        if hp.UNSEEN in np.copy(mapk):
+            m_apo[np.copy(mapk)!=hp.UNSEEN] = 1.0
+        else:
+            m_apo[np.copy(mapk)!=0] = 1.0
 
+        return smooth_map(m_apo, n_it=5, width = 0.1)
+    def apodize_map(map0,n_it =5):
+        """Apodizes a map with hp.UNSEEN pixels as masks. n_it represents the iterations of gaussian convolutions. Higher n_it generally means bigger windows and lower n_it the inverse."""
+
+        tmp = np.copy(map0)
+        tmp2 = np.copy(map0)
+        tmp1 = tmp!=hp.UNSEEN
+        m_apo = get_window(tmp2, n_it = n_it)
+        tmp[tmp1!=True] =0
+        output = tmp*m_apo
+        return output
+
+    chs = ["tube:LC1"]
     final = []
 
     for ch in chs:
@@ -1084,33 +1108,24 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             channels=ch,
             nside=NSIDE,
             unit="uK_CMB",
-            pysm_output_reference_frame="C",
-            pysm_components_string=pysm_string,
-            # output_filename_template = filename,
+            pysm_output_reference_frame="G",
+            pysm_components_string="a1",
             pysm_custom_components={"cmb": cmb},
             other_components={"noise": noise},
-            instrument_parameters="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl"
+            instrument_parameters=instrument_path
         )
-        print(simulator.channels)
-        output_map_full = simulator.execute()
-        print("execute output", output_map_full)
-        # Now Apodize
-        for det in output_map_full.keys():
-            for pol in np.arange(output_map_full[det].shape[0]):
-                output_map_full[det][pol] = apodize_map(
-                    output_map_full[det][pol])
-
-        final.append(output_map_full)
-    final = np.array(final)
+        output_map = simulator.execute(hitmap=hitmap_path)
+        for det in output_map.keys():
+            for pol in np.arange(output_map[det].shape[0]):
+                output_map[det][pol] = apodize_map(output_map[det][pol])
+        final.append(output_map)
     pols = ["T", "Q", "U"]
     for h in final:
         for k in h.keys():
+            print(k)
             for pol in np.arange(h[k].shape[0]):
-                hp.mollview(h[k][pol], title=str(k)+" "+pols[pol])
+                hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
                 plt.show()
-                print("here")
-    print("done")
-
 
 def _main():
     i = getInputs(os.path.join(

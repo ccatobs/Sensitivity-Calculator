@@ -42,6 +42,33 @@ def get_atmosphere_C(freqs, el=None, data_C=None):
     return np.array([data[f] * (ccat_pwv_cor*el_correction)**2 for f in freqs])
 
 
+def rolloff(ell, ell_off=None, alpha=-4, patience=2.):
+    """Get a transfer function T(ell) to roll off red noise at ell <
+    ell_off.  ell should be an ndarray.  Above the cut-off,
+    T(ell>=ell_off) = 1.  For T(ell<ell_off) will roll off smoothly,
+    approaching T(ell) \propto ell^-alpha.  The speed at which the
+    transition to the full power-law occurs is set by "patience";
+    patience (> 1) is the maximum allowed value of:
+                       T(ell) * ell**alpha
+                 -----------------------------
+                  T(ell_off) * ell_off**alpha
+    I.e, supposing you were fighting an ell**alpha spectrum, the
+    roll-off in T(ell) will be applied aggressively enough that
+    T(ell)*ell**alpha does not rise above "patience" times its value
+    at ell_off.
+    """
+    if ell_off is None or ell_off <= 0:
+        return np.ones(ell.shape)
+    L2 = ell_off
+    L1 = L2 * patience ** (2./alpha)
+    x = -np.log(ell / L2) / np.log(L1 / L2)
+    beta = alpha * np.log(L1 / L2)
+    output = x*0
+    output[x<0]  = (-x*x)[x<0]
+    output[x<-1] = (1 + 2*x)[x<-1]
+    return np.exp(output * beta)
+
+
 class SOLatType:
     def __init__(self, *args, **kwargs):
         raise RuntimeError('You should subclass this.')
@@ -118,7 +145,7 @@ class SOLatType:
         return self.band_sens**2 * self.get_survey_spread(f_sky, units=units)
 
     def get_noise_curves(self, f_sky, ell_max, delta_ell, deconv_beam=True,
-                         full_covar=False):
+                         full_covar=False, rolloff_ell=None):
         ell = np.arange(2, ell_max, delta_ell)
         W = self.band_sens**2
 
@@ -137,6 +164,12 @@ class SOLatType:
         for i in range(len(W)):
             T_noise[i, i] += W[i]
             P_noise[i, i] += W[i] * 2
+
+        if rolloff_ell is not None:
+            # Use the same simple rolloff for all bands, T & P.
+            gain = rolloff(ell, rolloff_ell)
+            T_noise *= gain
+            P_noise *= gain
 
         # Deconvolve beams.
         if deconv_beam:

@@ -4,12 +4,13 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+from noise import CCAT as CCAT_Survey
 #import so_pysm_models
 #log = logging.getLogger("mapsims")
 #logging.basicConfig(level=logging.INFO)
 #log.setLevel(logging.INFO)
 instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
-hitmap_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data")
+hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"
 NSIDE = 256
 cmb = mapsims.SOPrecomputedCMB(
     num=0,
@@ -21,7 +22,7 @@ cmb = mapsims.SOPrecomputedCMB(
     cmb_dir="data/mapsimscmb",
     input_units="uK_CMB",
 )
-noise = mapsims.SONoiseSimulator(
+noise = mapsims.ExternalNoiseSimulator(
     nside=NSIDE,
     return_uK_CMB=True,
     sensitivity_mode="baseline",
@@ -29,6 +30,7 @@ noise = mapsims.SONoiseSimulator(
     apply_kludge_correction=True,
     SA_one_over_f_mode="pessimistic",
     instrument_parameters=instrument_path
+    survey=CCAT_Survey()
 )
 def smooth_map(m, n_it = 5, width=0.1):
     """Helper to get_window"""
@@ -75,7 +77,7 @@ for ch in chs:
         other_components={"noise": noise},
         instrument_parameters=instrument_path
     )
-    output_map = simulator.execute()
+    output_map = simulator.execute(hitmap=hitmap_path)
     for det in output_map.keys():
         for pol in np.arange(output_map[det].shape[0]):
             output_map[det][pol] = apodize_map(output_map[det][pol])
