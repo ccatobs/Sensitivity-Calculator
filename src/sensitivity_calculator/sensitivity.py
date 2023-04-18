@@ -9,7 +9,7 @@ import scipy.optimize as op
 import sensitivity_calculator.pwvCalculator as ACTPWV
 from matplotlib import rc
 import mapsims
-from sensitivity_calculator.ad_fns import *
+#from sensitivity_calculator.ad_fns import *
 import healpy as hp
 import warnings
 from pathlib import Path
@@ -1109,12 +1109,12 @@ def mapsimsstuffs(i, outputs, noiseCurves):
             nside=NSIDE,
             unit="uK_CMB",
             pysm_output_reference_frame="G",
-            pysm_components_string="a1",
+            pysm_components_string="a1,c1",
             pysm_custom_components={"cmb": cmb},
             other_components={"noise": noise},
             instrument_parameters=instrument_path
         )
-        output_map = simulator.execute(hitmap=hitmap_path)
+        output_map = simulator.execute()
         for det in output_map.keys():
             for pol in np.arange(output_map[det].shape[0]):
                 output_map[det][pol] = apodize_map(output_map[det][pol])

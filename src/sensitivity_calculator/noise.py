@@ -188,6 +188,9 @@ class SOLatType:
         return (ell,
                 T_noise * self.get_survey_spread(f_sky, units='sr'),
                 P_noise * self.get_survey_spread(f_sky, units='sr'))
+    
+    def get_hitmap_filenames(self):
+        return np.array(["/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"] * 100)
 
 
 def el_noise_func(P, el):
@@ -260,3 +263,4 @@ class CCAT(SOLatType):
             N_tubes = [(b, x) for (b, n), x in zip(ref_tubes, N_tubes)]
 
         self.precompute(N_tubes, N_tels, data_C=data_C)
+
