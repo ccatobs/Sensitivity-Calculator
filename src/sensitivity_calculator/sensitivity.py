@@ -1044,7 +1044,7 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
     plt.show()
     plt.clf()
 
-def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed): 
+def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed, sim_cmb=False, sim_noise=False): 
     instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
     hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"
     NSIDE = 256
@@ -1110,8 +1110,8 @@ def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed):
             unit="uK_CMB",
             pysm_output_reference_frame="C",
             pysm_components_string=pysm_components,
-            #pysm_custom_components={"cmb": cmb},
-            #other_components={"noise": noise},
+            pysm_custom_components={"cmb": cmb} if sim_cmb else None,
+            other_components={"noise": noise} if sim_noise else None,
             instrument_parameters=instrument_path,
             num=seed
         )
@@ -1128,7 +1128,7 @@ def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed):
                 hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
                 plt.show()
 
-def so_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed): 
+def so_mapsims(channels, pysm_components, seed, sim_cmb=False, sim_noise=False): 
     NSIDE = 256
     cmb = mapsims.SOPrecomputedCMB(
         num=seed,
@@ -1188,8 +1188,8 @@ def so_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed):
             unit="uK_CMB",
             pysm_output_reference_frame="C",
             pysm_components_string=pysm_components,
-            #pysm_custom_components={"cmb": cmb},
-            #other_components={"noise": noise},
+            pysm_custom_components={"cmb": cmb} if sim_cmb else None,
+            other_components={"noise": noise} if sim_noise else None,
             num=seed,
         )
         output_map = simulator.execute()
@@ -1229,10 +1229,14 @@ def _main():
     # outputLoadings(i, calculate)
 
     noiseCurves = getNoiseCurves(i, outputs)
-    pysm_components = "d1"
-    ccat_mapsims(i, outputs, noiseCurves, ["tube:LC1"], pysm_components, 0)
-    so_mapsims(i, outputs, noiseCurves, ["tube:LT0"], pysm_components, 0)
-    inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
+    seed = 0
+    for pysm_components, sim_noise in zip(["d1", None], [False, True]):
+        if pysm_components == "d1":
+            continue
+        ccat_mapsims(i, outputs, noiseCurves, ["tube:LC1"], pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+        so_mapsims(["tube:LT0"], pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+        ccat_mapsims(i, outputs, noiseCurves, ["tube:LC3"], pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+    """inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
               'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
               'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
               'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
@@ -1241,7 +1245,7 @@ def _main():
     # print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
 
     # spillEfficiencyComparison(f=280e9, maxangle=180)
-
+    """
 
 if __name__ == "__main__":
     _main()
