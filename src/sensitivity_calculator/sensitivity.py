@@ -1262,17 +1262,17 @@ def _main():
             i, outputs, "HF2", "LC1", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
         ccat280cls = hp.sphtfunc.anafast(ccat280)
         plotPowerSpectrum(ccat280cls[0], ccat280cls[1], ccat280cls[2],
-                          "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
+                          "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
         so280 = so_mapsims("UHF2", "LT0", pysm_components,
                            seed, sim_cmb=False, sim_noise=sim_noise)
         so280cls = hp.sphtfunc.anafast(so280)
         plotPowerSpectrum(so280cls[0], so280cls[1], so280cls[2],
-                          "280 GHz SO " + ("Noise" if sim_noise else "Signal"))
+                          "280 GHz SO " + ("Noise" if sim_noise else "Signal"), zf=zf)
         ccat850 = ccat_mapsims(
             i, outputs, "HF5", "LC3", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
         ccat850cls = hp.sphtfunc.anafast(ccat850)
         plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2],
-                          "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
+                          "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
     ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1",
                  "d1", seed, sim_cmb=False, sim_noise=True)
     ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3",
