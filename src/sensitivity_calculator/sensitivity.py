@@ -740,7 +740,7 @@ def outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None, t
         print("Select a valid calculate option")
         exit(1)
     ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
+                           24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -844,7 +844,7 @@ def getNoiseCurves(i, outputs):
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
     ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                      24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+                           24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -960,7 +960,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         netw8avg = output["netW8Avg"]
         data_C = _data_C_calcV2(i)
         ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
-                          24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+                               24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
         fsky = 20000./(4*_pi*(180/_pi)**2)
         lat_lmax = 10000
         ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -1044,9 +1044,46 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
     plt.show()
     plt.clf()
 
-def ccat_mapsims(i, outputs, noiseCurves, band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False): 
-    instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
-    hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"
+
+def _smooth_map(m, n_it=5, width=0.1):
+    """Helper to get_window"""
+    i = 0
+    m_apo = m
+    while i <= n_it:
+        m_apo[m_apo < 0.8] = 0
+        m_apo = hp.smoothing(m_apo, fwhm=width)
+        m_apo[m_apo < 0] = 0
+        m_apo /= np.max(m_apo)
+        i += 1
+    return m_apo
+
+
+def _get_window(mapk, n_it=5, width=0.1):
+    """Helper to apodize_map"""
+    m_apo = np.copy(mapk)*0
+    if hp.UNSEEN in np.copy(mapk):
+        m_apo[np.copy(mapk) != hp.UNSEEN] = 1.0
+    else:
+        m_apo[np.copy(mapk) != 0] = 1.0
+
+    return _smooth_map(m_apo, n_it=5, width=0.1)
+
+
+def _apodize_map(map0, n_it=5):
+    """Apodizes a map with hp.UNSEEN pixels as masks. n_it represents the iterations of gaussian convolutions. Higher n_it generally means bigger windows and lower n_it the inverse."""
+
+    tmp = np.copy(map0)
+    tmp2 = np.copy(map0)
+    tmp1 = tmp != hp.UNSEEN
+    m_apo = _get_window(tmp2, n_it=n_it)
+    tmp[tmp1 != True] = 0
+    output = tmp*m_apo
+    return output
+
+
+def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False):
+    instrument_path = Path(
+        "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
     channels = ["tube:" + tube]
     tag = tube + "_" + band
     NSIDE = 256
@@ -1060,8 +1097,10 @@ def ccat_mapsims(i, outputs, noiseCurves, band, tube, pysm_components, seed, sim
         cmb_dir="data/mapsimscmb",
         input_units="uK_CMB",
     )
-    ccat_survey = noise_file.CCAT(i["centerFrequency"], outputs["beam"], outputs["netW8Avg"])
-    channels_list = mapsims.parse_channels(instrument_parameters=instrument_path)
+    ccat_survey = noise_file.CCAT(
+        i["centerFrequency"], outputs["beam"], outputs["netW8Avg"])
+    channels_list = mapsims.parse_channels(
+        instrument_parameters=instrument_path)
     noise = mapsims.noise.ExternalNoiseSimulator(
         nside=NSIDE,
         return_uK_CMB=True,
@@ -1071,36 +1110,6 @@ def ccat_mapsims(i, outputs, noiseCurves, band, tube, pysm_components, seed, sim
         survey=ccat_survey,
         channels_list=channels_list
     )
-    def smooth_map(m, n_it = 5, width=0.1):
-        """Helper to get_window"""
-        i = 0
-        m_apo = m
-        while i<= n_it:
-            m_apo[m_apo<0.8] =0
-            m_apo = hp.smoothing(m_apo, fwhm = width)
-            m_apo[m_apo<0] = 0
-            m_apo /= np.max(m_apo)
-            i+=1
-        return m_apo
-    def get_window(mapk,n_it=5,width = 0.1):
-        """Helper to apodize_map"""
-        m_apo = np.copy(mapk)*0
-        if hp.UNSEEN in np.copy(mapk):
-            m_apo[np.copy(mapk)!=hp.UNSEEN] = 1.0
-        else:
-            m_apo[np.copy(mapk)!=0] = 1.0
-
-        return smooth_map(m_apo, n_it=5, width = 0.1)
-    def apodize_map(map0,n_it =5):
-        """Apodizes a map with hp.UNSEEN pixels as masks. n_it represents the iterations of gaussian convolutions. Higher n_it generally means bigger windows and lower n_it the inverse."""
-
-        tmp = np.copy(map0)
-        tmp2 = np.copy(map0)
-        tmp1 = tmp!=hp.UNSEEN
-        m_apo = get_window(tmp2, n_it = n_it)
-        tmp[tmp1!=True] =0
-        output = tmp*m_apo
-        return output
 
     chs = channels
     final = []
@@ -1121,7 +1130,7 @@ def ccat_mapsims(i, outputs, noiseCurves, band, tube, pysm_components, seed, sim
         for det in output_map.keys():
             print("det:", det)
             for pol in np.arange(output_map[det].shape[0]):
-                output_map[det][pol] = apodize_map(output_map[det][pol])
+                output_map[det][pol] = _apodize_map(output_map[det][pol])
         final.append(output_map)
     pols = ["T", "Q", "U"]
     for h in final:
@@ -1129,13 +1138,14 @@ def ccat_mapsims(i, outputs, noiseCurves, band, tube, pysm_components, seed, sim
             print(k)
             if k == tag:
                 for pol in np.arange(h[k].shape[0]):
-                    hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
+                    hp.mollview(h[k][pol], title=str(k) + " " + pols[pol])
                     plt.show()
             else:
                 print("skipped:", k)
     return final[0][tag]
 
-def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False): 
+
+def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False):
     channels = ["tube:" + tube]
     tag = tube + "_" + band
     NSIDE = 256
@@ -1156,36 +1166,6 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
         apply_beam_correction=True,
         apply_kludge_correction=True,
     )
-    def smooth_map(m, n_it = 5, width=0.1):
-        """Helper to get_window"""
-        i = 0
-        m_apo = m
-        while i<= n_it:
-            m_apo[m_apo<0.8] =0
-            m_apo = hp.smoothing(m_apo, fwhm = width)
-            m_apo[m_apo<0] = 0
-            m_apo /= np.max(m_apo)
-            i+=1
-        return m_apo
-    def get_window(mapk,n_it=5,width = 0.1):
-        """Helper to apodize_map"""
-        m_apo = np.copy(mapk)*0
-        if hp.UNSEEN in np.copy(mapk):
-            m_apo[np.copy(mapk)!=hp.UNSEEN] = 1.0
-        else:
-            m_apo[np.copy(mapk)!=0] = 1.0
-
-        return smooth_map(m_apo, n_it=5, width = 0.1)
-    def apodize_map(map0,n_it =5):
-        """Apodizes a map with hp.UNSEEN pixels as masks. n_it represents the iterations of gaussian convolutions. Higher n_it generally means bigger windows and lower n_it the inverse."""
-
-        tmp = np.copy(map0)
-        tmp2 = np.copy(map0)
-        tmp1 = tmp!=hp.UNSEEN
-        m_apo = get_window(tmp2, n_it = n_it)
-        tmp[tmp1!=True] =0
-        output = tmp*m_apo
-        return output
 
     chs = channels
     final = []
@@ -1204,7 +1184,7 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
         output_map = simulator.execute()
         for det in output_map.keys():
             for pol in np.arange(output_map[det].shape[0]):
-                output_map[det][pol] = apodize_map(output_map[det][pol])
+                output_map[det][pol] = _apodize_map(output_map[det][pol])
         final.append(output_map)
     pols = ["T", "Q", "U"]
     for h in final:
@@ -1212,16 +1192,17 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
             print(k)
             if k == tag:
                 for pol in np.arange(h[k].shape[0]):
-                    hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
+                    hp.mollview(h[k][pol], title=str(k) + " " + pols[pol])
                     plt.show()
             else:
                 print("skipped:", k)
     return final[0][tag]
 
+
 def zeroHitmapFraction(path, nside):
     hitmap = hp.ud_grade(
-            hp.read_map(path, dtype=np.float64),
-            nside_out=nside,
+        hp.read_map(path, dtype=np.float64),
+        nside_out=nside,
     )
     zeros = 0
     total = 0
@@ -1231,6 +1212,20 @@ def zeroHitmapFraction(path, nside):
             zeros += 1
         total += 1
     return zeros / total
+
+
+def plotPowerSpectrum(tt, ee, bb, title, zf=1):
+    """Plots the power spectrum. zf is the fraction of the hitmap with 0s"""
+    plt.plot([i for i in range(len(tt))], tt/zf, linewidth=1, label="tt")
+    plt.plot([i for i in range(len(ee))], ee/zf, linewidth=1, label="ee")
+    plt.plot([i for i in range(len(bb))], bb/zf, linewidth=1, label="bb")
+    plt.yscale("log")
+    plt.ylabel("$C_{\ell}$")
+    plt.xlabel("$\ell$")
+    plt.title("Power Spectrum of " + title)
+    plt.legend()
+    plt.show()
+
 
 def _main():
     i = getInputs(os.path.join(
@@ -1258,35 +1253,30 @@ def _main():
 
     noiseCurves = getNoiseCurves(i, outputs)
     seed = 0
-    zeroHitmapFractio = zeroHitmapFraction("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", 256)
+    zeroHitmapFractio = zeroHitmapFraction(
+        "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", 256)
     zf = zeroHitmapFractio
     print("zf:", zf)
-    if False:
-        for pysm_components, sim_noise in zip(["d1", None], [False, True]):
-            """if pysm_components == "d1":
-                continue"""
-            ccat280 = ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
-            ccat280cls = hp.sphtfunc.anafast(ccat280)
-            tt, ee, bb = ccat280cls[0], ccat280cls[1], ccat280cls[2]
-            def plotPowerSpectrum(tt, ee, bb, title):
-                plt.plot([i for i in range(len(tt))], tt/zf, linewidth=1, label="tt")
-                plt.plot([i for i in range(len(ee))], ee/zf, linewidth=1, label="ee")
-                plt.plot([i for i in range(len(bb))], bb/zf, linewidth=1, label="bb")
-                plt.yscale("log")
-                plt.ylabel("$C_{\ell}$")
-                plt.xlabel("$\ell$")
-                plt.title("Power Spectrum of " + title)
-                plt.legend()
-                plt.show()
-            plotPowerSpectrum(tt, ee, bb, "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
-            so280 = so_mapsims("UHF2", "LT0", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
-            so280cls = hp.sphtfunc.anafast(so280)
-            plotPowerSpectrum(so280cls[0], so280cls[1], so280cls[2], "280 GHz SO " + ("Noise" if sim_noise else "Signal"))
-            ccat850 = ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
-            ccat850cls = hp.sphtfunc.anafast(ccat850)
-            plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2], "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
-    ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1", "d1", seed, sim_cmb=False, sim_noise=True)
-    ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3", "d1", seed, sim_cmb=False, sim_noise=True)
+    for pysm_components, sim_noise in zip(["d1", None], [False, True]):
+        ccat280 = ccat_mapsims(
+            i, outputs, "HF2", "LC1", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+        ccat280cls = hp.sphtfunc.anafast(ccat280)
+        plotPowerSpectrum(ccat280cls[0], ccat280cls[1], ccat280cls[2],
+                          "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
+        so280 = so_mapsims("UHF2", "LT0", pysm_components,
+                           seed, sim_cmb=False, sim_noise=sim_noise)
+        so280cls = hp.sphtfunc.anafast(so280)
+        plotPowerSpectrum(so280cls[0], so280cls[1], so280cls[2],
+                          "280 GHz SO " + ("Noise" if sim_noise else "Signal"))
+        ccat850 = ccat_mapsims(
+            i, outputs, "HF5", "LC3", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+        ccat850cls = hp.sphtfunc.anafast(ccat850)
+        plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2],
+                          "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
+    ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1",
+                 "d1", seed, sim_cmb=False, sim_noise=True)
+    ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3",
+                 "d1", seed, sim_cmb=False, sim_noise=True)
     """inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
               'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
               'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
@@ -1297,6 +1287,7 @@ def _main():
 
     # spillEfficiencyComparison(f=280e9, maxangle=180)
     """
+
 
 if __name__ == "__main__":
     _main()
