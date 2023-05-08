@@ -1044,9 +1044,11 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
     plt.show()
     plt.clf()
 
-def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed, sim_cmb=False, sim_noise=False): 
+def ccat_mapsims(i, outputs, noiseCurves, band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False): 
     instrument_path = Path("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
     hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"
+    channels = ["tube:" + tube]
+    tag = tube + "_" + band
     NSIDE = 256
     cmb = mapsims.SOPrecomputedCMB(
         num=seed,
@@ -1117,6 +1119,7 @@ def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed, sim_c
         )
         output_map = simulator.execute()
         for det in output_map.keys():
+            print("det:", det)
             for pol in np.arange(output_map[det].shape[0]):
                 output_map[det][pol] = apodize_map(output_map[det][pol])
         final.append(output_map)
@@ -1124,11 +1127,17 @@ def ccat_mapsims(i, outputs, noiseCurves, channels, pysm_components, seed, sim_c
     for h in final:
         for k in h.keys():
             print(k)
-            for pol in np.arange(h[k].shape[0]):
-                hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
-                plt.show()
+            if k == tag:
+                for pol in np.arange(h[k].shape[0]):
+                    hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
+                    plt.show()
+            else:
+                print("skipped:", k)
+    return final[0][tag]
 
-def so_mapsims(channels, pysm_components, seed, sim_cmb=False, sim_noise=False): 
+def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False): 
+    channels = ["tube:" + tube]
+    tag = tube + "_" + band
     NSIDE = 256
     cmb = mapsims.SOPrecomputedCMB(
         num=seed,
@@ -1201,9 +1210,28 @@ def so_mapsims(channels, pysm_components, seed, sim_cmb=False, sim_noise=False):
     for h in final:
         for k in h.keys():
             print(k)
-            for pol in np.arange(h[k].shape[0]):
-                hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
-                plt.show()
+            if k == tag:
+                for pol in np.arange(h[k].shape[0]):
+                    hp.mollview(h[k][pol], title = str(k) + " " + pols[pol])
+                    plt.show()
+            else:
+                print("skipped:", k)
+    return final[0][tag]
+
+def zeroHitmapFraction(path, nside):
+    hitmap = hp.ud_grade(
+            hp.read_map(path, dtype=np.float64),
+            nside_out=nside,
+    )
+    zeros = 0
+    total = 0
+    hitmap = np.array(hitmap)
+    for i in hitmap:
+        if i == 0:
+            zeros += 1
+        total += 1
+    return zeros / total
+
 def _main():
     i = getInputs(os.path.join(
         absolute_path, "input.yaml"))
@@ -1230,12 +1258,35 @@ def _main():
 
     noiseCurves = getNoiseCurves(i, outputs)
     seed = 0
-    for pysm_components, sim_noise in zip(["d1", None], [False, True]):
-        if pysm_components == "d1":
-            continue
-        ccat_mapsims(i, outputs, noiseCurves, ["tube:LC1"], pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
-        so_mapsims(["tube:LT0"], pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
-        ccat_mapsims(i, outputs, noiseCurves, ["tube:LC3"], pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+    zeroHitmapFractio = zeroHitmapFraction("/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", 256)
+    zf = zeroHitmapFractio
+    print("zf:", zf)
+    if False:
+        for pysm_components, sim_noise in zip(["d1", None], [False, True]):
+            """if pysm_components == "d1":
+                continue"""
+            ccat280 = ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+            ccat280cls = hp.sphtfunc.anafast(ccat280)
+            tt, ee, bb = ccat280cls[0], ccat280cls[1], ccat280cls[2]
+            def plotPowerSpectrum(tt, ee, bb, title):
+                plt.plot([i for i in range(len(tt))], tt/zf, linewidth=1, label="tt")
+                plt.plot([i for i in range(len(ee))], ee/zf, linewidth=1, label="ee")
+                plt.plot([i for i in range(len(bb))], bb/zf, linewidth=1, label="bb")
+                plt.yscale("log")
+                plt.ylabel("$C_{\ell}$")
+                plt.xlabel("$\ell$")
+                plt.title("Power Spectrum of " + title)
+                plt.legend()
+                plt.show()
+            plotPowerSpectrum(tt, ee, bb, "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
+            so280 = so_mapsims("UHF2", "LT0", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+            so280cls = hp.sphtfunc.anafast(so280)
+            plotPowerSpectrum(so280cls[0], so280cls[1], so280cls[2], "280 GHz SO " + ("Noise" if sim_noise else "Signal"))
+            ccat850 = ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+            ccat850cls = hp.sphtfunc.anafast(ccat850)
+            plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2], "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"))
+    ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1", "d1", seed, sim_cmb=False, sim_noise=True)
+    ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3", "d1", seed, sim_cmb=False, sim_noise=True)
     """inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
               'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
               'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
