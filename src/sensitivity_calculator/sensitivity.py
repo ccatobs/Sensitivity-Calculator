@@ -1082,6 +1082,10 @@ def _apodize_map(map0, n_it=5):
 
 
 def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False):
+    """Graphs and returns the map corresponding to a given [band] and [tube] in CCAT, with 
+    [pysm_components] and [seed] fed into mapsims to create the map. Sensitivities from the rest of 
+    the calculator are passed in through the input parameters [i] and broadband outputs [outputs]. 
+    [sim_cmb] and [sim_noise] are toggles for whether the CMB and noise will be simulated respectively."""
     instrument_path = Path(
         "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
     channels = ["tube:" + tube]
@@ -1146,6 +1150,9 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, s
 
 
 def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False):
+    """Graphs and returns the map corresponding to a given [band] and [tube] in SO's telescopes, with 
+    [pysm_components] and [seed] fed into mapsims to create the map. [sim_cmb] and [sim_noise] are toggles
+    for whether the CMB and noise will be simulated respectively."""
     channels = ["tube:" + tube]
     tag = tube + "_" + band
     NSIDE = 256
@@ -1200,6 +1207,7 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
 
 
 def zeroHitmapFraction(path, nside):
+    """Returns the fraction of zeros in a given hitmap given a path to the hitmap [path] and the nside [nside]."""
     hitmap = hp.ud_grade(
         hp.read_map(path, dtype=np.float64),
         nside_out=nside,
@@ -1277,16 +1285,15 @@ def _main():
                  "d1", seed, sim_cmb=False, sim_noise=True)
     ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3",
                  "d1", seed, sim_cmb=False, sim_noise=True)
-    """inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
-              'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
-              'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
-              'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
-    rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
-                       (103, 275*10**9), (104, 100*10**9)])
+    # inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
+    #          'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
+    #          'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
+    #          'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
+    # rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
+    #                   (103, 275*10**9), (104, 100*10**9)])
     # print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
 
     # spillEfficiencyComparison(f=280e9, maxangle=180)
-    """
 
 
 if __name__ == "__main__":
