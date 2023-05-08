@@ -1283,9 +1283,9 @@ def _main():
         ccat850cls = hp.sphtfunc.anafast(ccat850)
         plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2],
                           "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
-    ccat_mapsims(i, outputs, noiseCurves, "HF2", "LC1",
+    ccat_mapsims(i, outputs, "HF2", "LC1",
                  "d1", seed, sim_cmb=False, sim_noise=True)
-    ccat_mapsims(i, outputs, noiseCurves, "HF5", "LC3",
+    ccat_mapsims(i, outputs, "HF5", "LC3",
                  "d1", seed, sim_cmb=False, sim_noise=True)
     # inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
     #          'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
