@@ -1091,16 +1091,17 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, s
     channels = ["tube:" + tube]
     tag = tube + "_" + band
     NSIDE = 256
-    cmb = mapsims.SOPrecomputedCMB(
-        num=seed,
-        nside=NSIDE,
-        lensed=False,
-        aberrated=False,
-        has_polarization=True,
-        cmb_set=0,
-        cmb_dir="data/mapsimscmb",
-        input_units="uK_CMB",
-    )
+    if sim_cmb:
+        cmb = mapsims.SOPrecomputedCMB(
+            num=seed,
+            nside=NSIDE,
+            lensed=False,
+            aberrated=False,
+            has_polarization=True,
+            cmb_set=0,
+            cmb_dir="data/mapsimscmb",
+            input_units="uK_CMB",
+        )
     ccat_survey = noise_file.CCAT(
         i["centerFrequency"], outputs["beam"], outputs["netW8Avg"])
     channels_list = mapsims.parse_channels(
@@ -1156,16 +1157,17 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
     channels = ["tube:" + tube]
     tag = tube + "_" + band
     NSIDE = 256
-    cmb = mapsims.SOPrecomputedCMB(
-        num=seed,
-        nside=NSIDE,
-        lensed=False,
-        aberrated=False,
-        has_polarization=True,
-        cmb_set=0,
-        cmb_dir="data/mapsimscmb",
-        input_units="uK_CMB",
-    )
+    if sim_cmb:
+        cmb = mapsims.SOPrecomputedCMB(
+            num=seed,
+            nside=NSIDE,
+            lensed=False,
+            aberrated=False,
+            has_polarization=True,
+            cmb_set=0,
+            cmb_dir="data/mapsimscmb",
+            input_units="uK_CMB",
+        )
     noise = mapsims.SONoiseSimulator(
         nside=NSIDE,
         return_uK_CMB=True,
