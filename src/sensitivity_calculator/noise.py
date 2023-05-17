@@ -64,8 +64,8 @@ def rolloff(ell, ell_off=None, alpha=-4, patience=2.):
     x = -np.log(ell / L2) / np.log(L1 / L2)
     beta = alpha * np.log(L1 / L2)
     output = x*0
-    output[x<0]  = (-x*x)[x<0]
-    output[x<-1] = (1 + 2*x)[x<-1]
+    output[x < 0] = (-x*x)[x < 0]
+    output[x < -1] = (1 + 2*x)[x < -1]
     return np.exp(output * beta)
 
 
@@ -80,6 +80,10 @@ class SOLatType:
         return self.beams.copy()
 
     def precompute(self, N_tubes, N_tels=1, data_C=None):
+        print("N_tubes:", N_tubes)
+        print("N_tels:", N_tels)
+        print("data_C:", data_C)
+
         # Accumulate total white noise level and atmospheric
         # covariance matrix for this configuration.
 
@@ -89,6 +93,10 @@ class SOLatType:
             # * white_noise_el_rescale
             tube_noise = self.tube_configs[tube_name]
             s = (tube_noise != 0)
+
+            print("tube_count:", tube_count)
+            print("N_tels:", N_tels)
+            print("tube_noise", tube_noise)
             band_weights[s] += tube_count * N_tels * tube_noise[s]**-2
 
         self.band_sens = np.zeros(self.n_bands) + 1e9
@@ -188,7 +196,7 @@ class SOLatType:
         return (ell,
                 T_noise * self.get_survey_spread(f_sky, units='sr'),
                 P_noise * self.get_survey_spread(f_sky, units='sr'))
-    
+
     def get_hitmap_filenames(self):
         return np.array([self.hitmap_path] * 100)
 
@@ -265,4 +273,3 @@ class CCAT(SOLatType):
             N_tubes = [(b, x) for (b, n), x in zip(ref_tubes, N_tubes)]
 
         self.precompute(N_tubes, N_tels, data_C=data_C)
-
