@@ -190,7 +190,7 @@ class SOLatType:
                 P_noise * self.get_survey_spread(f_sky, units='sr'))
     
     def get_hitmap_filenames(self):
-        return np.array(["/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"] * 100)
+        return np.array([self.hitmap_path] * 100)
 
 
 def el_noise_func(P, el):
@@ -212,7 +212,9 @@ class CCAT(SOLatType):
                  N_tubes=None, N_tels=None,
                  survey_years=4000/24./365.24,
                  survey_efficiency=1.0,
-                 el=None):
+                 el=None, hitmap_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"):
+        self.hitmap_path = hitmap_path
+
         # Define the instrument.
         self.bands = np.array(centerFrequency)
         # scaled beam for 410 GHz but need to check 350 and 410.

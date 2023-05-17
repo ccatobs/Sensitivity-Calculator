@@ -1081,16 +1081,14 @@ def _apodize_map(map0, n_it=5):
     return output
 
 
-def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False):
+def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, instrument_parameters_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256):
     """Graphs and returns the map corresponding to a given [band] and [tube] in CCAT, with 
     [pysm_components] and [seed] fed into mapsims to create the map. Sensitivities from the rest of 
     the calculator are passed in through the input parameters [i] and broadband outputs [outputs]. 
     [sim_cmb] and [sim_noise] are toggles for whether the CMB and noise will be simulated respectively."""
-    instrument_path = Path(
-        "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl")
+    instrument_path = Path(instrument_parameters_path)
     channels = ["tube:" + tube]
     tag = tube + "_" + band
-    NSIDE = 256
     if sim_cmb:
         cmb = mapsims.SOPrecomputedCMB(
             num=seed,
@@ -1103,7 +1101,7 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, s
             input_units="uK_CMB",
         )
     ccat_survey = noise_file.CCAT(
-        i["centerFrequency"], outputs["beam"], outputs["netW8Avg"])
+        i["centerFrequency"], outputs["beam"], outputs["netW8Avg"], hitmap_path=hitmap_path)
     channels_list = mapsims.parse_channels(
         instrument_parameters=instrument_path)
     noise = mapsims.noise.ExternalNoiseSimulator(
@@ -1150,13 +1148,12 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, sim_cmb=False, s
     return final[0][tag]
 
 
-def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False):
+def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, hitmap="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256):
     """Graphs and returns the map corresponding to a given [band] and [tube] in SO's telescopes, with 
     [pysm_components] and [seed] fed into mapsims to create the map. [sim_cmb] and [sim_noise] are toggles
     for whether the CMB and noise will be simulated respectively."""
     channels = ["tube:" + tube]
     tag = tube + "_" + band
-    NSIDE = 256
     if sim_cmb:
         cmb = mapsims.SOPrecomputedCMB(
             num=seed,
@@ -1190,7 +1187,7 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
             other_components={"noise": noise} if sim_noise else None,
             num=seed,
         )
-        output_map = simulator.execute()
+        output_map = simulator.execute(hitmap=hitmap)
         for det in output_map.keys():
             for pol in np.arange(output_map[det].shape[0]):
                 output_map[det][pol] = _apodize_map(output_map[det][pol])
@@ -1231,7 +1228,9 @@ def plotPowerSpectrum(tt, ee, bb, title, zf=1):
     plt.plot([i for i in range(len(bb))], bb/zf, linewidth=1, label="bb")
     plt.yscale("log")
     plt.ylabel("$C_{\ell}$")
+    plt.xscale("log")
     plt.xlabel("$\ell$")
+    plt.xlim(10**2, 10**4)
     plt.title("Power Spectrum of " + title)
     plt.legend()
     plt.show()
@@ -1263,30 +1262,37 @@ def _main():
 
     noiseCurves = getNoiseCurves(i, outputs)
     seed = 0
-    zeroHitmapFractio = zeroHitmapFraction(
-        "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", 256)
+    NSIDE = 512
+    hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/ccat_uniform_coverage_nside" + str(NSIDE) + "_201021.fits"
+    zeroHitmapFractio = zeroHitmapFraction(hitmap_path, NSIDE)
     zf = zeroHitmapFractio
     print("zf:", zf)
-    for pysm_components, sim_noise in zip(["d1", None], [False, True]):
+    hitmap = hp.ud_grade(
+                hp.read_map(hitmap_path, dtype=np.float64),
+                nside_out=NSIDE,
+            )
+    for pysm_components, sim_noise in zip(["d2", None], [False, True]):
+        if pysm_components == "d2":
+            continue
         ccat280 = ccat_mapsims(
-            i, outputs, "HF2", "LC1", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+            i, outputs, "HF2", "LC1", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise, hitmap_path=hitmap_path, NSIDE=NSIDE)
         ccat280cls = hp.sphtfunc.anafast(ccat280)
         plotPowerSpectrum(ccat280cls[0], ccat280cls[1], ccat280cls[2],
                           "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
         so280 = so_mapsims("UHF2", "LT0", pysm_components,
-                           seed, sim_cmb=False, sim_noise=sim_noise)
+                           seed, sim_cmb=False, sim_noise=sim_noise, NSIDE=NSIDE, hitmap=hitmap)
         so280cls = hp.sphtfunc.anafast(so280)
         plotPowerSpectrum(so280cls[0], so280cls[1], so280cls[2],
                           "280 GHz SO " + ("Noise" if sim_noise else "Signal"), zf=zf)
         ccat850 = ccat_mapsims(
-            i, outputs, "HF5", "LC3", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise)
+            i, outputs, "HF5", "LC3", pysm_components, seed, sim_cmb=False, sim_noise=sim_noise, hitmap_path=hitmap_path, NSIDE=NSIDE)
         ccat850cls = hp.sphtfunc.anafast(ccat850)
         plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2],
                           "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
-    ccat_mapsims(i, outputs, "HF2", "LC1",
-                 "d1", seed, sim_cmb=False, sim_noise=True)
-    ccat_mapsims(i, outputs, "HF5", "LC3",
-                 "d1", seed, sim_cmb=False, sim_noise=True)
+    #ccat_mapsims(i, outputs, "HF2", "LC1",
+                 #"d1", seed, sim_cmb=False, sim_noise=True)
+    #ccat_mapsims(i, outputs, "HF5", "LC3",
+                 #"d1", seed, sim_cmb=False, sim_noise=True)
     # inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
     #          'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
     #          'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
