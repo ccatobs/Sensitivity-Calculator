@@ -1,5 +1,6 @@
 import sensitivity_calculator.pwvCalculator as pwv
 import numpy as np
+# File is modeled off of https://github.com/simonsobs/so_noise_models/blob/master/so_models_v3/SO_Noise_Calculator_Public_v3_1_1.py
 
 
 def get_atmosphere_C(freqs, el=None, data_C=None):
