@@ -4,14 +4,14 @@ import numpy as np
 from functools import partial
 import matplotlib.pyplot as plt
 from texttable import Texttable
-import sensitivity_calculator.noise as noise
+import sensitivity_calculator.noise as noise_file
 import scipy.optimize as op
 import sensitivity_calculator.pwvCalculator as ACTPWV
-from matplotlib import rc, rcParams
-# import mapsims
-# from ad_fns import *
-# import healpy as hp
+from matplotlib import rc
+import mapsims
+import healpy as hp
 import warnings
+from pathlib import Path
 warnings.filterwarnings("ignore")
 absolute_path = os.path.dirname(__file__)
 
@@ -156,7 +156,8 @@ def _a_to_CMB(f):
     return 1./(x**2*np.exp(x)/(np.exp(x)-1)**2)
 
 
-def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal, eqtrans):
+def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, r, eqtrans):
+    """Performs the calculations done in the original sensitivity calculations excel sheet, based on "CCAT-Prime_SZ-FPI_20220117.xlsx". Returns a dictionary of [netW8Avg], [netW8RJ], [neiW8], [eorNEFD], [eorNEI], [powerPerPixel], [eorPowerPerPixel], [wavelength] (corresponding to the center frequencies of the detectors), and [beam]."""
     wavelength = _c/centerFrequency*10**6
 
     aToCMB = np.array([_a_to_CMB(i/1e9) for i in centerFrequency])
@@ -173,23 +174,8 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
     e_window_warm = 1 - t_uhdpe_window
 
     # Instrument, beams/area of focal plane
-    # WindowTrans's formula doesn't make sense but is the same as the sheet, and luckily is not used here nor in the sheet
-    windowTrans = np.ones(len(wavelength)) * t_uhdpe_window[1]
     beam = 1.2*wavelength/diameter/1000000*206265
     solidAngle = _pi/4/_ln(2)*(beam/206264)**2
-    nativeAOmegaLambda2 = solidAngle*a/(wavelength*0.000001)**2
-    fov = _pi*0.45**2
-    hornFov = fov/spatialPixels
-    hornDiameter = _sqrt(4*hornFov/_pi)*3600
-    hornSolidAngle = _pi*(hornDiameter/2/206265)**2
-    beamSolidAngle = _pi/_ln(2)*(beam/2/206265)**2
-    beamsPerHorn = hornSolidAngle/beamSolidAngle
-    effectiveFovInSr = solidAngle*spatialPixels
-    effectiveFov = (180/_pi)**2*effectiveFovInSr
-    fovFillingFactor = fov/effectiveFov
-    pointingsIn1000SqDeg = 1000/effectiveFov
-    secondsPerPointingIn4000Hrs = 4000*3600/pointingsIn1000SqDeg
-    noiseFactor1000SqDeg4000Hrs = _sqrt(secondsPerPointingIn4000Hrs)
 
     # Weather quartiles/broadband
     e_warm = (t_uhdpe_window[:, None])*((1-eqtrans)
@@ -252,10 +238,12 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
 
 
 def _pwvToTick(pwv):
+    """Internal function that converts from [pwv] to an integer representing a fraction of the median pwv. Each number represents 5% of median pwv. I.e. 20 represents 100% of median pwv."""
     return int(pwv/(ccatPWVQ2/20))
 
 
 def _averageTransSE(filePath, start, end, col=1):
+    """Returns the average transmission given start and end frequencies."""
     file = open(filePath + ".out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
@@ -274,14 +262,15 @@ def _averageTransSE(filePath, start, end, col=1):
 
 
 def _averageTransHelper(filePath, center, width, col=1):
+    """Returns the average transmission given a center frequency and width."""
     return _averageTransSE(filePath, (center-width/2)/1e9, (center+width/2)/1e9, col)
 
 
 def _averageTrans(prefix, angle, percentile, center, width, col=1, newFilePathFormat=False):
-    filePath = prefix + str(percentile) + \
-        "/ACT_annual_" + str(percentile) + "."
+    """Returns the average transmission given a center frequency and width. Should be used over _averageTransHelper directly due to computing the file path for you and not throwing errors when giving impossible observation angles."""
+    filePath = f"{prefix}{percentile}/ACT_annual_{percentile}."
     if newFilePathFormat:
-        filePath = prefix + "ACT_annual_" + str(percentile) + "."
+        filePath = f"{prefix}ACT_annual_{percentile}."
     if fullData:
         if angle >= 15 and angle <= 75 and int(angle) == angle:
             return _averageTransHelper(filePath + str(angle), center, width, col)
@@ -308,12 +297,8 @@ def _averageTrans(prefix, angle, percentile, center, width, col=1, newFilePathFo
             print("Angle out of range")
 
 
-def _getEQTrans(angle, center, width):
-    return np.array([[_averageTrans("CerroConfig/", angle, percentile, centeri, widthi) for percentile in [25, 50, 75]] for centeri, widthi in zip(center, width)])
-
-
 def _getEQTransV2(angle, center, width):
-    #print(center, width)
+    """Returns the transmission at a given center frequency and width, linearly interpolating between precomputed transmission data."""
     lower = np.array([[_averageTrans(os.path.join(absolute_path, "data/VariablePWV/"), angle, pwvTick, centeri, widthi, newFilePathFormat=True)
                      for pwvTick in [_pwvToTick(ccatPWVQ1), _pwvToTick(ccatPWVQ2), _pwvToTick(ccatPWVQ3)]] for centeri, widthi in zip(center, width)])
     higher = np.array([[_averageTrans(os.path.join(absolute_path, "data/VariablePWV/"), angle, pwvTick, centeri, widthi, newFilePathFormat=True)
@@ -328,6 +313,7 @@ def _getEQTransV2(angle, center, width):
 
 
 def _trun(array, decimalPlaces):
+    """Rounds the values in a 1d or 2d array to a given precision in [decimalPlaces]."""
     if decimalPlaces != None:
         for k1 in array:
             if type(array[k1]) == dict:
@@ -341,6 +327,7 @@ def _trun(array, decimalPlaces):
 
 
 def _valueDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
+    """Outputs a dictionary with nicely formatted information. valDisplayPartial should be called instead of this function."""
     if len(w) > 0:
         unit = None
         if outputFreq:
@@ -353,8 +340,8 @@ def _valueDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
         return _trun(dict, decimalPlaces)
 
 
-# Creates a dictionary to be put into a yaml file for broadband data
 def _valueDisplay(array, outputFreq, centerFrequency, wavelength, decimalPlaces):
+    """Creates a dictionary to be put into a yaml file for broadband data."""
     if type(array) == np.ndarray:
         array = _arrayify(array)
     outputLabel = None
@@ -371,6 +358,7 @@ def valDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
 
 
 def _quartileDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
+    """Outputs a dictionary with nicely formatted information. quartDisplayPartial should be called instead of this function."""
     if len(w) > 0:
         unit = None
         if outputFreq:
@@ -384,8 +372,8 @@ def _quartileDisplayHelper(array, w, dict, outputFreq, decimalPlaces):
         return _trun(dict, decimalPlaces)
 
 
-# Creates a dictionary to be put into a yaml file for data involving quartiles
 def _quartileDisplay(array, outputFreq, centerFrequency, wavelength, decimalPlaces):
+    """Creates a dictionary to be put into a yaml file for data involving quartiles"""
     if type(array) == np.ndarray:
         array = _arrayify(array)
     outputLabel = None
@@ -401,12 +389,12 @@ def quartDisplayPartial(outputFreq, centerFrequency, wavelength, decimalPlaces):
     return partial(_quartileDisplay, outputFreq=outputFreq, centerFrequency=centerFrequency, wavelength=wavelength, decimalPlaces=decimalPlaces)
 
 
-def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal):
+def calcByAngle(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, singleModedAOmegaLambda2, spatialPixels, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, r):
     """Returns a function that takes observation zenith angle as an input and returns the following outputs in a dictionary: NET Weighted Average as "netW8Avg", NET Weighted RJ as "netW8RJ", NEI Weighted Average as "neiW8", EoR Spec NEFD as "eorNEFD", EoR Spec NEI as "eorNEI", Power per Pixel as "powerPerPixel", EoR Spec Power per Pixel as "eorPowerPerPixel", Center Wavelengths as "wavelength", Beam as "beam"."""
 
     partTrans = partial(_getEQTransV2, center=centerFrequency, width=eqbw)
     partCalc = partial(_calculate, diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency,
-                       singleModedAOmegaLambda2, spatialPixels, fpi, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, sensitivity, hoursPerYear, sensPerBeam, r, signal)
+                       singleModedAOmegaLambda2, spatialPixels, eqbw, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, r)
     return lambda x: partCalc(partTrans(x))
 
 
@@ -435,6 +423,7 @@ def outputPowerFile(i, outputs, calculate, quartileDisplay):
 
 
 def _calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=False, f=None):
+    """Calculates the spill efficiency of the telescope assuming that the data gets contracted proportional to [contractFactor], such as for various wavelengths and detector spacings."""
     def power2(db):
         return 10.0**(db/10.0)
 
@@ -478,6 +467,7 @@ def _calcSpillFromData(half_angle, contractFactor, degrees, values, showPlots=Fa
 
 
 def _getColdSpillOverEfficiency(i, beamFreq, beamPixelSpacing, degrees, values, showPlots=False):
+    """Returns a 1d array of spill efficiencies for corresponding wavelengths and detector spacings."""
     return np.array([_calcSpillFromData(i["lyotStopAngle"], beamFreq / (f * (s / beamPixelSpacing)), degrees, values, showPlots=showPlots, f=f/1e9) for f, s in zip(i["centerFrequency"], i["detectorSpacing"])])
 
 
@@ -499,8 +489,8 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
 def getSpillEfficiency(i, oldFile=False):
     """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
     if oldFile:
-        data = np.genfromtxt(
-            'data/tolTEC_staircase_singleHorn_280GHz.txt', skip_header=2).reshape(-1, 721, 8)
+        data = np.genfromtxt(os.path.join(absolute_path,
+                                          'data/tolTEC_staircase_singleHorn_280GHz.txt'), skip_header=2).reshape(-1, 721, 8)
         degr = data[0, :, 0]
         vals = data[0, :, 3]
         # data = np.genfromtxt('data/beam_280.txt')
@@ -518,9 +508,7 @@ def getSpillEfficiency(i, oldFile=False):
 
 def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percentile=None):
     if filePath is None:
-        filePath = prefix + "/" + \
-            str(percentile) + "/ACT_annual_" + \
-            str(percentile) + "." + str(angle)
+        filePath = f"{prefix}/{percentile}/ACT_annual_{percentile}.{angle}"
     file = open(filePath + ".out", "r")
     data = file.readlines()
     x = [float(i.split(" ")[0]) for i in data]
@@ -549,124 +537,6 @@ def _averageTemp(start, end, col, filePath=None, prefix=None, angle=None, percen
     return temperature/corr
 
 
-def _tangent_line_slope(cf, eqbw, col, a, p, maunaKea=False, filePath=None):
-    """Depricated. Requires higher and lower calculations, should just use variable pwv."""
-    higher = ""
-    lower = ""
-    if not maunaKea:
-        higher = "Higher"
-        lower = "Lower"
-    else:
-        higher = "MaunaKea/Higher"
-        lower = "MaunaKea/Lower"
-    # V1 Derivatives
-    higher = np.array([_averageTemp(c-w/2, c+w/2, col, prefix=higher, angle=a, percentile=p, filePath=filePath)
-                       for c, w in zip(cf, eqbw)])
-    lower = np.array([_averageTemp(c-w/2, c+w/2, col, prefix=lower, angle=a, percentile=p, filePath=filePath)
-                      for c, w in zip(cf, eqbw)])
-    derivative = (higher - lower) / 0.02
-    return derivative
-
-
-def _tangent_line_slopeV2(cf, eqbw, col, a, pwv):
-    lower = int(pwv * 20 / ccatPWVQ2)
-    higher = lower + 1
-    lower = np.array([_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(lower) + "." + str(a)))
-                      for c, w in zip(cf, eqbw)])
-    higher = np.array([_averageTemp(c-w/2, c+w/2, col, filePath=("VariablePWV/ACT_annual_" + str(higher) + "." + str(a)))
-                       for c, w in zip(cf, eqbw)])
-
-    derivative = (higher - lower) / (ccatPWVQ2 / 20)
-
-    return derivative
-
-
-def _least_squares_slope(cf, eqbw, col, a, graph=False, maunaKea=False):
-    # V2 Derivatives
-    filePath = "VariablePWV/ACT_annual_"
-    if maunaKea:
-        filePath = "MaunaKea/VariablePWV/"
-    wieghtedTemp = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(filePath + str(i) + "." + str(a)))
-                              for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-    rjTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
-                      1e9, (c+w/2)/1e9, col=2) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-    planckTemp = np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45", (c-w/2) /
-                                            1e9, (c+w/2)/1e9, col=3) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-    absorption = 1-np.array([[_averageTransSE("VariablePWV/ACT_annual_" + str(i) + ".45",
-                                              (c-w/2)/1e9, (c+w/2)/1e9, col=1) for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
-
-    def line(x, m, b):
-        return m*x + b
-    derivative = []
-    temp = ccatPWVQ2
-    if maunaKea:
-        temp = ACTPWV.configPWVHelper(
-            "data/MaunaKea/Default/50/.err")
-        # print(ccatMedPWV)
-    pwvs = (np.array(range(40))+1) / 20*temp
-    for i in range(len(cf)):
-        popt = op.curve_fit(line, pwvs, wieghtedTemp[:, i])[0]
-        # print(popt)
-        derivative.append(popt[0])
-    derivative = np.array(derivative)
-    if graph:
-        ylabel = ["Weighted Rayleigh-Jeans Temperature (K)", "RJ Temperature (K)",
-                  "Planck Temperature (K)", "Absorption"]
-        if not maunaKea:
-            print("Steve's PWV range:", (0.3*.7192506910, 3*.7192506910))
-            print("CCAT 50th percentile PWV:", ccatPWVQ2)
-        for j in range(4):
-            for i in np.array(range(len(cf)))[::-1][:-1]:
-                if j == 0:
-                    plt.plot(pwvs, wieghtedTemp[:, i], linewidth=1,
-                             label=str(int(cf[i]/1e9))+' GHz')
-                if j == 1:
-                    plt.plot(pwvs, rjTemp[:, i], linewidth=1,
-                             label=str(int(cf[i]/1e9))+' GHz')
-                if j == 2:
-                    plt.plot(pwvs, planckTemp[:, i], linewidth=1,
-                             label=str(int(cf[i]/1e9))+' GHz')
-                if j == 3:
-                    plt.plot(pwvs, absorption[:, i], linewidth=1,
-                             label=str(int(cf[i]/1e9))+' GHz')
-            plt.title("Brightness Temperature vs PWV")
-            plt.ylim(bottom=0)
-            plt.ylabel(ylabel[j])
-            plt.xlim(left=0, right=ccatPWVQ2*2)
-            plt.xlabel("PWV (mm)")
-            plt.legend(loc='best')
-            plt.grid()
-            plt.show()
-
-        for i in [1, 5]:  # 220 and 850 GHz
-            plt.plot(pwvs, wieghtedTemp[:, i], linewidth=1,
-                     label=str(int(cf[i]/1e9))+' GHz Weighted RJ Temp')
-            plt.plot(pwvs, rjTemp[:, i], linewidth=1,
-                     label=str(int(cf[i]/1e9))+' GHz RJ Temp')
-            plt.plot(pwvs, planckTemp[:, i], linewidth=1,
-                     label=str(int(cf[i]/1e9))+' GHz Planck Temp')
-        plt.ylim(bottom=0)
-        plt.ylabel("Brightness Temperature (K)")
-        plt.xlim(left=0, right=ccatPWVQ2*2)
-        plt.xlabel("PWV (mm)")
-        plt.legend(loc='best')
-        plt.title("Brightness Temperature vs PWV Comparison")
-        plt.grid()
-        plt.show()
-
-        for i in np.array(range(len(cf)))[::-1]:
-            plt.plot(pwvs, wieghtedTemp[:, i] - rjTemp[:, i], linewidth=1,
-                     label=str(int(cf[i]/1e9))+' GHz')
-        plt.ylabel("Difference Between Weighted RJ and RJ (Arbitrary Units)")
-        plt.xlim(left=0, right=ccatPWVQ2*2)
-        plt.xlabel("PWV (mm)")
-        plt.legend(loc='best')
-        plt.grid()
-        plt.show()
-
-    return derivative
-
-
 def _least_squares_slopeV2(cf, eqbw, col, a, lowPWV, highPWV):
     wieghtedTemp = np.array([[_averageTemp(c-w/2, c+w/2, col, filePath=(os.path.join(absolute_path, "data/VariablePWV/ACT_annual_") + str(i) + "." + str(a)))
                               for c, w in zip(cf, eqbw)] for i in np.array(range(40))+1])
@@ -686,35 +556,8 @@ def _least_squares_slopeV2(cf, eqbw, col, a, lowPWV, highPWV):
     return derivative
 
 
-def _data_C_calc(i, table=False, graphSlopes=False, maunaKea=False):
-    P = 50
-    A = 45
-    COL = 2
-
-    cf = np.append(145e9, i["centerFrequency"])
-    eqbw = np.append(145*0.276e9, i["eqbw"])
-
-    dataCs = np.array([])
-    # Choose method
-    derivative = _tangent_line_slope(cf, eqbw, COL, A, P, maunaKea=maunaKea)
-    for n in range(1, len(cf)):
-        dataCs = np.append(dataCs,
-                           (derivative[n]*_a_to_CMB(cf[n]/1e9)/(derivative[0]*_a_to_CMB(cf[0]/1e9)))**2)
-    if table:
-        t = Texttable(max_width=110)
-        table_header = np.append("Method", np.char.add(
-            (cf/1e9).astype(int).astype(str), ' GHz'))
-        table = np.array([table_header, np.append("Least Squares Regression Line", _least_squares_slope(cf, eqbw, COL, A, graph=graphSlopes, maunaKea=maunaKea)), np.append("Best Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 75, maunaKea=maunaKea)), np.append("Expected Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 50, maunaKea=maunaKea)), np.append("Worst Case Tangent Line", _tangent_line_slope(cf, eqbw, COL, A, 25, maunaKea=maunaKea)), np.append("Corrected PWV Previous Method",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     np.array([6.2, 14.7, 25.0, 48.5, 66.4, 64.4])), np.append("Uncorrected PWV Previous Method",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               np.array([4.5, 10.6, 17.9, 34.9, 47.8, 46.3]))])
-        t.add_rows(table, header=True)
-        print(t.draw())
-    elif graphSlopes:
-        _least_squares_slope(cf, eqbw, COL, A, graph=True, maunaKea=maunaKea)
-    return dataCs*1.2e4
-
-
 def _data_C_calcV2(i):
+    """Returns data_C based on the input dictionary [i] specified by getInputs."""
     A = 45
     COL = 2
 
@@ -727,110 +570,6 @@ def _data_C_calcV2(i):
         dataCs = np.append(dataCs,
                            (derivative[n]*_a_to_CMB(cf[n]/1e9)/(derivative[0]*_a_to_CMB(cf[0]/1e9)))**2)
     return dataCs*1.2e4
-
-
-def outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None, table=False, graphSlopes=False, maunaKea=False, lowFreq=False):
-    """NOTE: Deprecated from removal of old am data."""
-    centerFrequency = None
-    beam = None
-    net = None
-    data_C = None
-    if calculate == 'original':
-        centerFrequency = [222., 280., 348., 405., 850.]
-        beam = [59/60., 47/60., 37/60., 32/60., 15/60.]
-        net = [6.8, 12.7, 47.7, 181.8, 305400.7]
-        data_C = None  # Automatic values
-    elif calculate == 'change' or calculate == 'dataC' or calculate == 'data_C':
-        centerFrequency = i['centerFrequency']/1e9
-        beam = outputs["beam"]/60
-        net = outputs["netW8Avg"]
-        data_C = None
-    elif calculate == 'y' or calculate == 'yes' or calculate == 'all':
-        centerFrequency = i['centerFrequency']/1e9
-        beam = outputs["beam"]/60
-        net = outputs["netW8Avg"]
-        data_C = _data_C_calc(
-            i, table=table, graphSlopes=graphSlopes, maunaKea=maunaKea)
-        # print(data_C)
-    else:
-        print("Select a valid calculate option")
-        exit(1)
-    ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                      24./365.24, survey_efficiency=1.0, N_tubes=(1, 1, 1, 1, 1), el=45., data_C=data_C)
-    fsky = 20000./(4*_pi*(180/_pi)**2)
-    lat_lmax = 10000
-    ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
-        fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
-
-    # Formerly under the if statement
-    plotTemperature = plotCurve == 'T' or plotCurve == 't' or plotCurve == 'temp' or plotCurve == 'temperature'
-    if False:  # Removes 850 GHz
-        N_ell_T_full = N_ell_T_full[:-1]
-        N_ell_P_full = N_ell_P_full[:-1]
-        centerFrequency = centerFrequency[:-1]
-        plt.ylim(10**-5, 10**3)
-    elif lowFreq:  # Only 280 GHz
-        N_ell_T_full = [N_ell_T_full[1]]
-        N_ell_P_full = [N_ell_P_full[1]]
-        centerFrequency = [centerFrequency[1]]
-        plt.ylim(10**-4, 10**3)
-    else:  # Only 850 GHz
-        N_ell_T_full = [N_ell_T_full[4]]
-        N_ell_P_full = [N_ell_P_full[4]]
-        centerFrequency = [centerFrequency[4]]
-        plt.ylim(10**4, 10**12)
-    if plotCurve is not None:
-        for curve, label in zip(N_ell_T_full if plotTemperature else N_ell_P_full, centerFrequency):
-            plt.plot(ell, curve, label=str(int(label))+' GHz')
-            plt.yscale('log')
-            plt.xscale('log')
-            plt.xlim(10**2, 10**4)
-            plt.title("Temperature" if plotTemperature else "Polarization")
-        plt.legend(loc='upper right')
-        plt.grid()
-        plt.show()
-    return ell, N_ell_T_full[0], N_ell_P_full[0]
-
-
-def getCustNoiseCurvesSubplot(i, outputs, temp, lowFreq, ax):
-    before = outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='change', plotCurve=None,
-                                           table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
-    after = outputNoiseCurvesAndTempVsPWV(i, outputs, calculate='all', plotCurve=None,
-                                          table=False, graphSlopes=False, maunaKea=False, lowFreq=lowFreq)
-
-    ell = before[0]  # Also equal to after[0]
-
-    ax.plot(ell, before[1 if temp else 2], label='Before')
-    ax.plot(ell, after[1 if temp else 2],
-            ('-' if temp else '--'), label='After')
-
-    ax.set_yscale('log')
-    if lowFreq:
-        ax.set_ylim(10**-4, 10**3)
-    else:
-        ax.set_ylim(10**4, 10**12)
-    ax.set_ylabel('$N_{\ell} (\mu K^2)$')
-    ax.set_xscale('log')
-    ax.set_xlim(10**2, 10**4)
-    ax.set_xlabel('$\ell$')
-    ax.set_title(('Temperature' if temp else 'Polarization') +
-                 ' Noise at ' + ('280' if lowFreq else '850') + ' GHz')
-    ax.legend(loc='upper right')
-    ax.grid()
-
-
-def outputNoiseCurves(i, outputs):
-    """NOTE: Deprecated from removal of old am data."""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
-        2, 2, sharex='col', sharey='row')
-    getCustNoiseCurvesSubplot(i, outputs, True, True, ax1)
-    getCustNoiseCurvesSubplot(i, outputs, False, True, ax2)
-    getCustNoiseCurvesSubplot(i, outputs, True, False, ax3)
-    getCustNoiseCurvesSubplot(i, outputs, False, False, ax4)
-    for ax in fig.get_axes():
-        ax.label_outer()
-    fig.tight_layout()
-    plt.show()
 
 
 def outputLoadings(i, calculate):
@@ -849,6 +588,7 @@ def outputLoadings(i, calculate):
 
 
 def useLatexFont():
+    """Changes matplotlib to use formatting that looks like latex."""
     rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
     rc('text', usetex=True)
 
@@ -859,8 +599,8 @@ def getNoiseCurves(i, outputs):
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
-    ccat = noise.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                      24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+    ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=4000 /
+                           24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -868,96 +608,8 @@ def getNoiseCurves(i, outputs):
     return ell, N_ell_T_full, N_ell_P_full
 
 
-def outputDataCChanges(i):
-    """NOTE: Deprecated from removal of old am data."""
-    old = _data_C_calc(i)
-    new = _data_C_calcV2(i)
-    change = 100*(old-new)/new
-
-    t = Texttable(max_width=110)
-    t.set_cols_dtype(['t', 'e', 'e', 'e', 'e', 'e'])
-    t.set_cols_width([20, 10, 10, 10, 10, 10])
-    table_header = np.append("Center Frequency", np.char.add(
-        (i["centerFrequency"]/1e9).astype(int).astype(str), ' GHz'))
-    table = np.array([table_header, np.append("5% to 200% of Q2 PWV", old), np.append(
-        "Q1 PWV to Q3 PWV", new)])
-    t.add_rows(table, header=True)
-    print(t.draw())
-
-    t = Texttable(max_width=110)
-    t.set_cols_dtype(['t', 'f', 'f', 'f', 'f', 'f'])
-    t.set_precision(1)
-    t.set_cols_width([20, 10, 10, 10, 10, 10])
-    table = np.array([np.append("Percentage Change", change)])
-    t.add_rows(table, header=False)
-    print(t.draw())
-
-
-def mapsimsstuffs(i, outputs, noiseCurves):
-    NSIDE = 128
-    lat_lmax = 1500
-    pysm_string = "d0,s0"
-    cmb = mapsims.SOPrecomputedCMB(
-        num=0,
-        nside=NSIDE,
-        lensed=False,
-        aberrated=False,
-        has_polarization=True,
-        cmb_set=0,
-        cmb_dir="/home/amm487/cloned_repos/mapsims/mapsims/tests/data",
-        input_units="uK_CMB",
-    )
-    noise = mapsims.SONoiseSimulator(
-        nside=NSIDE,
-        return_uK_CMB=True,
-        sensitivity_mode="baseline",
-        apply_beam_correction=False,
-        apply_kludge_correction=False,
-        homogeneous=False,
-        rolloff_ell=50,
-        ell_max=lat_lmax,
-        survey_efficiency=1.0,
-        full_covariance=False,
-        LA_years=5,
-        elevation=50,
-        SA_years=5,
-        SA_one_over_f_mode="pessimistic"
-    )
-    print(noise)
-    chs = ["tube:LC1", "tube:LC2", "tube:LC3"]
-
-    final = []
-
-    for ch in chs:
-        simulator = mapsims.MapSim(
-            channels="all",
-            nside=NSIDE,
-            unit="uK_CMB",
-            pysm_output_reference_frame="C",
-            pysm_components_string=pysm_string,
-            # output_filename_template = filename,
-            pysm_custom_components={"cmb": cmb},
-            other_components={"noise": noise},
-        )
-        output_map_full = simulator.execute()
-
-        # Now Apodize
-        for det in output_map_full.keys():
-            for pol in np.arange(output_map_full[det].shape[0]):
-                output_map_full[det][pol] = apodize_map(
-                    output_map_full[det][pol])
-
-        final.append(output_map_full)
-    final = np.array(final)
-    pols = ["T", "Q", "U"]
-    for h in final:
-        for k in h.keys():
-            for pol in np.arange(h[k].shape[0]):
-                hp.mollview(h[k][pol], title=str(k)+" "+pols[pol])
-                plt.show()
-
-
 def _eorCalculate(diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, centerFrequency, detectorNEP, backgroundSubtractionDegradationFactor, eqtrans, spatialPixels, pixelYield, eorEqBw, detIndex, fnum):
+    """Equivalent to _calculate but for EoR calculations. Should be used instead of the EoR outputs from the _calculate function."""
     temp = eorEqBw[fnum]
     eorEqBw = np.zeros(len(spatialPixels))
     eorEqBw[detIndex] = temp
@@ -1020,6 +672,7 @@ def _eorCalcByFreqR(angle, diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_
 
 
 def _geteqbw(f, r):
+    """Returns the equivalent bandwith for a given frequency and r for EoR calculations."""
     return f / (10 * r) * _pi / 2
 
 
@@ -1039,8 +692,8 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         beam = output["beam"] / 60
         netw8avg = output["netW8Avg"]
         data_C = _data_C_calcV2(i)
-        ccat = noise.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
-                          24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+        ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
+                               24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
         fsky = 20000./(4*_pi*(180/_pi)**2)
         lat_lmax = 10000
         ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -1055,8 +708,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
                 index = j
                 break
         else:
-            print("Skipped " + str(ri) + ", " + str(fi) +
-                  " for not being in any frequency ranges")
+            print(f"Skipped {ri}, {fi} for not being in any frequency ranges")
             continue
         centerFrequency = np.zeros(len(i["spatialPixels"]))
         centerFrequency[index] = fi
@@ -1075,6 +727,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
 
 
 def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180):
+    """Graphs the 280 and 350 GHz data for calculating the spill efficiency."""
     def spillPlot(half_angle, contractFactor, degrees, values, label):
         def power2(db):
             return 10.0**(db/10.0)
@@ -1111,14 +764,14 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
         os.path.join(absolute_path, 'data/tolTEC_staircase_singleHorn_280GHz.txt'), skip_header=2).reshape(-1, 721, 8)
     degr = data[0, :, 0]
     vals = data[0, :, 3]
-    oldPlot = spillPlot(lyotStopAngle, (280e9 / f)
-                        * (ds / 2.75), degr, vals, "280 GHz beam")
+    spillPlot(lyotStopAngle, (280e9 / f)
+              * (ds / 2.75), degr, vals, "280 GHz beam")
     data = np.genfromtxt(
         os.path.join(absolute_path, 'data/ccat350_2p75_pitch_250um_step_v1run10_12AUG2022_beam_350GHz.txt'))
     degr = data[:, 0]
     vals = np.log10((data[:, 1]**2))*10
-    newPlot = spillPlot(lyotStopAngle, (350e9 / f)
-                        * (ds / 2.75), degr, vals, "350 GHz beam")
+    spillPlot(lyotStopAngle, (350e9 / f)
+              * (ds / 2.75), degr, vals, "350 GHz beam")
     plt.axvline(x=lyotStopAngle, color='k',
                 linewidth=2, label='Lyot stop angle')
     plt.title(f"Beams scaled to {f/1e9:.0f} GHz and {ds} mm detector spacing")
@@ -1126,7 +779,196 @@ def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180
     plt.clf()
 
 
-if __name__ == "__main__":
+def _smooth_map(m, n_it=5, width=0.1):
+    """Helper to get_window"""
+    i = 0
+    m_apo = m
+    while i <= n_it:
+        m_apo[m_apo < 0.8] = 0
+        m_apo = hp.smoothing(m_apo, fwhm=width)
+        m_apo[m_apo < 0] = 0
+        m_apo /= np.max(m_apo)
+        i += 1
+    return m_apo
+
+
+def _get_window(mapk, n_it=5, width=0.1):
+    """Helper to apodize_map"""
+    m_apo = np.copy(mapk)*0
+    if hp.UNSEEN in np.copy(mapk):
+        m_apo[np.copy(mapk) != hp.UNSEEN] = 1.0
+    else:
+        m_apo[np.copy(mapk) != 0] = 1.0
+
+    return _smooth_map(m_apo, n_it=5, width=0.1)
+
+
+def _apodize_map(map0, n_it=5):
+    """Apodizes a map with hp.UNSEEN pixels as masks. n_it represents the iterations of gaussian convolutions. Higher n_it generally means bigger windows and lower n_it the inverse."""
+
+    tmp = np.copy(map0)
+    tmp2 = np.copy(map0)
+    tmp1 = tmp != hp.UNSEEN
+    m_apo = _get_window(tmp2, n_it=n_it)
+    tmp[tmp1 != True] = 0
+    output = tmp*m_apo
+    return output
+
+
+def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256):
+    """Graphs and returns the map corresponding to a given [band] and [tube] in CCAT, with 
+    [pysm_components] and [seed] fed into mapsims to create the map. Sensitivities from the rest of 
+    the calculator are passed in through the input parameters [i] and broadband outputs [outputs]. 
+    [sim_cmb] and [sim_noise] are toggles for whether the CMB and noise will be simulated respectively."""
+    instrument_path = Path(instrument_parameters_path)
+    channels = ["tube:" + tube]
+    tag = tube + "_" + band
+    if sim_cmb:
+        cmb = mapsims.SOPrecomputedCMB(
+            num=seed,
+            nside=NSIDE,
+            lensed=False,
+            aberrated=False,
+            has_polarization=True,
+            cmb_set=0,
+            cmb_dir="data/mapsimscmb",
+            input_units="uK_CMB",
+        )
+    ccat_survey = noise_file.CCAT(
+        i["centerFrequency"], outputs["beam"], outputs["netW8Avg"], hitmap_path=hitmap_path, data_C=data_C)
+    channels_list = mapsims.parse_channels(
+        instrument_parameters=instrument_path)
+    noise = mapsims.noise.ExternalNoiseSimulator(
+        nside=NSIDE,
+        return_uK_CMB=True,
+        sensitivity_mode="baseline",
+        apply_beam_correction=True,
+        apply_kludge_correction=True,
+        survey=ccat_survey,
+        channels_list=channels_list
+    )
+
+    chs = channels
+    final = []
+
+    for ch in chs:
+        simulator = mapsims.MapSim(
+            channels=ch,
+            nside=NSIDE,
+            unit="uK_CMB",
+            pysm_output_reference_frame="C",
+            pysm_components_string=pysm_components,
+            pysm_custom_components={"cmb": cmb} if sim_cmb else None,
+            other_components={"noise": noise} if sim_noise else None,
+            instrument_parameters=instrument_path,
+            num=seed
+        )
+        output_map = simulator.execute()
+        for det in output_map.keys():
+            for pol in np.arange(output_map[det].shape[0]):
+                output_map[det][pol] = _apodize_map(output_map[det][pol])
+        final.append(output_map)
+    pols = ["T", "Q", "U"]
+    for h in final:
+        for k in h.keys():
+            if k == tag:
+                for pol in np.arange(h[k].shape[0]):
+                    hp.mollview(h[k][pol], title=str(k) + " " + pols[pol])
+                    plt.show()
+            else:
+                pass
+    return final[0][tag]
+
+
+def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, hitmap="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256):
+    """Graphs and returns the map corresponding to a given [band] and [tube] in SO's telescopes, with 
+    [pysm_components] and [seed] fed into mapsims to create the map. [sim_cmb] and [sim_noise] are toggles
+    for whether the CMB and noise will be simulated respectively."""
+    channels = ["tube:" + tube]
+    tag = tube + "_" + band
+    if sim_cmb:
+        cmb = mapsims.SOPrecomputedCMB(
+            num=seed,
+            nside=NSIDE,
+            lensed=False,
+            aberrated=False,
+            has_polarization=True,
+            cmb_set=0,
+            cmb_dir="data/mapsimscmb",
+            input_units="uK_CMB",
+        )
+    noise = mapsims.SONoiseSimulator(
+        nside=NSIDE,
+        return_uK_CMB=True,
+        sensitivity_mode="baseline",
+        apply_beam_correction=True,
+        apply_kludge_correction=True,
+    )
+
+    chs = channels
+    final = []
+
+    for ch in chs:
+        simulator = mapsims.MapSim(
+            channels=ch,
+            nside=NSIDE,
+            unit="uK_CMB",
+            pysm_output_reference_frame="C",
+            pysm_components_string=pysm_components,
+            pysm_custom_components={"cmb": cmb} if sim_cmb else None,
+            other_components={"noise": noise} if sim_noise else None,
+            num=seed,
+        )
+        output_map = simulator.execute(hitmap=hitmap)
+        for det in output_map.keys():
+            for pol in np.arange(output_map[det].shape[0]):
+                output_map[det][pol] = _apodize_map(output_map[det][pol])
+        final.append(output_map)
+    pols = ["T", "Q", "U"]
+    for h in final:
+        for k in h.keys():
+            if k == tag:
+                for pol in np.arange(h[k].shape[0]):
+                    hp.mollview(h[k][pol], title=str(k) + " " + pols[pol])
+                    plt.show()
+            else:
+                pass
+    return final[0][tag]
+
+
+def zeroHitmapFraction(path, nside):
+    """Returns the fraction of zeros in a given hitmap given a path to the hitmap [path] and the nside [nside]."""
+    hitmap = hp.ud_grade(
+        hp.read_map(path, dtype=np.float64),
+        nside_out=nside,
+    )
+    zeros = 0
+    total = 0
+    hitmap = np.array(hitmap)
+    for i in hitmap:
+        if i == 0:
+            zeros += 1
+        total += 1
+    return zeros / total
+
+
+def plotPowerSpectrum(tt, ee, bb, title, zf=1):
+    """Plots the power spectrum. zf is the fraction of the hitmap with 0s"""
+    plt.plot([i for i in range(len(tt))], tt/zf, linewidth=1, label="tt")
+    plt.plot([i for i in range(len(ee))], ee/zf, linewidth=1, label="ee")
+    plt.plot([i for i in range(len(bb))], bb/zf, linewidth=1, label="bb")
+    plt.yscale("log")
+    plt.ylabel("$C_{\ell}$")
+    plt.xscale("log")
+    plt.xlabel("$\ell$")
+    plt.xlim(10**2, 10**4)
+    plt.title("Power Spectrum of " + title)
+    plt.legend()
+    plt.show()
+
+
+def _main():
+    """Basic testing of functions"""
     i = getInputs(os.path.join(
         absolute_path, "input.yaml"))
     angle = 90 - i["observationElevationAngle"]
@@ -1134,10 +976,10 @@ if __name__ == "__main__":
 
     calculate = calcByAngle(i["diameter"], i["t"], i["wfe"], i["eta"], i["doe"], i["t_int"], i["pixelYield"], i["szCamNumPoln"], i["eorSpecNumPoln"],
                             i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency, i["singleModedAOmegaLambda2"],
-                            i["spatialPixels"], i["fpi"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
-                            i["backgroundSubtractionDegradationFactor"], i["sensitivity"], i["hoursPerYear"], i["sensPerBeam"], i["r"], i["signal"])
+                            i["spatialPixels"], i["eqbw"], i["centerFrequency"], i["detectorNEP"],
+                            i["backgroundSubtractionDegradationFactor"], i["r"])
 
-    #outputs = calculate(angle)
+    outputs = calculate(angle)
 
     # valueDisplay = valDisplayPartial(
     #    i["outputFreq"], i["centerFrequency"], outputs["wavelength"], i["decimalPlaces"])
@@ -1150,14 +992,50 @@ if __name__ == "__main__":
     # outputSpillEfficiencyFile(i, calculate, coldSpillOverEfficiency)
     # outputLoadings(i, calculate)
 
-    # noiseCurves = getNoiseCurves(i, outputs)
-    # mapsimsstuffs(i, outputs, noiseCurves)
-    inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
-              'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
-              'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
-              'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
-    rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
-                       (103, 275*10**9), (104, 100*10**9)])
+    noiseCurves = getNoiseCurves(i, outputs)
+    seed = 0
+    NSIDE = 512
+    hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/ccat_uniform_coverage_nside" + \
+        str(NSIDE) + "_201021.fits"
+    zeroHitmapFractio = zeroHitmapFraction(hitmap_path, NSIDE)
+    zf = zeroHitmapFractio
+    data_C = _data_C_calcV2(i)
+    hitmap = hp.ud_grade(
+        hp.read_map(hitmap_path, dtype=np.float64),
+        nside_out=NSIDE,
+    )
+    for pysm_components, sim_noise in zip(["d2", None], [False, True]):
+        if pysm_components == "d2":
+            continue
+        ccat280 = ccat_mapsims(
+            i, outputs, "HF2", "LC1", pysm_components, seed, data_C, sim_cmb=False, sim_noise=sim_noise, hitmap_path=hitmap_path, NSIDE=NSIDE)
+        ccat280cls = hp.sphtfunc.anafast(ccat280)
+        plotPowerSpectrum(ccat280cls[0], ccat280cls[1], ccat280cls[2],
+                          "280 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
+        so280 = so_mapsims("UHF2", "LT0", pysm_components,
+                           seed, sim_cmb=False, sim_noise=sim_noise, NSIDE=NSIDE, hitmap=hitmap)
+        so280cls = hp.sphtfunc.anafast(so280)
+        plotPowerSpectrum(so280cls[0], so280cls[1], so280cls[2],
+                          "280 GHz SO " + ("Noise" if sim_noise else "Signal"), zf=zf)
+        ccat850 = ccat_mapsims(
+            i, outputs, "HF5", "LC3", pysm_components, seed, data_C, sim_cmb=False, sim_noise=sim_noise, hitmap_path=hitmap_path, NSIDE=NSIDE)
+        ccat850cls = hp.sphtfunc.anafast(ccat850)
+        plotPowerSpectrum(ccat850cls[0], ccat850cls[1], ccat850cls[2],
+                          "850 GHz CCAT " + ("Noise" if sim_noise else "Signal"), zf=zf)
+    # ccat_mapsims(i, outputs, "HF2", "LC1",
+        # "d1", seed, sim_cmb=False, sim_noise=True)
+    # ccat_mapsims(i, outputs, "HF5", "LC3",
+        # "d1", seed, sim_cmb=False, sim_noise=True)
+    # inputs = {'diameter': 5.7, 't': 273, 'wfe': 10.7, 'eta': 0.98, 'doe': 0.8, 'pixelYield': 0.8,
+    #          'eorSpecNumPoln': 2, 't_filter_cold': np.array([1, 1]), 't_lens_cold': np.array([.98, .98]), 't_uhdpe_window': np.array([1, 1]), 'spatialPixels': np.array([3456, 3072]),
+    #          'centerFrequency': np.array([262.5*10**9, 367.5*10**9]), 'detectorNEP': 0,
+    #          'backgroundSubtractionDegradationFactor': 1, 'observationElevationAngle': 45, 'detectorSpacing': np.array([2.75, 2.09]), 'lyotStopAngle': 13.4}
+    # rfpairs = np.array([(101, 250*10**9), (102, 350*10**9),
+    #                   (103, 275*10**9), (104, 100*10**9)])
     # print(eorNoiseCurves(inputs, rfpairs)[(101, 250*10**9)])
 
-    spillEfficiencyComparison(f=280e9, maxangle=180)
+    # spillEfficiencyComparison(f=280e9, maxangle=180)
+
+
+if __name__ == "__main__":
+    _main()

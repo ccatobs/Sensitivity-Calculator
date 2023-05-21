@@ -1,5 +1,6 @@
 import sensitivity_calculator.pwvCalculator as pwv
 import numpy as np
+# File is modeled off of https://github.com/simonsobs/so_noise_models/blob/master/so_models_v3/SO_Noise_Calculator_Public_v3_1_1.py
 
 
 def get_atmosphere_C(freqs, el=None, data_C=None):
@@ -42,6 +43,33 @@ def get_atmosphere_C(freqs, el=None, data_C=None):
     return np.array([data[f] * (ccat_pwv_cor*el_correction)**2 for f in freqs])
 
 
+def rolloff(ell, ell_off=None, alpha=-4, patience=2.):
+    """Get a transfer function T(ell) to roll off red noise at ell <
+    ell_off.  ell should be an ndarray.  Above the cut-off,
+    T(ell>=ell_off) = 1.  For T(ell<ell_off) will roll off smoothly,
+    approaching T(ell) \propto ell^-alpha.  The speed at which the
+    transition to the full power-law occurs is set by "patience";
+    patience (> 1) is the maximum allowed value of:
+                       T(ell) * ell**alpha
+                 -----------------------------
+                  T(ell_off) * ell_off**alpha
+    I.e, supposing you were fighting an ell**alpha spectrum, the
+    roll-off in T(ell) will be applied aggressively enough that
+    T(ell)*ell**alpha does not rise above "patience" times its value
+    at ell_off.
+    """
+    if ell_off is None or ell_off <= 0:
+        return np.ones(ell.shape)
+    L2 = ell_off
+    L1 = L2 * patience ** (2./alpha)
+    x = -np.log(ell / L2) / np.log(L1 / L2)
+    beta = alpha * np.log(L1 / L2)
+    output = x*0
+    output[x < 0] = (-x*x)[x < 0]
+    output[x < -1] = (1 + 2*x)[x < -1]
+    return np.exp(output * beta)
+
+
 class SOLatType:
     def __init__(self, *args, **kwargs):
         raise RuntimeError('You should subclass this.')
@@ -53,6 +81,10 @@ class SOLatType:
         return self.beams.copy()
 
     def precompute(self, N_tubes, N_tels=1, data_C=None):
+        print("N_tubes:", N_tubes)
+        print("N_tels:", N_tels)
+        print("data_C:", data_C)
+
         # Accumulate total white noise level and atmospheric
         # covariance matrix for this configuration.
 
@@ -62,6 +94,10 @@ class SOLatType:
             # * white_noise_el_rescale
             tube_noise = self.tube_configs[tube_name]
             s = (tube_noise != 0)
+
+            print("tube_count:", tube_count)
+            print("N_tels:", N_tels)
+            print("tube_noise", tube_noise)
             band_weights[s] += tube_count * N_tels * tube_noise[s]**-2
 
         self.band_sens = np.zeros(self.n_bands) + 1e9
@@ -118,7 +154,7 @@ class SOLatType:
         return self.band_sens**2 * self.get_survey_spread(f_sky, units=units)
 
     def get_noise_curves(self, f_sky, ell_max, delta_ell, deconv_beam=True,
-                         full_covar=False):
+                         full_covar=False, rolloff_ell=None):
         ell = np.arange(2, ell_max, delta_ell)
         W = self.band_sens**2
 
@@ -138,6 +174,12 @@ class SOLatType:
             T_noise[i, i] += W[i]
             P_noise[i, i] += W[i] * 2
 
+        if rolloff_ell is not None:
+            # Use the same simple rolloff for all bands, T & P.
+            gain = rolloff(ell, rolloff_ell)
+            T_noise *= gain
+            P_noise *= gain
+
         # Deconvolve beams.
         if deconv_beam:
             beam_sig_rad = self.get_beams() * np.pi/180/60 / (8.*np.log(2))**0.5
@@ -155,6 +197,9 @@ class SOLatType:
         return (ell,
                 T_noise * self.get_survey_spread(f_sky, units='sr'),
                 P_noise * self.get_survey_spread(f_sky, units='sr'))
+
+    def get_hitmap_filenames(self):
+        return np.array([self.hitmap_path] * 100)
 
 
 def el_noise_func(P, el):
@@ -176,7 +221,9 @@ class CCAT(SOLatType):
                  N_tubes=None, N_tels=None,
                  survey_years=4000/24./365.24,
                  survey_efficiency=1.0,
-                 el=None):
+                 el=None, hitmap_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"):
+        self.hitmap_path = hitmap_path
+
         # Define the instrument.
         self.bands = np.array(centerFrequency)
         # scaled beam for 410 GHz but need to check 350 and 410.

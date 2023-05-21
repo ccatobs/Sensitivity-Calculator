@@ -12,3 +12,4 @@ dist
 .coverage
 .tox
 .pytest_cache
+src/sensitivity_calculator/ccat_uniform_coverage_nside*
