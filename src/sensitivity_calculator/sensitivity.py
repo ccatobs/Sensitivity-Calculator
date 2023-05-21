@@ -175,7 +175,6 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
 
     # Instrument, beams/area of focal plane
     beam = 1.2*wavelength/diameter/1000000*206265
-    print(beam)
     solidAngle = _pi/4/_ln(2)*(beam/206264)**2
 
     # Weather quartiles/broadband
@@ -866,20 +865,18 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
         )
         output_map = simulator.execute()
         for det in output_map.keys():
-            print("det:", det)
             for pol in np.arange(output_map[det].shape[0]):
                 output_map[det][pol] = _apodize_map(output_map[det][pol])
         final.append(output_map)
     pols = ["T", "Q", "U"]
     for h in final:
         for k in h.keys():
-            print(k)
             if k == tag:
                 for pol in np.arange(h[k].shape[0]):
                     hp.mollview(h[k][pol], title=str(k) + " " + pols[pol])
                     plt.show()
             else:
-                print("skipped:", k)
+                pass
     return final[0][tag]
 
 
@@ -930,13 +927,12 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
     pols = ["T", "Q", "U"]
     for h in final:
         for k in h.keys():
-            print(k)
             if k == tag:
                 for pol in np.arange(h[k].shape[0]):
                     hp.mollview(h[k][pol], title=str(k) + " " + pols[pol])
                     plt.show()
             else:
-                print("skipped:", k)
+                pass
     return final[0][tag]
 
 
@@ -1003,7 +999,6 @@ def _main():
         str(NSIDE) + "_201021.fits"
     zeroHitmapFractio = zeroHitmapFraction(hitmap_path, NSIDE)
     zf = zeroHitmapFractio
-    print("zf:", zf)
     data_C = _data_C_calcV2(i)
     hitmap = hp.ud_grade(
         hp.read_map(hitmap_path, dtype=np.float64),
