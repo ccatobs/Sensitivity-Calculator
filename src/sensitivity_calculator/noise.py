@@ -81,9 +81,9 @@ class SOLatType:
         return self.beams.copy()
 
     def precompute(self, N_tubes, N_tels=1, data_C=None):
-        print("N_tubes:", N_tubes)
-        print("N_tels:", N_tels)
-        print("data_C:", data_C)
+        # print("N_tubes:", N_tubes)
+        # print("N_tels:", N_tels)
+        # print("data_C:", data_C)
 
         # Accumulate total white noise level and atmospheric
         # covariance matrix for this configuration.
@@ -95,9 +95,9 @@ class SOLatType:
             tube_noise = self.tube_configs[tube_name]
             s = (tube_noise != 0)
 
-            print("tube_count:", tube_count)
-            print("N_tels:", N_tels)
-            print("tube_noise", tube_noise)
+            # print("tube_count:", tube_count)
+            # print("N_tels:", N_tels)
+            # print("tube_noise", tube_noise)
             band_weights[s] += tube_count * N_tels * tube_noise[s]**-2
 
         self.band_sens = np.zeros(self.n_bands) + 1e9
@@ -221,7 +221,7 @@ class CCAT(SOLatType):
                  N_tubes=None, N_tels=None,
                  survey_years=4000/24./365.24,
                  survey_efficiency=1.0,
-                 el=None, hitmap_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"):
+                 el=None, hitmap_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits"):
         self.hitmap_path = hitmap_path
 
         # Define the instrument.

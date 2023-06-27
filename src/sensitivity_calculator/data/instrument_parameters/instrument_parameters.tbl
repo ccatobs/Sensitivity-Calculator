@@ -28,9 +28,13 @@
         SA ST2_MFS2 MFS2  ST2       9       1                3   27.0            146.5
         SA  ST3_LF1  LF1  ST3      10       0                0  144.0             25.7
         SA  ST3_LF2  LF2  ST3      10       1                1   99.0             38.9
-        LA  LC1_HF1  HF1  LC1      11       0                0    1.0            222.0
-        LA  LC1_HF2  HF2  LC1      11       1                1    0.8            280.0
-        LA  LC2_HF3  HF3  LC2      12       0                2    0.6            348.0
-        LA  LC2_HF4  HF4  LC2      12       1                3    0.5            405.0
-        LA  LC3_HF5  HF5  LC3      13       0                4    0.3            850.0
-        LA  LC3_HF6  HF6  LC3      13       1                4    0.3            850.0
+        LA  LC1_HF1  HF1  LC1      11       0                4    1.0            222.0
+        LA  LC1_HF1  HF1  LC1      11       1                4    1.0            222.0
+        LA  LC2_HF2  HF2  LC2      12       0                3    0.8            280.0
+        LA  LC2_HF2  HF2  LC2      12       1                3    0.8            280.0
+        LA  LC3_HF3  HF3  LC3      13       0                2    0.6            348.0
+        LA  LC3_HF3  HF3  LC3      13       1                2    0.6            348.0
+        LA  LC4_HF4  HF4  LC4      14       0                1    0.5            405.0
+        LA  LC4_HF4  HF4  LC4      14       1                1    0.5            405.0
+        LA  LC5_HF5  HF5  LC5      15       0                0    0.3            850.0
+        LA  LC5_HF5  HF5  LC5      15       1                0    0.3            850.0

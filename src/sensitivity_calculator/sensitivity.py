@@ -676,7 +676,7 @@ def _geteqbw(f, r):
     return f / (10 * r) * _pi / 2
 
 
-def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9):
+def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9,fsky = 20000./(4*_pi*(180/_pi)**2),survey_years=4000/24./365.24):
     """Returns a list of noise curves (ell, N_ell_T_full, N_ell_P_full) corresponding to rfpairs, a list of finesse-frequency pairs, and detector arrays i. frequencyRanges is an optional parameter 
     for modifying the frequency range of the detector arrays."""
     angle = 90 - i["observationElevationAngle"]
@@ -687,14 +687,12 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
                                 i["t_filter_cold"], i["t_lens_cold"], i["t_uhdpe_window"], coldSpillOverEfficiency,
                                 i["detectorNEP"], i["backgroundSubtractionDegradationFactor"], i["spatialPixels"], i["pixelYield"], i["eqbw"])
 
-    def _outsourcedCalculation(i, output):
+    def _outsourcedCalculation(i, output, fsky):
         centerFrequency = i["centerFrequency"] / 1e9
         beam = output["beam"] / 60
         netw8avg = output["netW8Avg"]
         data_C = _data_C_calcV2(i)
-        ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=4000 /
-                               24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
-        fsky = 20000./(4*_pi*(180/_pi)**2)
+        ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=survey_years, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
         lat_lmax = 10000
         ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
             fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
@@ -719,7 +717,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         i["r"] = r
 
         output = calculate(i["centerFrequency"], index, count)
-        ell, N_ell_T_full, N_ell_P_full = _outsourcedCalculation(i, output)
+        ell, N_ell_T_full, N_ell_P_full = _outsourcedCalculation(i,output,fsky)
         N_ell_T_full = N_ell_T_full[index]
         N_ell_P_full = N_ell_P_full[index]
         results[(ri, fi)] = (ell, N_ell_T_full, N_ell_P_full)
@@ -815,11 +813,14 @@ def _apodize_map(map0, n_it=5):
     return output
 
 
-def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256):
+def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
     """Graphs and returns the map corresponding to a given [band] and [tube] in CCAT, with 
     [pysm_components] and [seed] fed into mapsims to create the map. Sensitivities from the rest of 
     the calculator are passed in through the input parameters [i] and broadband outputs [outputs]. 
     [sim_cmb] and [sim_noise] are toggles for whether the CMB and noise will be simulated respectively."""
+    if lmax is None:
+        lmax = 3*NSIDE-1
+    lmax_over_nside = int(lmax/NSIDE)
     instrument_path = Path(instrument_parameters_path)
     channels = ["tube:" + tube]
     tag = tube + "_" + band
@@ -835,7 +836,7 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
             input_units="uK_CMB",
         )
     ccat_survey = noise_file.CCAT(
-        i["centerFrequency"], outputs["beam"], outputs["netW8Avg"], hitmap_path=hitmap_path, data_C=data_C)
+        i["centerFrequency"], outputs["beam"]/60., outputs["netW8Avg"], hitmap_path=hitmap_path, data_C=data_C)
     channels_list = mapsims.parse_channels(
         instrument_parameters=instrument_path)
     noise = mapsims.noise.ExternalNoiseSimulator(
@@ -843,9 +844,11 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
         return_uK_CMB=True,
         sensitivity_mode="baseline",
         apply_beam_correction=True,
-        apply_kludge_correction=True,
+        apply_kludge_correction=False,
         survey=ccat_survey,
-        channels_list=channels_list
+        channels_list=channels_list,
+        survey_efficiency=1.0,
+        rolloff_ell=30,
     )
 
     chs = channels
@@ -856,7 +859,8 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
             channels=ch,
             nside=NSIDE,
             unit="uK_CMB",
-            pysm_output_reference_frame="C",
+            lmax_over_nside=lmax_over_nside,
+            output_reference_frame="C",
             pysm_components_string=pysm_components,
             pysm_custom_components={"cmb": cmb} if sim_cmb else None,
             other_components={"noise": noise} if sim_noise else None,
@@ -880,10 +884,14 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
     return final[0][tag]
 
 
-def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, hitmap="/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256):
+def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, instrument_parameters_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
     """Graphs and returns the map corresponding to a given [band] and [tube] in SO's telescopes, with 
     [pysm_components] and [seed] fed into mapsims to create the map. [sim_cmb] and [sim_noise] are toggles
     for whether the CMB and noise will be simulated respectively."""
+    if lmax is None:
+        lmax = 3*NSIDE-1
+    lmax_over_nside = int(lmax/NSIDE)
+    instrument_path = Path(instrument_parameters_path)
     channels = ["tube:" + tube]
     tag = tube + "_" + band
     if sim_cmb:
@@ -902,7 +910,8 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
         return_uK_CMB=True,
         sensitivity_mode="baseline",
         apply_beam_correction=True,
-        apply_kludge_correction=True,
+        apply_kludge_correction=False,
+        instrument_parameters=instrument_path,
     )
 
     chs = channels
@@ -913,13 +922,15 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
             channels=ch,
             nside=NSIDE,
             unit="uK_CMB",
-            pysm_output_reference_frame="C",
+            lmax_over_nside=lmax_over_nside,
+            output_reference_frame="C",
             pysm_components_string=pysm_components,
             pysm_custom_components={"cmb": cmb} if sim_cmb else None,
             other_components={"noise": noise} if sim_noise else None,
+            instrument_parameters=instrument_path,
             num=seed,
         )
-        output_map = simulator.execute(hitmap=hitmap)
+        output_map = simulator.execute()
         for det in output_map.keys():
             for pol in np.arange(output_map[det].shape[0]):
                 output_map[det][pol] = _apodize_map(output_map[det][pol])
@@ -952,11 +963,15 @@ def zeroHitmapFraction(path, nside):
     return zeros / total
 
 
-def plotPowerSpectrum(tt, ee, bb, title, zf=1):
+def plotPowerSpectrum(tt, ee, bb, title, zf=1,TT_theory=None,PP_theory=None):
     """Plots the power spectrum. zf is the fraction of the hitmap with 0s"""
     plt.plot([i for i in range(len(tt))], tt/zf, linewidth=1, label="tt")
     plt.plot([i for i in range(len(ee))], ee/zf, linewidth=1, label="ee")
     plt.plot([i for i in range(len(bb))], bb/zf, linewidth=1, label="bb")
+    if TT_theory is not None:
+        plt.plot(TT_theory)
+    if PP_theory is not None:
+        plt.plot(PP_theory)
     plt.yscale("log")
     plt.ylabel("$C_{\ell}$")
     plt.xscale("log")
@@ -994,8 +1009,8 @@ def _main():
 
     noiseCurves = getNoiseCurves(i, outputs)
     seed = 0
-    NSIDE = 512
-    hitmap_path = "/home/amm487/cloned_repos/Sensitivity-Calculator/src/sensitivity_calculator/ccat_uniform_coverage_nside" + \
+    NSIDE = 256
+    hitmap_path = "/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/ccat_uniform_coverage_nside" + \
         str(NSIDE) + "_201021.fits"
     zeroHitmapFractio = zeroHitmapFraction(hitmap_path, NSIDE)
     zf = zeroHitmapFractio
