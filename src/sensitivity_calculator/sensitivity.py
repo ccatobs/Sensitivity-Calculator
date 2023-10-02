@@ -676,7 +676,7 @@ def _geteqbw(f, r):
     return f / (10 * r) * _pi / 2
 
 
-def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9,fsky = 20000./(4*_pi*(180/_pi)**2),survey_years=4000/24./365.24):
+def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9,fsky = 20000./(4*_pi*(180/_pi)**2),survey_years=4000/24./365.24,return_outputs=False):
     """Returns a list of noise curves (ell, N_ell_T_full, N_ell_P_full) corresponding to rfpairs, a list of finesse-frequency pairs, and detector arrays i. frequencyRanges is an optional parameter 
     for modifying the frequency range of the detector arrays."""
     angle = 90 - i["observationElevationAngle"]
@@ -699,6 +699,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         return ell, N_ell_T_full, N_ell_P_full
 
     results = {}
+    outputs = {}
     for count, (ri, fi) in enumerate(rfpairs):
         index = 0
         for j in range(len(frequencyRanges)):
@@ -721,7 +722,12 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         N_ell_T_full = N_ell_T_full[index]
         N_ell_P_full = N_ell_P_full[index]
         results[(ri, fi)] = (ell, N_ell_T_full, N_ell_P_full)
-    return results
+        outputs[(ri, fi)] = output
+
+    if return_outputs:
+        return results, outputs
+    else:
+        return results
 
 
 def spillEfficiencyComparison(lyotStopAngle=13.4, f=350e9, ds=2.75, maxangle=180):
