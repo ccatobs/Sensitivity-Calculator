@@ -234,7 +234,8 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
 
     return {"netW8Avg": netW8Avg, "netW8RJ":
             netW8RJ, "neiW8": neiW8, "eorNEFD": eorNEFD, "eorNEI": eorNEI, "powerPerPixel":
-            powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam}
+            powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam,
+            "eorPhotonNoiseNEP": eorPhotonNoiseNEP}
 
 
 def _pwvToTick(pwv):
@@ -660,7 +661,7 @@ def _eorCalculate(diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_cold, t_l
     arrayNETCMB = arrayNETRJ*aToCMB[:, None]*1000
     netw8avg = _sqrt(3/(1/arrayNETCMB[:, 0]**2+1/arrayNETCMB[:, 1]
                         ** 2+1/arrayNETCMB[:, 2]**2).astype(float))
-    return {"eorNEFD": eorNEFD, "eorNEI": eorNEI, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam, "netW8Avg": netw8avg}
+    return {"eorNEFD": eorNEFD, "eorNEI": eorNEI, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam, "netW8Avg": netw8avg, "eorPhotonNoiseNEP":eorPhotonNoiseNEP, "eorEqTrans": eorEqTrans}
 
 
 def _eorCalcByFreqR(angle, diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_cold, t_lens_cold, t_uhdpe_window, coldSpillOverEfficiency, detectorNEP, backgroundSubtractionDegradationFactor, spatialPixels, pixelYield, eqbw):
