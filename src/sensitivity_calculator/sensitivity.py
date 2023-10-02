@@ -674,7 +674,8 @@ def _eorCalcByFreqR(angle, diameter, t, wfe, eta, doe, eorSpecNumPoln, t_filter_
 
 def _geteqbw(f, r):
     """Returns the equivalent bandwith for a given frequency and r for EoR calculations."""
-    return f / (10 * r) * _pi / 2
+    #return f / (10 * r) * _pi / 2
+    return f / r * _pi / 2
 
 
 def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9,fsky = 20000./(4*_pi*(180/_pi)**2),survey_years=4000/24./365.24,return_outputs=False):
