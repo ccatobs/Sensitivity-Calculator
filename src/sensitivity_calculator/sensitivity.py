@@ -235,7 +235,7 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
     return {"netW8Avg": netW8Avg, "netW8RJ":
             netW8RJ, "neiW8": neiW8, "eorNEFD": eorNEFD, "eorNEI": eorNEI, "powerPerPixel":
             powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam,
-            "eorPhotonNoiseNEP": eorPhotonNoiseNEP}
+            "eorPhotonNoiseNEP": eorPhotonNoiseNEP, "photonNoiseNEP": photonNoiseNEP}
 
 
 def _pwvToTick(pwv):
