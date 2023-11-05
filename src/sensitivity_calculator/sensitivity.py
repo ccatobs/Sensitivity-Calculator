@@ -487,7 +487,7 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
 
 
 # Load the beam file and pass the angle and value data to other functions
-def getSpillEfficiency(i, oldFile=False):
+def getSpillEfficiency(i, oldFile=True):
     """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
     if oldFile:
         data = np.genfromtxt(os.path.join(absolute_path,
