@@ -235,7 +235,7 @@ def _calculate(diameter, t, wfe, eta, doe, t_int, pixelYield, szCamNumPoln, eorS
     return {"netW8Avg": netW8Avg, "netW8RJ":
             netW8RJ, "neiW8": neiW8, "eorNEFD": eorNEFD, "eorNEI": eorNEI, "powerPerPixel":
             powerPerPixel, "eorPowerPerPixel": eorPowerPerPixel, "wavelength": wavelength, "beam": beam,
-            "eorPhotonNoiseNEP": eorPhotonNoiseNEP, "photonNoiseNEP": photonNoiseNEP, "EqTrans": eqtrans}
+            "eorPhotonNoiseNEP": eorPhotonNoiseNEP, "photonNoiseNEP": photonNoiseNEP}
 
 
 def _pwvToTick(pwv):
@@ -487,7 +487,7 @@ def outputSpillEfficiencyFile(i, calculate, spillEfficiency):
 
 
 # Load the beam file and pass the angle and value data to other functions
-def getSpillEfficiency(i, oldFile=True):
+def getSpillEfficiency(i, oldFile=False):
     """Returns spill efficiency, using data/tolTEC_staircase_singleHorn_280GHz.txt as a reference. Is meant to be updated when better/more curves are calculated."""
     if oldFile:
         data = np.genfromtxt(os.path.join(absolute_path,
@@ -821,7 +821,7 @@ def _apodize_map(map0, n_it=5):
     return output
 
 
-def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
+def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
     """Graphs and returns the map corresponding to a given [band] and [tube] in CCAT, with 
     [pysm_components] and [seed] fed into mapsims to create the map. Sensitivities from the rest of 
     the calculator are passed in through the input parameters [i] and broadband outputs [outputs]. 
@@ -892,7 +892,7 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
     return final[0][tag]
 
 
-def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, instrument_parameters_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
+def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False, instrument_parameters_path="src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap="src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
     """Graphs and returns the map corresponding to a given [band] and [tube] in SO's telescopes, with 
     [pysm_components] and [seed] fed into mapsims to create the map. [sim_cmb] and [sim_noise] are toggles
     for whether the CMB and noise will be simulated respectively."""
@@ -1018,7 +1018,7 @@ def _main():
     noiseCurves = getNoiseCurves(i, outputs)
     seed = 0
     NSIDE = 256
-    hitmap_path = "/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/ccat_uniform_coverage_nside" + \
+    hitmap_path = "src/sensitivity_calculator/ccat_uniform_coverage_nside" + \
         str(NSIDE) + "_201021.fits"
     zeroHitmapFractio = zeroHitmapFraction(hitmap_path, NSIDE)
     zf = zeroHitmapFractio
