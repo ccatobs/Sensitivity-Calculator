@@ -558,7 +558,8 @@ def _least_squares_slopeV2(cf, eqbw, col, a, lowPWV, highPWV):
 
 
 def _data_C_calcV2(i):
-    """Returns data_C based on the input dictionary [i] specified by getInputs."""
+    """Returns data_C based on the input dictionary [i] specified by getInputs.
+    This doesn't yet take into account observation angle."""
     A = 45
     COL = 2
 
@@ -594,15 +595,17 @@ def useLatexFont():
     rc('text', usetex=True)
 
 
-def getNoiseCurves(i, outputs, survey_hours = 4000, el = 45.):
-    """Returns a tuple of (ell, N_ell_T_full, N_ell_P_full) for the given inputs and outputs from the rest of the sensitivity calculator."""
+def getNoiseCurves(i, outputs, survey_hours = 4000, el = 45., sky_area = 20000.):
+    """Returns a tuple of (ell, N_ell_T_full, N_ell_P_full) for the given inputs and outputs from the rest of the sensitivity calculator.
+    el: observation elevation angle
+    sky_area: sky area in deg."""
     centerFrequency = i['centerFrequency']/1e9
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
     ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=survey_hours /
                            24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=el, data_C=data_C)
-    fsky = 20000./(4*_pi*(180/_pi)**2)
+    fsky = sky_area/(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
         fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
