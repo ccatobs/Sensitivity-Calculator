@@ -594,14 +594,14 @@ def useLatexFont():
     rc('text', usetex=True)
 
 
-def getNoiseCurves(i, outputs):
+def getNoiseCurves(i, outputs, survey_hours = 4000, el = 45.):
     """Returns a tuple of (ell, N_ell_T_full, N_ell_P_full) for the given inputs and outputs from the rest of the sensitivity calculator."""
     centerFrequency = i['centerFrequency']/1e9
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
-    ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=4000 /
-                           24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+    ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=survey_hours /
+                           24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=el, data_C=data_C)
     fsky = 20000./(4*_pi*(180/_pi)**2)
     lat_lmax = 10000
     ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
@@ -678,7 +678,7 @@ def _geteqbw(f, r):
     return f / r * _pi / 2
 
 
-def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9,fsky = 20000./(4*_pi*(180/_pi)**2),survey_years=4000/24./365.24,return_outputs=False):
+def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]])*10**9,fsky = 20000./(4*_pi*(180/_pi)**2),survey_years=4000/24./365.24,return_outputs=False,el=45.):
     """Returns a list of noise curves (ell, N_ell_T_full, N_ell_P_full) corresponding to rfpairs, a list of finesse-frequency pairs, and detector arrays i. frequencyRanges is an optional parameter 
     for modifying the frequency range of the detector arrays."""
     angle = 90 - i["observationElevationAngle"]
@@ -694,7 +694,7 @@ def eorNoiseCurves(i, rfpairs, frequencyRanges=np.array([[210, 315], [315, 420]]
         beam = output["beam"] / 60
         netw8avg = output["netW8Avg"]
         data_C = _data_C_calcV2(i)
-        ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=survey_years, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=45., data_C=data_C)
+        ccat = noise_file.CCAT(centerFrequency, beam, netw8avg, survey_years=survey_years, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=el, data_C=data_C)
         lat_lmax = 10000
         ell, N_ell_T_full, N_ell_P_full = ccat.get_noise_curves(
             fsky, lat_lmax, 1, full_covar=False, deconv_beam=True)
