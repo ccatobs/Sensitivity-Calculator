@@ -824,7 +824,8 @@ def _apodize_map(map0, n_it=5):
     return output
 
 
-def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None):
+def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=False, sim_noise=False, instrument_parameters_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/instrument_parameters/instrument_parameters.tbl", hitmap_path="/Users/stevekchoi/work/build/Sensitivity-Calculator/src/sensitivity_calculator/data/ccat_uniform_coverage_nside256_201021.fits", NSIDE=256, lmax=None,
+    survey_hours=4000.,survey_efficiency=1.0,el=None):
     """Graphs and returns the map corresponding to a given [band] and [tube] in CCAT, with 
     [pysm_components] and [seed] fed into mapsims to create the map. Sensitivities from the rest of 
     the calculator are passed in through the input parameters [i] and broadband outputs [outputs]. 
@@ -846,8 +847,9 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
             cmb_dir="data/mapsimscmb",
             input_units="uK_CMB",
         )
+    survey_years = survey_hours/24./365.24
     ccat_survey = noise_file.CCAT(
-        i["centerFrequency"], outputs["beam"]/60., outputs["netW8Avg"], hitmap_path=hitmap_path, data_C=data_C)
+        i["centerFrequency"], outputs["beam"]/60., outputs["netW8Avg"], hitmap_path=hitmap_path, data_C=data_C,survey_years=survey_years,survey_efficiency=survey_efficiency,el=el)
     channels_list = mapsims.parse_channels(
         instrument_parameters=instrument_path)
     noise = mapsims.noise.ExternalNoiseSimulator(
@@ -858,7 +860,7 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
         apply_kludge_correction=False,
         survey=ccat_survey,
         channels_list=channels_list,
-        survey_efficiency=1.0,
+        survey_efficiency=survey_efficiency,
         rolloff_ell=30,
     )
 
