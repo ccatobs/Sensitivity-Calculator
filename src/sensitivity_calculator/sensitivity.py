@@ -595,7 +595,7 @@ def useLatexFont():
     rc('text', usetex=True)
 
 
-def getNoiseCurves(i, outputs, survey_hours = 4000, el = 45., sky_area = 20000.):
+def getNoiseCurves(i, outputs, survey_hours = 4000, el = 45., sky_area = 20000., atmosphere = True):
     """Returns a tuple of (ell, N_ell_T_full, N_ell_P_full) for the given inputs and outputs from the rest of the sensitivity calculator.
     el: observation elevation angle
     sky_area: sky area in deg."""
@@ -603,6 +603,8 @@ def getNoiseCurves(i, outputs, survey_hours = 4000, el = 45., sky_area = 20000.)
     beam = outputs["beam"]/60
     net = outputs["netW8Avg"]
     data_C = _data_C_calcV2(i)
+    if not atmosphere:
+        data_C *= 0
     ccat = noise_file.CCAT(centerFrequency, beam, net, survey_years=survey_hours /
                            24./365.24, survey_efficiency=1.0, N_tubes=tuple(1 for _ in centerFrequency), el=el, data_C=data_C)
     fsky = sky_area/(4*_pi*(180/_pi)**2)
@@ -881,9 +883,9 @@ def ccat_mapsims(i, outputs, band, tube, pysm_components, seed, data_C, sim_cmb=
             num=seed
         )
         output_map = simulator.execute()
-        for det in output_map.keys():
-            for pol in np.arange(output_map[det].shape[0]):
-                output_map[det][pol] = _apodize_map(output_map[det][pol])
+        # for det in output_map.keys():
+        #     for pol in np.arange(output_map[det].shape[0]):
+        #         output_map[det][pol] = _apodize_map(output_map[det][pol])
         final.append(output_map)
     pols = ["T", "Q", "U"]
     for h in final:
