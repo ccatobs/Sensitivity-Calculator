@@ -946,9 +946,9 @@ def so_mapsims(band, tube, pysm_components, seed, sim_cmb=False, sim_noise=False
             num=seed,
         )
         output_map = simulator.execute()
-        for det in output_map.keys():
-            for pol in np.arange(output_map[det].shape[0]):
-                output_map[det][pol] = _apodize_map(output_map[det][pol])
+        # for det in output_map.keys():
+        #     for pol in np.arange(output_map[det].shape[0]):
+        #         output_map[det][pol] = _apodize_map(output_map[det][pol])
         final.append(output_map)
     pols = ["T", "Q", "U"]
     for h in final:
